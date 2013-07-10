@@ -21,9 +21,18 @@ class ObjectValidator
     list.push [fn, message]
     return null
 
-  validate: (callback) ->
+  validate: (attributes..., callback) ->
+    attributes ||= []
+
+    if typeof callback is 'string'
+      attributes.push callback
+      callback = null
+
+    if attributes.length is 0
+      attributes = (attr for own attr of @_validations)
+
     validationPromises = []
-    for own attr of @_validations
+    for attr in attributes
       validationPromises.push @_validateAttribute(attr)...
 
     promise = all(validationPromises).then (results) =>

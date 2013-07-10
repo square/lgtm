@@ -19,9 +19,14 @@ validator = LGTM.validatorFor(person)
                 .with(((age) -> age > 18), "You must be over 18.")
               .build()
 
+# Validate all attributes and return results with a promise.
 validator.validate().then (result) ->
   if not result.valid
     alert JSON.stringify(result.errors) # { "lastName": ["You must enter a last name."] }
+
+# Specify the attributes to validate, this time using a callback.
+validator.validate 'firstName', 'age', (result) ->
+  alert JSON.stringify(result) # { "valid": true, "errors": {} }
 ```
 
 ## Installing

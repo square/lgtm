@@ -1,4 +1,5 @@
 { ObjectValidator } = LGTM
+{ core }            = LGTM.validators
 { module }          = QUnit
 
 resolve = (value) ->
@@ -12,6 +13,8 @@ module 'ObjectValidator',
     @validator = new ObjectValidator({})
 
 test 'calls back when given a callback', ->
+  expect 2
+
   returnValue = @validator.validate (result) ->
     start()
     ok result.valid, 'properly returns results'
@@ -19,14 +22,41 @@ test 'calls back when given a callback', ->
   stop()
 
 test 'returns a promise when no callback is given', ->
+  expect 1
+
   returnValue = @validator.validate()
   returnValue.then (result) ->
-    ok result.valid, 'properly returns results'
     start()
+    ok result.valid, 'properly returns results'
+  stop()
+
+test 'can validate a specific list of attributes', ->
+  expect 2
+
+  @validator.addValidation 'firstName', core.required, "Missing first name!"
+  @validator.addValidation 'lastName', core.required, "Missing last name!"
+
+  @validator.validate().then (result) =>
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        firstName: ["Missing first name!"]
+        lastName: ["Missing last name!"]
+
+    @validator.validate('firstName').then (result) =>
+      start()
+      deepEqual result,
+        valid: no
+        errors:
+          firstName: ["Missing first name!"]
+    stop()
   stop()
 
 testValidatesAsExpected = ->
   test 'resolves the promise correctly', ->
+    expect 1
+
     called = no
     @validator.validate().then (result) ->
       called = yes
@@ -35,6 +65,8 @@ testValidatesAsExpected = ->
     stop()
 
   test 'yields the validation results correctly', ->
+    expect 1
+
     @object.lastName = 'Solo'
     @validator.validate().then (result) ->
       deepEqual result,
