@@ -4,7 +4,8 @@
 
 module 'ObjectValidator',
   setup: ->
-    @validator = new ObjectValidator({})
+    @object    = {}
+    @validator = new ObjectValidator(@object)
 
 test 'calls back when given a callback', ->
   expect 2
@@ -46,6 +47,19 @@ test 'can validate a specific list of attributes', ->
           firstName: ["Missing first name!"]
     stop()
   stop()
+
+test 'passes the validation function the value, key, and object being validated', ->
+  expect 4
+
+  @object.firstName = 'Han'
+
+  @validator.addValidation 'firstName', (args...) =>
+    strictEqual args.length, 3, 'passes three arguments'
+    strictEqual args[0], 'Han',       '1st argument is value'
+    strictEqual args[1], 'firstName', '2nd argument is key'
+    strictEqual args[2], @object,     '3rd argument is object'
+
+  @validator.validate()
 
 testValidatesAsExpected = ->
   test 'resolves the promise correctly', ->

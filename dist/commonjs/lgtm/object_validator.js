@@ -75,14 +75,15 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype._validateAttribute = function(attr) {
-    var fn, message, value, _i, _len, _ref, _ref1, _results;
+    var fn, message, object, value, _i, _len, _ref, _ref1, _results;
+    object = this.object;
     value = get(this.object, attr);
     _ref = this._validations[attr];
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       _ref1 = _ref[_i], fn = _ref1[0], message = _ref1[1];
       _results.push((function(message) {
-        return resolve(fn(value)).then(function(isValid) {
+        return resolve(fn(value, attr, object)).then(function(isValid) {
           if (isValid !== true) {
             return [attr, message];
           }

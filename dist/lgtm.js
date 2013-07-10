@@ -25,7 +25,7 @@ exports.validators = validators;
 
 exports.ObjectValidator = ObjectValidator;
 
-},{"./lgtm/object_validator":3,"./lgtm/validator_builder":2,"./lgtm/validators/core":4}],2:[function(require,module,exports){
+},{"./lgtm/object_validator":2,"./lgtm/validator_builder":3,"./lgtm/validators/core":4}],3:[function(require,module,exports){
 "use strict";
 var ObjectValidator, ValidatorBuilder,
   __slice = [].slice;
@@ -90,7 +90,7 @@ ValidatorBuilder = (function() {
 
 module.exports = ValidatorBuilder;
 
-},{"./object_validator":3}],4:[function(require,module,exports){
+},{"./object_validator":2}],4:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder, register, required;
 
@@ -111,7 +111,7 @@ exports.required = required;
 
 exports.register = register;
 
-},{"../validator_builder":2}],3:[function(require,module,exports){
+},{"../validator_builder":3}],2:[function(require,module,exports){
 "use strict";
 var ObjectValidator, all, get, resolve, __dependency1__,
   __slice = [].slice,
@@ -189,14 +189,15 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype._validateAttribute = function(attr) {
-    var fn, message, value, _i, _len, _ref, _ref1, _results;
+    var fn, message, object, value, _i, _len, _ref, _ref1, _results;
+    object = this.object;
     value = get(this.object, attr);
     _ref = this._validations[attr];
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       _ref1 = _ref[_i], fn = _ref1[0], message = _ref1[1];
       _results.push((function(message) {
-        return resolve(fn(value)).then(function(isValid) {
+        return resolve(fn(value, attr, object)).then(function(isValid) {
           if (isValid !== true) {
             return [attr, message];
           }
@@ -257,7 +258,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":9,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":7,"./rsvp/hash":10,"./rsvp/node":8,"./rsvp/promise":6,"./rsvp/reject":14,"./rsvp/resolve":13}],7:[function(require,module,exports){
+},{"./rsvp/all":10,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":7,"./rsvp/hash":9,"./rsvp/node":8,"./rsvp/promise":6,"./rsvp/reject":14,"./rsvp/resolve":13}],7:[function(require,module,exports){
 "use strict";
 var Event = function(type, options) {
   this.type = type;
@@ -580,53 +581,7 @@ function denodeify(nodeFunc) {
 
 
 exports.denodeify = denodeify;
-},{"./all":9,"./promise":6}],9:[function(require,module,exports){
-(function(){"use strict";
-var Promise = require("./promise").Promise;
-/* global toString */
-
-
-function all(promises) {
-  if(toString.call(promises) !== "[object Array]") {
-    throw new TypeError('You must pass an array to all.');
-  }
-  return new Promise(function(resolve, reject) {
-    var results = [], remaining = promises.length,
-    promise;
-
-    if (remaining === 0) {
-      resolve([]);
-    }
-
-    function resolver(index) {
-      return function(value) {
-        resolveAll(index, value);
-      };
-    }
-
-    function resolveAll(index, value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        resolve(results);
-      }
-    }
-
-    for (var i = 0; i < promises.length; i++) {
-      promise = promises[i];
-
-      if (promise && typeof promise.then === 'function') {
-        promise.then(resolver(i), reject);
-      } else {
-        resolveAll(i, promise);
-      }
-    }
-  });
-}
-
-
-exports.all = all;
-})()
-},{"./promise":6}],10:[function(require,module,exports){
+},{"./all":10,"./promise":6}],9:[function(require,module,exports){
 "use strict";
 var defer = require("./defer").defer;
 
@@ -677,7 +632,53 @@ function hash(promises) {
 
 
 exports.hash = hash;
-},{"./defer":11}],11:[function(require,module,exports){
+},{"./defer":11}],10:[function(require,module,exports){
+(function(){"use strict";
+var Promise = require("./promise").Promise;
+/* global toString */
+
+
+function all(promises) {
+  if(toString.call(promises) !== "[object Array]") {
+    throw new TypeError('You must pass an array to all.');
+  }
+  return new Promise(function(resolve, reject) {
+    var results = [], remaining = promises.length,
+    promise;
+
+    if (remaining === 0) {
+      resolve([]);
+    }
+
+    function resolver(index) {
+      return function(value) {
+        resolveAll(index, value);
+      };
+    }
+
+    function resolveAll(index, value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        resolve(results);
+      }
+    }
+
+    for (var i = 0; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        resolveAll(i, promise);
+      }
+    }
+  });
+}
+
+
+exports.all = all;
+})()
+},{"./promise":6}],11:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 

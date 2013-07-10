@@ -43,11 +43,12 @@ class ObjectValidator
     return promise unless callback?
 
   _validateAttribute: (attr) ->
-    value = get @object, attr
+    object = @object
+    value  = get @object, attr
 
     for [fn, message] in @_validations[attr]
       do (message) ->
-        resolve(fn(value))
+        resolve(fn(value, attr, object))
           .then((isValid) -> [ attr, message ] if isValid isnt yes)
 
   _collectResults: (results) ->
