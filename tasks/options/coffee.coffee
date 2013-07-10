@@ -9,12 +9,3 @@ module.exports =
       dest: 'dist/commonjs'
       ext: '.js'
     ]
-
-  test:
-    files: [
-      expand: yes
-      cwd: 'test'
-      src: '**/*.coffee'
-      dest: 'tmp/test'
-      ext: '.js'
-    ]

@@ -27,7 +27,8 @@
     "grunt-contrib-connect": "~0.3.0",
     "grunt-contrib-watch": "~0.4.4",
     "grunt-contrib-copy": "~0.4.1",
-    "grunt-browserify": "~1.2.0"
+    "grunt-browserify": "~1.2.0",
+    "coffeeify": "~0.5.1"
   },
   "dependencies": {
     "rsvp": "~2.0.0"
