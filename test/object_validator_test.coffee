@@ -2,12 +2,6 @@
 { core }            = LGTM.validators
 { module }          = QUnit
 
-resolve = (value) ->
-  then: (callback) ->
-    setTimeout ->
-      callback value
-    , 0
-
 module 'ObjectValidator',
   setup: ->
     @validator = new ObjectValidator({})
