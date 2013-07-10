@@ -40,4 +40,8 @@ class ValidatorBuilder
       @using fn, message
     return null
 
+  @unregisterHelper: (name) ->
+    delete @::[name]
+    return null
+
 export default ValidatorBuilder

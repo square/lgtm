@@ -7,7 +7,12 @@ core.register()
 validator = (object) ->
   new ValidatorBuilder(object)
 
+register = (args...) ->
+  ValidatorBuilder.registerHelper args...
 
-validations = { core }
+unregister = (args...) ->
+  ValidatorBuilder.unregisterHelper args...
+
+validations = { core, register, unregister }
 
 export { validator, validations, ObjectValidator }

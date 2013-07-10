@@ -60,6 +60,11 @@ ValidatorBuilder = (function() {
     return null;
   };
 
+  ValidatorBuilder.unregisterHelper = function(name) {
+    delete this.prototype[name];
+    return null;
+  };
+
   return ValidatorBuilder;
 
 })();
