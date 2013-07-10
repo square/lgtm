@@ -1,5 +1,5 @@
 { ObjectValidator } = LGTM
-{ core }            = LGTM.validators
+{ core }            = LGTM.validations
 { module }          = QUnit
 
 module 'ObjectValidator',

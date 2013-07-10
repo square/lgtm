@@ -1,7 +1,7 @@
-{ core }   = LGTM.validators
+{ core }   = LGTM.validations
 { module } = QUnit
 
-module 'validators.core'
+module 'validations.core'
 
 test 'required', ->
   ok core.required(0), 'returns true for numbers'
