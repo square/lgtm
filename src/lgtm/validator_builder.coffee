@@ -1,4 +1,5 @@
 import ObjectValidator from './object_validator'
+import { resolve } from 'rsvp'
 
 class ValidatorBuilder
   _attr      : null
@@ -22,10 +23,11 @@ class ValidatorBuilder
       condition = @_condition
       originalPredicate = predicate
       predicate = (args...) ->
-        if condition(args...)
-          originalPredicate(args...)
-        else
-          yes
+        resolve(condition(args...)).then (result) ->
+          if result
+            originalPredicate(args...)
+          else
+            yes
 
     @_validator.addValidation @_attr, predicate, message
     return this

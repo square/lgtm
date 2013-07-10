@@ -61,3 +61,31 @@ test 'allows conditionally running validations', ->
     stop()
 
   stop()
+
+test 'allows conditionals that return promises', ->
+  @validator =
+    validatorFor(@object)
+      .validates('name')
+        .when((name) -> resolve(name.length % 2 isnt 0))
+          .using(((name) -> name is 'Han'), "Your name is not Han!")
+      .build()
+
+  @object.name = 'Brian' # odd length names are validated
+
+  @validator.validate().then (result) =>
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        name: ["Your name is not Han!"]
+
+    @object.name = 'Fred' # even length names are not validated
+
+    @validator.validate().then (result) =>
+      start()
+      deepEqual result,
+        valid: yes
+        errors: {}
+      , 'promise conditions are respected'
+    stop()
+  stop()

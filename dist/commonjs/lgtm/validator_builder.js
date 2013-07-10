@@ -1,8 +1,10 @@
 "use strict";
-var ObjectValidator, ValidatorBuilder,
+var ObjectValidator, ValidatorBuilder, resolve,
   __slice = [].slice;
 
 ObjectValidator = require("./object_validator");
+
+resolve = require("rsvp").resolve;
 
 ValidatorBuilder = (function() {
   ValidatorBuilder.prototype._attr = null;
@@ -34,11 +36,13 @@ ValidatorBuilder = (function() {
       predicate = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (condition.apply(null, args)) {
-          return originalPredicate.apply(null, args);
-        } else {
-          return true;
-        }
+        return resolve(condition.apply(null, args)).then(function(result) {
+          if (result) {
+            return originalPredicate.apply(null, args);
+          } else {
+            return true;
+          }
+        });
       };
     }
     this._validator.addValidation(this._attr, predicate, message);
