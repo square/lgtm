@@ -1,7 +1,7 @@
 (function(e){if("function"==typeof bootstrap)bootstrap("lgtm",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeLGTM=e}else"undefined"!=typeof window?window.LGTM=e():global.LGTM=e()})(function(){var define,ses,bootstrap,module,exports;
 return (function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 "use strict";
-var ObjectValidator, ValidatorBuilder, core, validatorFor, validators;
+var ObjectValidator, ValidatorBuilder, core, validator, validators;
 
 ValidatorBuilder = require("./lgtm/validator_builder");
 
@@ -11,7 +11,7 @@ core = require("./lgtm/validators/core");
 
 core.register();
 
-validatorFor = function(object) {
+validator = function(object) {
   return new ValidatorBuilder(object);
 };
 
@@ -19,13 +19,13 @@ validators = {
   core: core
 };
 
-exports.validatorFor = validatorFor;
+exports.validator = validator;
 
 exports.validators = validators;
 
 exports.ObjectValidator = ObjectValidator;
 
-},{"./lgtm/object_validator":3,"./lgtm/validator_builder":2,"./lgtm/validators/core":4}],4:[function(require,module,exports){
+},{"./lgtm/object_validator":4,"./lgtm/validator_builder":2,"./lgtm/validators/core":3}],3:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder, register, required;
 
@@ -62,8 +62,8 @@ ValidatorBuilder = (function() {
 
   ValidatorBuilder.prototype._validator = null;
 
-  function ValidatorBuilder(object) {
-    this._validator = new ObjectValidator(object);
+  function ValidatorBuilder() {
+    this._validator = new ObjectValidator();
   }
 
   ValidatorBuilder.prototype.validates = function(attr) {
@@ -115,7 +115,7 @@ ValidatorBuilder = (function() {
 
 module.exports = ValidatorBuilder;
 
-},{"./object_validator":3,"rsvp":5}],3:[function(require,module,exports){
+},{"./object_validator":4,"rsvp":5}],4:[function(require,module,exports){
 "use strict";
 var ObjectValidator, all, get, resolve, __dependency1__,
   __slice = [].slice,
@@ -138,12 +138,9 @@ get = function(object, property) {
 };
 
 ObjectValidator = (function() {
-  ObjectValidator.prototype.object = null;
-
   ObjectValidator.prototype._validations = null;
 
-  function ObjectValidator(object) {
-    this.object = object;
+  function ObjectValidator() {
     this._validations = [];
   }
 
@@ -155,10 +152,9 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype.validate = function() {
-    var attr, attributes, callback, promise, validationPromises, _i, _j, _len,
+    var attr, attributes, callback, object, promise, validationPromises, _i, _j, _len,
       _this = this;
-    attributes = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), callback = arguments[_i++];
-    attributes || (attributes = []);
+    object = arguments[0], attributes = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
     if (typeof callback === 'string') {
       attributes.push(callback);
       callback = null;
@@ -178,7 +174,7 @@ ObjectValidator = (function() {
     validationPromises = [];
     for (_j = 0, _len = attributes.length; _j < _len; _j++) {
       attr = attributes[_j];
-      validationPromises.push.apply(validationPromises, this._validateAttribute(attr));
+      validationPromises.push.apply(validationPromises, this._validateAttribute(object, attr));
     }
     promise = all(validationPromises).then(function(results) {
       results = _this._collectResults(results);
@@ -192,10 +188,9 @@ ObjectValidator = (function() {
     }
   };
 
-  ObjectValidator.prototype._validateAttribute = function(attr) {
-    var fn, message, object, value, _i, _len, _ref, _ref1, _results;
-    object = this.object;
-    value = get(this.object, attr);
+  ObjectValidator.prototype._validateAttribute = function(object, attr) {
+    var fn, message, value, _i, _len, _ref, _ref1, _results;
+    value = get(object, attr);
     _ref = this._validations[attr];
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -262,7 +257,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":9,"./rsvp/config":12,"./rsvp/defer":10,"./rsvp/events":6,"./rsvp/hash":11,"./rsvp/node":8,"./rsvp/promise":7,"./rsvp/reject":14,"./rsvp/resolve":13}],6:[function(require,module,exports){
+},{"./rsvp/all":8,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":9,"./rsvp/promise":7,"./rsvp/reject":14,"./rsvp/resolve":13}],6:[function(require,module,exports){
 "use strict";
 var Event = function(type, options) {
   this.type = type;
@@ -543,49 +538,6 @@ function reject(promise, value) {
 
 exports.Promise = Promise;
 },{"./config":12,"./events":6}],8:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-var all = require("./all").all;
-
-function makeNodeCallbackFor(resolve, reject) {
-  return function (error, value) {
-    if (error) {
-      reject(error);
-    } else if (arguments.length > 2) {
-      resolve(Array.prototype.slice.call(arguments, 1));
-    } else {
-      resolve(value);
-    }
-  };
-}
-
-function denodeify(nodeFunc) {
-  return function()  {
-    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
-    var thisArg = this;
-
-    var promise = new Promise(function(nodeResolve, nodeReject) {
-      resolve = nodeResolve;
-      reject = nodeReject;
-    });
-
-    all(nodeArgs).then(function(nodeArgs) {
-      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
-
-      try {
-        nodeFunc.apply(thisArg, nodeArgs);
-      } catch(e) {
-        reject(e);
-      }
-    });
-
-    return promise;
-  };
-}
-
-
-exports.denodeify = denodeify;
-},{"./all":9,"./promise":7}],9:[function(require,module,exports){
 (function(){"use strict";
 var Promise = require("./promise").Promise;
 /* global toString */
@@ -631,25 +583,50 @@ function all(promises) {
 
 exports.all = all;
 })()
-},{"./promise":7}],10:[function(require,module,exports){
+},{"./promise":7}],9:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
+var all = require("./all").all;
 
-function defer() {
-  var deferred = {};
+function makeNodeCallbackFor(resolve, reject) {
+  return function (error, value) {
+    if (error) {
+      reject(error);
+    } else if (arguments.length > 2) {
+      resolve(Array.prototype.slice.call(arguments, 1));
+    } else {
+      resolve(value);
+    }
+  };
+}
 
-  var promise = new Promise(function(resolve, reject) {
-    deferred.resolve = resolve;
-    deferred.reject = reject;
-  });
+function denodeify(nodeFunc) {
+  return function()  {
+    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
+    var thisArg = this;
 
-  deferred.promise = promise;
-  return deferred;
+    var promise = new Promise(function(nodeResolve, nodeReject) {
+      resolve = nodeResolve;
+      reject = nodeReject;
+    });
+
+    all(nodeArgs).then(function(nodeArgs) {
+      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
+
+      try {
+        nodeFunc.apply(thisArg, nodeArgs);
+      } catch(e) {
+        reject(e);
+      }
+    });
+
+    return promise;
+  };
 }
 
 
-exports.defer = defer;
-},{"./promise":7}],11:[function(require,module,exports){
+exports.denodeify = denodeify;
+},{"./all":8,"./promise":7}],10:[function(require,module,exports){
 "use strict";
 var defer = require("./defer").defer;
 
@@ -700,7 +677,25 @@ function hash(promises) {
 
 
 exports.hash = hash;
-},{"./defer":10}],12:[function(require,module,exports){
+},{"./defer":11}],11:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+function defer() {
+  var deferred = {};
+
+  var promise = new Promise(function(resolve, reject) {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  deferred.promise = promise;
+  return deferred;
+}
+
+
+exports.defer = defer;
+},{"./promise":7}],12:[function(require,module,exports){
 "use strict";
 var async = require("./async").async;
 

@@ -9,11 +9,9 @@ get = (object, property) ->
     object[property]
 
 class ObjectValidator
-  object       : null
   _validations : null
 
-  constructor: (object) ->
-    @object = object
+  constructor: ->
     @_validations = []
 
   addValidation: (attr, fn, message) ->
@@ -21,9 +19,7 @@ class ObjectValidator
     list.push [fn, message]
     return null
 
-  validate: (attributes..., callback) ->
-    attributes ||= []
-
+  validate: (object, attributes..., callback) ->
     if typeof callback is 'string'
       attributes.push callback
       callback = null
@@ -33,7 +29,7 @@ class ObjectValidator
 
     validationPromises = []
     for attr in attributes
-      validationPromises.push @_validateAttribute(attr)...
+      validationPromises.push @_validateAttribute(object, attr)...
 
     promise = all(validationPromises).then (results) =>
       results = @_collectResults results
@@ -42,9 +38,8 @@ class ObjectValidator
 
     return promise unless callback?
 
-  _validateAttribute: (attr) ->
-    object = @object
-    value  = get @object, attr
+  _validateAttribute: (object, attr) ->
+    value  = get object, attr
 
     for [fn, message] in @_validations[attr]
       do (message) ->

@@ -1,10 +1,10 @@
-{ validatorFor, ObjectValidator } = LGTM
-{ module }                        = QUnit
+{ validator, ObjectValidator } = LGTM
+{ module }                     = QUnit
 
-module 'validatorFor',
+module 'validator',
   setup: ->
     @validator =
-      validatorFor({})
+      validator()
         .validates('name')
           .required("You must provide a name.")
         .build()
@@ -12,7 +12,7 @@ module 'validatorFor',
 test 'provides an easy way to build a validator', ->
   expect 2
 
-  @validator.validate().then (result) ->
+  @validator.validate({}).then (result) ->
     start()
     ok ! result.valid, 'result is invalid'
     deepEqual result.errors, name: ["You must provide a name."]
@@ -21,12 +21,12 @@ test 'provides an easy way to build a validator', ->
 test 'returns an ObjectValidator', ->
   ok @validator instanceof ObjectValidator
 
-module 'validatorFor#when',
+module 'validator#when',
   setup: ->
     @object = {}
 
     @validator =
-      validatorFor(@object)
+      validator()
         .validates('age')
           .when((age) -> age % 2 is 0)
             .using(((age) -> age > 12), "You must be at least 13 years old.")
@@ -39,7 +39,7 @@ test 'allows conditionally running validations', ->
 
   @object.age = 10 # even numbered ages are validated
 
-  @validator.validate().then (result) =>
+  @validator.validate(@object).then (result) =>
     start()
     deepEqual result,
       valid: no
@@ -51,7 +51,7 @@ test 'allows conditionally running validations', ->
 
     @object.age = 7 # odd numbered ages aren't validated
 
-    @validator.validate().then (result) =>
+    @validator.validate(@object).then (result) =>
       start()
       deepEqual result,
         valid: no
@@ -64,7 +64,7 @@ test 'allows conditionally running validations', ->
 
 test 'allows conditionals that return promises', ->
   @validator =
-    validatorFor(@object)
+    validator()
       .validates('name')
         .when((name) -> resolve(name.length % 2 isnt 0))
           .using(((name) -> name is 'Han'), "Your name is not Han!")
@@ -72,7 +72,7 @@ test 'allows conditionals that return promises', ->
 
   @object.name = 'Brian' # odd length names are validated
 
-  @validator.validate().then (result) =>
+  @validator.validate(@object).then (result) =>
     start()
     deepEqual result,
       valid: no
@@ -81,7 +81,7 @@ test 'allows conditionals that return promises', ->
 
     @object.name = 'Fred' # even length names are not validated
 
-    @validator.validate().then (result) =>
+    @validator.validate(@object).then (result) =>
       start()
       deepEqual result,
         valid: yes

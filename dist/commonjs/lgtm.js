@@ -1,5 +1,5 @@
 "use strict";
-var ObjectValidator, ValidatorBuilder, core, validatorFor, validators;
+var ObjectValidator, ValidatorBuilder, core, validator, validators;
 
 ValidatorBuilder = require("./lgtm/validator_builder");
 
@@ -9,7 +9,7 @@ core = require("./lgtm/validators/core");
 
 core.register();
 
-validatorFor = function(object) {
+validator = function(object) {
   return new ValidatorBuilder(object);
 };
 
@@ -17,7 +17,7 @@ validators = {
   core: core
 };
 
-exports.validatorFor = validatorFor;
+exports.validator = validator;
 
 exports.validators = validators;
 

@@ -20,12 +20,9 @@ get = function(object, property) {
 };
 
 ObjectValidator = (function() {
-  ObjectValidator.prototype.object = null;
-
   ObjectValidator.prototype._validations = null;
 
-  function ObjectValidator(object) {
-    this.object = object;
+  function ObjectValidator() {
     this._validations = [];
   }
 
@@ -37,10 +34,9 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype.validate = function() {
-    var attr, attributes, callback, promise, validationPromises, _i, _j, _len,
+    var attr, attributes, callback, object, promise, validationPromises, _i, _j, _len,
       _this = this;
-    attributes = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), callback = arguments[_i++];
-    attributes || (attributes = []);
+    object = arguments[0], attributes = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
     if (typeof callback === 'string') {
       attributes.push(callback);
       callback = null;
@@ -60,7 +56,7 @@ ObjectValidator = (function() {
     validationPromises = [];
     for (_j = 0, _len = attributes.length; _j < _len; _j++) {
       attr = attributes[_j];
-      validationPromises.push.apply(validationPromises, this._validateAttribute(attr));
+      validationPromises.push.apply(validationPromises, this._validateAttribute(object, attr));
     }
     promise = all(validationPromises).then(function(results) {
       results = _this._collectResults(results);
@@ -74,10 +70,9 @@ ObjectValidator = (function() {
     }
   };
 
-  ObjectValidator.prototype._validateAttribute = function(attr) {
-    var fn, message, object, value, _i, _len, _ref, _ref1, _results;
-    object = this.object;
-    value = get(this.object, attr);
+  ObjectValidator.prototype._validateAttribute = function(object, attr) {
+    var fn, message, value, _i, _len, _ref, _ref1, _results;
+    value = get(object, attr);
     _ref = this._validations[attr];
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {

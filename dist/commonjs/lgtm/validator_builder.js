@@ -13,8 +13,8 @@ ValidatorBuilder = (function() {
 
   ValidatorBuilder.prototype._validator = null;
 
-  function ValidatorBuilder(object) {
-    this._validator = new ObjectValidator(object);
+  function ValidatorBuilder() {
+    this._validator = new ObjectValidator();
   }
 
   ValidatorBuilder.prototype.validates = function(attr) {

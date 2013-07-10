@@ -4,9 +4,9 @@ import core from './lgtm/validators/core'
 
 core.register()
 
-validatorFor = (object) ->
+validator = (object) ->
   new ValidatorBuilder(object)
 
 validators = { core }
 
-export { validatorFor, validators, ObjectValidator }
+export { validator, validators, ObjectValidator }

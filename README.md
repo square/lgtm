@@ -13,7 +13,7 @@ person =
 lastNameRequired = yes
 
 validator =
-  LGTM.validatorFor(person)
+  LGTM.validator()
     .validates('firstName')
       .required("You must enter a first name.")
     .validates('lastName')
@@ -24,12 +24,12 @@ validator =
     .build()
 
 # Validate all attributes and return results with a promise.
-validator.validate().then (result) ->
+validator.validate(person).then (result) ->
   if not result.valid
     alert JSON.stringify(result.errors) # { "lastName": ["You must enter a last name."] }
 
 # Specify the attributes to validate, this time using a callback.
-validator.validate 'firstName', 'age', (result) ->
+validator.validate person, 'firstName', 'age', (result) ->
   alert JSON.stringify(result) # { "valid": true, "errors": {} }
 ```
 

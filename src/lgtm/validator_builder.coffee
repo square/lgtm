@@ -6,8 +6,8 @@ class ValidatorBuilder
   _condition : null
   _validator : null
 
-  constructor: (object) ->
-    @_validator = new ObjectValidator(object)
+  constructor: ->
+    @_validator = new ObjectValidator()
 
   validates: (attr) ->
     @_attr = attr

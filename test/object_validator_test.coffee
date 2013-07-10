@@ -5,12 +5,12 @@
 module 'ObjectValidator',
   setup: ->
     @object    = {}
-    @validator = new ObjectValidator(@object)
+    @validator = new ObjectValidator()
 
 test 'calls back when given a callback', ->
   expect 2
 
-  returnValue = @validator.validate (result) ->
+  returnValue = @validator.validate @object, (result) ->
     start()
     ok result.valid, 'properly returns results'
   ok ! returnValue, 'has no return value'
@@ -19,7 +19,7 @@ test 'calls back when given a callback', ->
 test 'returns a promise when no callback is given', ->
   expect 1
 
-  returnValue = @validator.validate()
+  returnValue = @validator.validate(@object)
   returnValue.then (result) ->
     start()
     ok result.valid, 'properly returns results'
@@ -31,7 +31,7 @@ test 'can validate a specific list of attributes', ->
   @validator.addValidation 'firstName', core.required, "Missing first name!"
   @validator.addValidation 'lastName', core.required, "Missing last name!"
 
-  @validator.validate().then (result) =>
+  @validator.validate(@object).then (result) =>
     start()
     deepEqual result,
       valid: no
@@ -39,7 +39,7 @@ test 'can validate a specific list of attributes', ->
         firstName: ["Missing first name!"]
         lastName: ["Missing last name!"]
 
-    @validator.validate('firstName').then (result) =>
+    @validator.validate(@object, 'firstName').then (result) =>
       start()
       deepEqual result,
         valid: no
@@ -59,14 +59,14 @@ test 'passes the validation function the value, key, and object being validated'
     strictEqual args[1], 'firstName', '2nd argument is key'
     strictEqual args[2], @object,     '3rd argument is object'
 
-  @validator.validate()
+  @validator.validate(@object)
 
 testValidatesAsExpected = ->
   test 'resolves the promise correctly', ->
     expect 1
 
     called = no
-    @validator.validate().then (result) ->
+    @validator.validate(@object).then (result) ->
       called = yes
       start()
     ok ! called, 'the promise is not resolved synchronously'
@@ -76,7 +76,7 @@ testValidatesAsExpected = ->
     expect 1
 
     @object.lastName = 'Solo'
-    @validator.validate().then (result) ->
+    @validator.validate(@object).then (result) ->
       deepEqual result,
         valid: no
         errors:
@@ -87,7 +87,7 @@ testValidatesAsExpected = ->
 module 'ObjectValidator with validations that return immediately',
   setup: ->
     @object    = {}
-    @validator = new ObjectValidator(@object)
+    @validator = new ObjectValidator()
 
     @validator.addValidation 'firstName',
       ((firstName) -> firstName is 'Han'),
@@ -101,7 +101,7 @@ testValidatesAsExpected()
 module 'ObjectValidator with validations that return eventually',
   setup: ->
     @object    = {}
-    @validator = new ObjectValidator(@object)
+    @validator = new ObjectValidator()
 
     @validator.addValidation 'firstName',
       ((firstName) -> resolve(firstName is 'Han')),
