@@ -2,5 +2,5 @@ module.exports =
   all:
     options:
       urls: [
-        'http://localhost:8000/'
+        "http://localhost:#{process.env.PORT ? 8000}/"
       ]

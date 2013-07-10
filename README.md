@@ -60,7 +60,8 @@ the `develop` grunt test:
 $ grunt develop
 ```
 
-Then go to http://localhost:8000/ in your browser.
+Then go to http://localhost:8000/ in your browser (run with `PORT={port}` to
+override the default port).
 
 ### Pull Requests
 
