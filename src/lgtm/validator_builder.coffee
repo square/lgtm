@@ -11,7 +11,7 @@ class ValidatorBuilder
     @_attr = attr
     return this
 
-  with: (fn, message) ->
+  using: (fn, message) ->
     @_validator.addValidation @_attr, fn, message
     return this
 
@@ -20,7 +20,7 @@ class ValidatorBuilder
 
   @registerHelper: (name, fn) ->
     @::[name] = (message) ->
-      @with fn, message
+      @using fn, message
     return null
 
 export default ValidatorBuilder

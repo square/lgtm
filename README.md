@@ -16,7 +16,7 @@ validator = LGTM.validatorFor(person)
               .validates('lastName')
                 .required("You must enter a last name.")
               .validates('age')
-                .with(((age) -> age > 18), "You must be over 18.")
+                .using(((age) -> age > 18), "You must be over 18.")
               .build()
 
 # Validate all attributes and return results with a promise.

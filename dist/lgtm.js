@@ -25,7 +25,7 @@ exports.validators = validators;
 
 exports.ObjectValidator = ObjectValidator;
 
-},{"./lgtm/object_validator":3,"./lgtm/validator_builder":2,"./lgtm/validators/core":4}],2:[function(require,module,exports){
+},{"./lgtm/object_validator":2,"./lgtm/validator_builder":3,"./lgtm/validators/core":4}],3:[function(require,module,exports){
 "use strict";
 var ObjectValidator, ValidatorBuilder;
 
@@ -45,7 +45,7 @@ ValidatorBuilder = (function() {
     return this;
   };
 
-  ValidatorBuilder.prototype["with"] = function(fn, message) {
+  ValidatorBuilder.prototype.using = function(fn, message) {
     this._validator.addValidation(this._attr, fn, message);
     return this;
   };
@@ -56,7 +56,7 @@ ValidatorBuilder = (function() {
 
   ValidatorBuilder.registerHelper = function(name, fn) {
     this.prototype[name] = function(message) {
-      return this["with"](fn, message);
+      return this.using(fn, message);
     };
     return null;
   };
@@ -67,7 +67,7 @@ ValidatorBuilder = (function() {
 
 module.exports = ValidatorBuilder;
 
-},{"./object_validator":3}],4:[function(require,module,exports){
+},{"./object_validator":2}],4:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder, register, required;
 
@@ -88,7 +88,7 @@ exports.required = required;
 
 exports.register = register;
 
-},{"../validator_builder":2}],3:[function(require,module,exports){
+},{"../validator_builder":3}],2:[function(require,module,exports){
 "use strict";
 var ObjectValidator, all, get, resolve, __dependency1__,
   __slice = [].slice,
@@ -234,7 +234,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":9,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":7,"./rsvp/promise":8,"./rsvp/reject":14,"./rsvp/resolve":13}],6:[function(require,module,exports){
+},{"./rsvp/all":8,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":9,"./rsvp/promise":7,"./rsvp/reject":14,"./rsvp/resolve":13}],6:[function(require,module,exports){
 "use strict";
 var Event = function(type, options) {
   this.type = type;
@@ -333,49 +333,6 @@ var EventTarget = {
 
 exports.EventTarget = EventTarget;
 },{}],7:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-var all = require("./all").all;
-
-function makeNodeCallbackFor(resolve, reject) {
-  return function (error, value) {
-    if (error) {
-      reject(error);
-    } else if (arguments.length > 2) {
-      resolve(Array.prototype.slice.call(arguments, 1));
-    } else {
-      resolve(value);
-    }
-  };
-}
-
-function denodeify(nodeFunc) {
-  return function()  {
-    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
-    var thisArg = this;
-
-    var promise = new Promise(function(nodeResolve, nodeReject) {
-      resolve = nodeResolve;
-      reject = nodeReject;
-    });
-
-    all(nodeArgs).then(function(nodeArgs) {
-      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
-
-      try {
-        nodeFunc.apply(thisArg, nodeArgs);
-      } catch(e) {
-        reject(e);
-      }
-    });
-
-    return promise;
-  };
-}
-
-
-exports.denodeify = denodeify;
-},{"./all":9,"./promise":8}],8:[function(require,module,exports){
 "use strict";
 var config = require("./config").config;
 var EventTarget = require("./events").EventTarget;
@@ -557,7 +514,7 @@ function reject(promise, value) {
 
 
 exports.Promise = Promise;
-},{"./config":12,"./events":6}],9:[function(require,module,exports){
+},{"./config":12,"./events":6}],8:[function(require,module,exports){
 (function(){"use strict";
 var Promise = require("./promise").Promise;
 /* global toString */
@@ -603,7 +560,7 @@ function all(promises) {
 
 exports.all = all;
 })()
-},{"./promise":8}],10:[function(require,module,exports){
+},{"./promise":7}],10:[function(require,module,exports){
 "use strict";
 var defer = require("./defer").defer;
 
@@ -654,7 +611,50 @@ function hash(promises) {
 
 
 exports.hash = hash;
-},{"./defer":11}],11:[function(require,module,exports){
+},{"./defer":11}],9:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+var all = require("./all").all;
+
+function makeNodeCallbackFor(resolve, reject) {
+  return function (error, value) {
+    if (error) {
+      reject(error);
+    } else if (arguments.length > 2) {
+      resolve(Array.prototype.slice.call(arguments, 1));
+    } else {
+      resolve(value);
+    }
+  };
+}
+
+function denodeify(nodeFunc) {
+  return function()  {
+    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
+    var thisArg = this;
+
+    var promise = new Promise(function(nodeResolve, nodeReject) {
+      resolve = nodeResolve;
+      reject = nodeReject;
+    });
+
+    all(nodeArgs).then(function(nodeArgs) {
+      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
+
+      try {
+        nodeFunc.apply(thisArg, nodeArgs);
+      } catch(e) {
+        reject(e);
+      }
+    });
+
+    return promise;
+  };
+}
+
+
+exports.denodeify = denodeify;
+},{"./all":8,"./promise":7}],11:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -672,7 +672,7 @@ function defer() {
 
 
 exports.defer = defer;
-},{"./promise":8}],12:[function(require,module,exports){
+},{"./promise":7}],12:[function(require,module,exports){
 "use strict";
 var async = require("./async").async;
 
@@ -721,7 +721,7 @@ function resolve(thenable) {
 
 
 exports.resolve = resolve;
-},{"./promise":8}],14:[function(require,module,exports){
+},{"./promise":7}],14:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -739,7 +739,7 @@ function reject(reason) {
 
 
 exports.reject = reject;
-},{"./promise":8}],16:[function(require,module,exports){
+},{"./promise":7}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};

@@ -17,7 +17,7 @@ ValidatorBuilder = (function() {
     return this;
   };
 
-  ValidatorBuilder.prototype["with"] = function(fn, message) {
+  ValidatorBuilder.prototype.using = function(fn, message) {
     this._validator.addValidation(this._attr, fn, message);
     return this;
   };
@@ -28,7 +28,7 @@ ValidatorBuilder = (function() {
 
   ValidatorBuilder.registerHelper = function(name, fn) {
     this.prototype[name] = function(message) {
-      return this["with"](fn, message);
+      return this.using(fn, message);
     };
     return null;
   };
