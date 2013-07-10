@@ -10,14 +10,15 @@ person =
   lastName  : null
   age       : 30
 
-validator = LGTM.validatorFor(person)
-              .validates('firstName')
-                .required("You must enter a first name.")
-              .validates('lastName')
-                .required("You must enter a last name.")
-              .validates('age')
-                .using(((age) -> age > 18), "You must be over 18.")
-              .build()
+validator =
+  LGTM.validatorFor(person)
+    .validates('firstName')
+      .required("You must enter a first name.")
+    .validates('lastName')
+      .required("You must enter a last name.")
+    .validates('age')
+      .using(((age) -> age > 18), "You must be over 18.")
+    .build()
 
 # Validate all attributes and return results with a promise.
 validator.validate().then (result) ->
