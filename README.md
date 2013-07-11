@@ -135,6 +135,7 @@ being validated:
 LGTM.validator()
   .validates('street1')
     .using(((street1, _, business) -> street1? or business.mobile), "Please enter a street address.")
+  .build()
 ```
 
 The downside of this approach is that we're using `street1?` as a substitute
@@ -147,6 +148,7 @@ LGTM.validator()
   .validates('street1')
     .when(((_, _, business) -> not business.mobile))
       .required("Please enter a street address.")
+  .build()
 ```
 
 
