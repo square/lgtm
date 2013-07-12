@@ -1,5 +1,23 @@
 import ObjectValidator from './object_validator'
 import { resolve } from 'rsvp'
+import { get } from './utils'
+
+wrapCallbackWithDependencies = (callback, dependencies) ->
+  return callback if dependencies.length is 0
+
+  (value, key, object) ->
+    values = (get object, dep for dep in dependencies)
+    callback values..., key, object
+
+wrapCallbackWithCondition = (callback, condition) ->
+  return callback unless condition?
+
+  (args...) ->
+    resolve(condition(args...)).then (result) ->
+      if result
+        callback(args...)
+      else
+        yes
 
 class ValidatorBuilder
   _attr      : null
@@ -14,21 +32,15 @@ class ValidatorBuilder
     @_condition = null
     return this
 
-  when: (condition) ->
-    @_condition = condition
+  when: (dependencies..., condition) ->
+    dependencies = [@_attr] if dependencies.length is 0
+    @_condition = wrapCallbackWithDependencies condition, dependencies
     return this
 
-  using: (predicate, message) ->
-    if @_condition
-      condition = @_condition
-      originalPredicate = predicate
-      predicate = (args...) ->
-        resolve(condition(args...)).then (result) ->
-          if result
-            originalPredicate(args...)
-          else
-            yes
-
+  using: (dependencies..., predicate, message) ->
+    dependencies = [@_attr] if dependencies.length is 0
+    predicate = wrapCallbackWithCondition predicate, @_condition
+    predicate = wrapCallbackWithDependencies predicate, dependencies
     @_validator.addValidation @_attr, predicate, message
     return this
 

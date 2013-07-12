@@ -1,12 +1,5 @@
 import { all, resolve } from 'rsvp'
-
-get = (object, property) ->
-  if not object?
-    return
-  else if typeof object.get is 'function'
-    object.get(property)
-  else
-    object[property]
+import { get } from './utils'
 
 class ObjectValidator
   _validations : null

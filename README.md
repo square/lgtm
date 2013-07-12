@@ -134,7 +134,7 @@ being validated:
 # businesses only need street addresses if they're not mobile
 LGTM.validator()
   .validates('street1')
-    .using(((street1, _, business) -> street1? or business.mobile), "Please enter a street address.")
+    .using('street1', 'mobile', ((street1, mobile) -> street1? or mobile), "Please enter a street address.")
   .build()
 ```
 
@@ -146,10 +146,13 @@ still use `required()` with a little bit of help from `when()`:
 # businesses only need street addresses if they're not mobile
 LGTM.validator()
   .validates('street1')
-    .when(((_, _, business) -> not business.mobile))
+    .when('mobile', ((mobile) -> not mobile))
       .required("Please enter a street address.")
   .build()
 ```
+
+`using()` and `when()` both implicity pass the value of the attribute being
+validated by default if no attributes are specified.
 
 
 ## Contributing

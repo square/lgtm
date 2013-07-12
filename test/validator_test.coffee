@@ -21,6 +21,27 @@ test 'provides an easy way to build a validator', ->
 test 'returns an ObjectValidator', ->
   ok @validator instanceof ObjectValidator
 
+
+module 'validator#using'
+
+test 'passes declared dependencies', ->
+  expect 1
+
+  @validator =
+    validator()
+      .validates('password')
+        .using('password', 'passwordConfirmation', ((password, passwordConfirmation) -> password is passwordConfirmation), "Passwords must match.")
+      .build()
+
+  @validator.validate(password: 'abc123', passwordConfirmation: 'abc123').then (result) ->
+    start()
+    deepEqual result,
+      valid: yes
+      errors: {}
+    , 'dependent values are passed in'
+  stop()
+
+
 module 'validator#when',
   setup: ->
     @object = {}
@@ -88,4 +109,30 @@ test 'allows conditionals that return promises', ->
         errors: {}
       , 'promise conditions are respected'
     stop()
+  stop()
+
+test 'passes declared dependencies', ->
+  expect 5
+
+  @object =
+    name : 'Brian'
+    age  : 30
+
+  @validator =
+    validator()
+      .validates('name')
+        .when('name', 'age', 'unset', (name, age, unset, key, object) =>
+          strictEqual name, 'Brian'
+          strictEqual age, 30
+          strictEqual unset, undefined
+          strictEqual key, 'name'
+          strictEqual object, @object
+          no
+        )
+        .required("You must enter a name.")
+      .build()
+
+  @validator.validate(@object).then (result) ->
+    start()
+
   stop()

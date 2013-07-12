@@ -61,7 +61,131 @@ exports.required = required;
 
 exports.register = register;
 
-},{"../validator_builder":2}],3:[function(require,module,exports){
+},{"../validator_builder":2}],5:[function(require,module,exports){
+"use strict";
+var get;
+
+get = function(object, property) {
+  if (object == null) {
+
+  } else if (typeof object.get === 'function') {
+    return object.get(property);
+  } else {
+    return object[property];
+  }
+};
+
+exports.get = get;
+
+},{}],2:[function(require,module,exports){
+"use strict";
+var ObjectValidator, ValidatorBuilder, get, resolve, wrapCallbackWithCondition, wrapCallbackWithDependencies,
+  __slice = [].slice;
+
+ObjectValidator = require("./object_validator");
+
+resolve = require("rsvp").resolve;
+
+get = require("./utils").get;
+
+wrapCallbackWithDependencies = function(callback, dependencies) {
+  if (dependencies.length === 0) {
+    return callback;
+  }
+  return function(value, key, object) {
+    var dep, values;
+    values = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = dependencies.length; _i < _len; _i++) {
+        dep = dependencies[_i];
+        _results.push(get(object, dep));
+      }
+      return _results;
+    })();
+    return callback.apply(null, __slice.call(values).concat([key], [object]));
+  };
+};
+
+wrapCallbackWithCondition = function(callback, condition) {
+  if (condition == null) {
+    return callback;
+  }
+  return function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return resolve(condition.apply(null, args)).then(function(result) {
+      if (result) {
+        return callback.apply(null, args);
+      } else {
+        return true;
+      }
+    });
+  };
+};
+
+ValidatorBuilder = (function() {
+  ValidatorBuilder.prototype._attr = null;
+
+  ValidatorBuilder.prototype._condition = null;
+
+  ValidatorBuilder.prototype._validator = null;
+
+  function ValidatorBuilder() {
+    this._validator = new ObjectValidator();
+  }
+
+  ValidatorBuilder.prototype.validates = function(attr) {
+    this._attr = attr;
+    this._condition = null;
+    return this;
+  };
+
+  ValidatorBuilder.prototype.when = function() {
+    var condition, dependencies, _i;
+    dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
+    if (dependencies.length === 0) {
+      dependencies = [this._attr];
+    }
+    this._condition = wrapCallbackWithDependencies(condition, dependencies);
+    return this;
+  };
+
+  ValidatorBuilder.prototype.using = function() {
+    var dependencies, message, predicate, _i;
+    dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
+    if (dependencies.length === 0) {
+      dependencies = [this._attr];
+    }
+    predicate = wrapCallbackWithCondition(predicate, this._condition);
+    predicate = wrapCallbackWithDependencies(predicate, dependencies);
+    this._validator.addValidation(this._attr, predicate, message);
+    return this;
+  };
+
+  ValidatorBuilder.prototype.build = function() {
+    return this._validator;
+  };
+
+  ValidatorBuilder.registerHelper = function(name, fn) {
+    this.prototype[name] = function(message) {
+      return this.using(fn, message);
+    };
+    return null;
+  };
+
+  ValidatorBuilder.unregisterHelper = function(name) {
+    delete this.prototype[name];
+    return null;
+  };
+
+  return ValidatorBuilder;
+
+})();
+
+module.exports = ValidatorBuilder;
+
+},{"./object_validator":3,"./utils":5,"rsvp":6}],3:[function(require,module,exports){
 "use strict";
 var ObjectValidator, all, get, resolve, __dependency1__,
   __slice = [].slice,
@@ -73,15 +197,7 @@ all = __dependency1__.all;
 
 resolve = __dependency1__.resolve;
 
-get = function(object, property) {
-  if (object == null) {
-
-  } else if (typeof object.get === 'function') {
-    return object.get(property);
-  } else {
-    return object[property];
-  }
-};
+get = require("./utils").get;
 
 ObjectValidator = (function() {
   ObjectValidator.prototype._validations = null;
@@ -177,81 +293,7 @@ ObjectValidator = (function() {
 
 module.exports = ObjectValidator;
 
-},{"rsvp":5}],2:[function(require,module,exports){
-"use strict";
-var ObjectValidator, ValidatorBuilder, resolve,
-  __slice = [].slice;
-
-ObjectValidator = require("./object_validator");
-
-resolve = require("rsvp").resolve;
-
-ValidatorBuilder = (function() {
-  ValidatorBuilder.prototype._attr = null;
-
-  ValidatorBuilder.prototype._condition = null;
-
-  ValidatorBuilder.prototype._validator = null;
-
-  function ValidatorBuilder() {
-    this._validator = new ObjectValidator();
-  }
-
-  ValidatorBuilder.prototype.validates = function(attr) {
-    this._attr = attr;
-    this._condition = null;
-    return this;
-  };
-
-  ValidatorBuilder.prototype.when = function(condition) {
-    this._condition = condition;
-    return this;
-  };
-
-  ValidatorBuilder.prototype.using = function(predicate, message) {
-    var condition, originalPredicate;
-    if (this._condition) {
-      condition = this._condition;
-      originalPredicate = predicate;
-      predicate = function() {
-        var args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        return resolve(condition.apply(null, args)).then(function(result) {
-          if (result) {
-            return originalPredicate.apply(null, args);
-          } else {
-            return true;
-          }
-        });
-      };
-    }
-    this._validator.addValidation(this._attr, predicate, message);
-    return this;
-  };
-
-  ValidatorBuilder.prototype.build = function() {
-    return this._validator;
-  };
-
-  ValidatorBuilder.registerHelper = function(name, fn) {
-    this.prototype[name] = function(message) {
-      return this.using(fn, message);
-    };
-    return null;
-  };
-
-  ValidatorBuilder.unregisterHelper = function(name) {
-    delete this.prototype[name];
-    return null;
-  };
-
-  return ValidatorBuilder;
-
-})();
-
-module.exports = ValidatorBuilder;
-
-},{"./object_validator":3,"rsvp":5}],5:[function(require,module,exports){
+},{"./utils":5,"rsvp":6}],6:[function(require,module,exports){
 "use strict";
 var EventTarget = require("./rsvp/events").EventTarget;
 var Promise = require("./rsvp/promise").Promise;
@@ -277,7 +319,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":10,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":7,"./rsvp/hash":9,"./rsvp/node":8,"./rsvp/promise":6,"./rsvp/reject":14,"./rsvp/resolve":13}],7:[function(require,module,exports){
+},{"./rsvp/all":10,"./rsvp/config":13,"./rsvp/defer":12,"./rsvp/events":7,"./rsvp/hash":11,"./rsvp/node":9,"./rsvp/promise":8,"./rsvp/reject":15,"./rsvp/resolve":14}],7:[function(require,module,exports){
 "use strict";
 var Event = function(type, options) {
   this.type = type;
@@ -375,7 +417,7 @@ var EventTarget = {
 
 
 exports.EventTarget = EventTarget;
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 var config = require("./config").config;
 var EventTarget = require("./events").EventTarget;
@@ -557,7 +599,7 @@ function reject(promise, value) {
 
 
 exports.Promise = Promise;
-},{"./config":12,"./events":7}],8:[function(require,module,exports){
+},{"./config":13,"./events":7}],9:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 var all = require("./all").all;
@@ -600,7 +642,53 @@ function denodeify(nodeFunc) {
 
 
 exports.denodeify = denodeify;
-},{"./all":10,"./promise":6}],9:[function(require,module,exports){
+},{"./all":10,"./promise":8}],10:[function(require,module,exports){
+(function(){"use strict";
+var Promise = require("./promise").Promise;
+/* global toString */
+
+
+function all(promises) {
+  if(toString.call(promises) !== "[object Array]") {
+    throw new TypeError('You must pass an array to all.');
+  }
+  return new Promise(function(resolve, reject) {
+    var results = [], remaining = promises.length,
+    promise;
+
+    if (remaining === 0) {
+      resolve([]);
+    }
+
+    function resolver(index) {
+      return function(value) {
+        resolveAll(index, value);
+      };
+    }
+
+    function resolveAll(index, value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        resolve(results);
+      }
+    }
+
+    for (var i = 0; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        resolveAll(i, promise);
+      }
+    }
+  });
+}
+
+
+exports.all = all;
+})()
+},{"./promise":8}],11:[function(require,module,exports){
 "use strict";
 var defer = require("./defer").defer;
 
@@ -651,53 +739,7 @@ function hash(promises) {
 
 
 exports.hash = hash;
-},{"./defer":11}],10:[function(require,module,exports){
-(function(){"use strict";
-var Promise = require("./promise").Promise;
-/* global toString */
-
-
-function all(promises) {
-  if(toString.call(promises) !== "[object Array]") {
-    throw new TypeError('You must pass an array to all.');
-  }
-  return new Promise(function(resolve, reject) {
-    var results = [], remaining = promises.length,
-    promise;
-
-    if (remaining === 0) {
-      resolve([]);
-    }
-
-    function resolver(index) {
-      return function(value) {
-        resolveAll(index, value);
-      };
-    }
-
-    function resolveAll(index, value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        resolve(results);
-      }
-    }
-
-    for (var i = 0; i < promises.length; i++) {
-      promise = promises[i];
-
-      if (promise && typeof promise.then === 'function') {
-        promise.then(resolver(i), reject);
-      } else {
-        resolveAll(i, promise);
-      }
-    }
-  });
-}
-
-
-exports.all = all;
-})()
-},{"./promise":6}],11:[function(require,module,exports){
+},{"./defer":12}],12:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -715,7 +757,7 @@ function defer() {
 
 
 exports.defer = defer;
-},{"./promise":6}],12:[function(require,module,exports){
+},{"./promise":8}],13:[function(require,module,exports){
 "use strict";
 var async = require("./async").async;
 
@@ -724,7 +766,7 @@ config.async = async;
 
 
 exports.config = config;
-},{"./async":15}],13:[function(require,module,exports){
+},{"./async":16}],14:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -764,7 +806,7 @@ function resolve(thenable) {
 
 
 exports.resolve = resolve;
-},{"./promise":6}],14:[function(require,module,exports){
+},{"./promise":8}],15:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -782,7 +824,7 @@ function reject(reason) {
 
 
 exports.reject = reject;
-},{"./promise":6}],16:[function(require,module,exports){
+},{"./promise":8}],17:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -836,7 +878,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function(process){"use strict";
 var browserGlobal = (typeof window !== 'undefined') ? window : {};
 
@@ -887,6 +929,6 @@ if (typeof process !== 'undefined' &&
 
 exports.async = async;
 })(require("__browserify_process"))
-},{"__browserify_process":16}]},{},[1])(1)
+},{"__browserify_process":17}]},{},[1])(1)
 });
 ;
