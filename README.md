@@ -178,8 +178,8 @@ The list of attributes your validator cares about will be available with the
 ```coffeescript
 validator = LGTM.validator()
   .validates('street1')
-    .when('mobile', ((mobile) -> not mobile))
-      .using('street1', 'street2', ((street1, street2) -> street1? if street2), "Enter street address if you have an apartment.")
+    .when('mobile', 'street2', ((mobile, street2) -> not mobile and street2?))
+      .required("Enter street address if you have an apartment.")
   .build()
 
 validator.attributes()  # => ["street1", "mobile", "street2"]
