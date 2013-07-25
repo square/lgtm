@@ -12,8 +12,8 @@ core = require("./lgtm/validations/core");
 
 core.register();
 
-validator = function(object) {
-  return new ValidatorBuilder(object);
+validator = function() {
+  return new ValidatorBuilder();
 };
 
 register = function() {
@@ -63,7 +63,8 @@ exports.register = register;
 
 },{"../validator_builder":2}],5:[function(require,module,exports){
 "use strict";
-var get;
+var get, uniq,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 get = function(object, property) {
   if (object == null) {
@@ -75,7 +76,21 @@ get = function(object, property) {
   }
 };
 
+uniq = function(array) {
+  var item, result, _i, _len;
+  result = [];
+  for (_i = 0, _len = array.length; _i < _len; _i++) {
+    item = array[_i];
+    if (__indexOf.call(result, item) < 0) {
+      result.push(item);
+    }
+  }
+  return result;
+};
+
 exports.get = get;
+
+exports.uniq = uniq;
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -142,20 +157,32 @@ ValidatorBuilder = (function() {
   };
 
   ValidatorBuilder.prototype.when = function() {
-    var condition, dependencies, _i;
+    var condition, dependencies, dependency, _i, _j, _len;
     dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
     if (dependencies.length === 0) {
       dependencies = [this._attr];
     }
     this._condition = wrapCallbackWithDependencies(condition, dependencies);
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
+    }
     return this;
   };
 
   ValidatorBuilder.prototype.using = function() {
-    var dependencies, message, predicate, _i;
+    var dependencies, dependency, message, predicate, _i, _j, _len;
     dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
     if (dependencies.length === 0) {
       dependencies = [this._attr];
+    }
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
     }
     predicate = wrapCallbackWithCondition(predicate, this._condition);
     predicate = wrapCallbackWithDependencies(predicate, dependencies);
@@ -187,7 +214,7 @@ module.exports = ValidatorBuilder;
 
 },{"./object_validator":3,"./utils":5,"rsvp":6}],3:[function(require,module,exports){
 "use strict";
-var ObjectValidator, all, get, resolve, __dependency1__,
+var ObjectValidator, all, get, resolve, uniq, __dependency1__, __dependency2__,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
 
@@ -197,13 +224,20 @@ all = __dependency1__.all;
 
 resolve = __dependency1__.resolve;
 
-get = require("./utils").get;
+__dependency2__ = require("./utils");
+
+get = __dependency2__.get;
+
+uniq = __dependency2__.uniq;
 
 ObjectValidator = (function() {
   ObjectValidator.prototype._validations = null;
 
+  ObjectValidator.prototype._dependencies = null;
+
   function ObjectValidator() {
-    this._validations = [];
+    this._validations = {};
+    this._dependencies = {};
   }
 
   ObjectValidator.prototype.addValidation = function(attr, fn, message) {
@@ -211,6 +245,29 @@ ObjectValidator = (function() {
     list = (_base = this._validations)[attr] || (_base[attr] = []);
     list.push([fn, message]);
     return null;
+  };
+
+  ObjectValidator.prototype.addDependentsFor = function() {
+    var dependentAttributes, parentAttribute, _base, _ref;
+    parentAttribute = arguments[0], dependentAttributes = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    (_ref = ((_base = this._dependencies)[parentAttribute] || (_base[parentAttribute] = []))).push.apply(_ref, dependentAttributes);
+    return null;
+  };
+
+  ObjectValidator.prototype.attributes = function() {
+    var attribute, attributes, parentAttribute, _ref, _ref1;
+    attributes = [];
+    _ref = this._validations;
+    for (attribute in _ref) {
+      if (!__hasProp.call(_ref, attribute)) continue;
+      attributes.push(attribute);
+    }
+    _ref1 = this._dependencies;
+    for (parentAttribute in _ref1) {
+      if (!__hasProp.call(_ref1, parentAttribute)) continue;
+      attributes.push(parentAttribute);
+    }
+    return uniq(attributes);
   };
 
   ObjectValidator.prototype.validate = function() {
@@ -251,21 +308,27 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype._validateAttribute = function(object, attr) {
-    var fn, message, value, _i, _len, _ref, _ref1, _results;
+    var dependent, results, validations, value, _i, _len, _ref;
     value = get(object, attr);
-    _ref = this._validations[attr];
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      _ref1 = _ref[_i], fn = _ref1[0], message = _ref1[1];
-      _results.push((function(message) {
-        return resolve(fn(value, attr, object)).then(function(isValid) {
+    validations = this._validations[attr];
+    results = [];
+    if (validations != null) {
+      validations.forEach(function(_arg) {
+        var fn, message;
+        fn = _arg[0], message = _arg[1];
+        return results.push(resolve(fn(value, attr, object)).then(function(isValid) {
           if (isValid !== true) {
             return [attr, message];
           }
-        });
-      })(message));
+        }));
+      });
     }
-    return _results;
+    _ref = this._getDependentsFor(attr);
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      dependent = _ref[_i];
+      results.push.apply(results, this._validateAttribute(object, dependent));
+    }
+    return results;
   };
 
   ObjectValidator.prototype._collectResults = function(results) {
@@ -285,6 +348,10 @@ ObjectValidator = (function() {
       result.valid = false;
     }
     return result;
+  };
+
+  ObjectValidator.prototype._getDependentsFor = function(parentAttribute) {
+    return (this._dependencies[parentAttribute] || []).slice();
   };
 
   return ObjectValidator;
@@ -510,20 +577,25 @@ var invokeCallback = function(type, promise, callback, event) {
 Promise.prototype = {
   constructor: Promise,
 
+  isRejected: undefined,
+  isFulfilled: undefined,
+  rejectedReason: undefined,
+  fulfillmentValue: undefined,
+
   then: function(done, fail) {
     this.off('error', onerror);
 
     var thenPromise = new this.constructor(function() {});
 
     if (this.isFulfilled) {
-      config.async(function() {
-        invokeCallback('resolve', thenPromise, done, { detail: this.fulfillmentValue });
+      config.async(function(promise) {
+        invokeCallback('resolve', thenPromise, done, { detail: promise.fulfillmentValue });
       }, this);
     }
 
     if (this.isRejected) {
-      config.async(function() {
-        invokeCallback('reject', thenPromise, fail, { detail: this.rejectedReason });
+      config.async(function(promise) {
+        invokeCallback('reject', thenPromise, fail, { detail: promise.rejectedReason });
       }, this);
     }
 
@@ -550,32 +622,40 @@ function resolve(promise, value) {
 }
 
 function handleThenable(promise, value) {
-  var then = null;
+  var then = null,
+  resolved;
 
-  if (objectOrFunction(value)) {
-    try {
-      then = value.then;
-    } catch(e) {
-      reject(promise, e);
-      return true;
+  try {
+    if (promise === value) {
+      throw new TypeError("A promises callback cannot return that same promise.");
     }
 
-    if (isFunction(then)) {
-      try {
+    if (objectOrFunction(value)) {
+      then = value.then;
+
+      if (isFunction(then)) {
         then.call(value, function(val) {
+          if (resolved) { return true; }
+          resolved = true;
+
           if (value !== val) {
             resolve(promise, val);
           } else {
             fulfill(promise, val);
           }
         }, function(val) {
+          if (resolved) { return true; }
+          resolved = true;
+
           reject(promise, val);
         });
-      } catch (e) {
-        reject(promise, e);
+
+        return true;
       }
-      return true;
     }
+  } catch (error) {
+    reject(promise, error);
+    return true;
   }
 
   return false;
@@ -649,9 +729,10 @@ var Promise = require("./promise").Promise;
 
 
 function all(promises) {
-  if(toString.call(promises) !== "[object Array]") {
+  if (Object.prototype.toString.call(promises) !== "[object Array]") {
     throw new TypeError('You must pass an array to all.');
   }
+
   return new Promise(function(resolve, reject) {
     var results = [], remaining = promises.length,
     promise;
@@ -744,14 +825,18 @@ exports.hash = hash;
 var Promise = require("./promise").Promise;
 
 function defer() {
-  var deferred = {};
+  var deferred = {
+    // pre-allocate shape
+    resolve: undefined,
+    reject:  undefined,
+    promise: undefined
+  };
 
-  var promise = new Promise(function(resolve, reject) {
+  deferred.promise = new Promise(function(resolve, reject) {
     deferred.resolve = resolve;
     deferred.reject = reject;
   });
 
-  deferred.promise = promise;
   return deferred;
 }
 
@@ -770,38 +855,10 @@ exports.config = config;
 "use strict";
 var Promise = require("./promise").Promise;
 
-function objectOrFunction(x) {
-  return typeof x === "function" || (typeof x === "object" && x !== null);
-}
-
 function resolve(thenable) {
-  if (thenable instanceof Promise) {
-    return thenable;
-  }
-
-  var promise = new Promise(function(resolve, reject) {
-    var then;
-
-    try {
-      if ( objectOrFunction(thenable) ) {
-        then = thenable.then;
-
-        if (typeof then === "function") {
-          then.call(thenable, resolve, reject);
-        } else {
-          resolve(thenable);
-        }
-
-      } else {
-        resolve(thenable);
-      }
-
-    } catch(error) {
-      reject(error);
-    }
+  return new Promise(function(resolve, reject) {
+    resolve(thenable);
   });
-
-  return promise;
 }
 
 
@@ -809,12 +866,6 @@ exports.resolve = resolve;
 },{"./promise":8}],15:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
-
-
-function objectOrFunction(x) {
-  return typeof x === "function" || (typeof x === "object" && x !== null);
-}
-
 
 function reject(reason) {
   return new Promise(function (resolve, reject) {
@@ -881,18 +932,29 @@ process.chdir = function (dir) {
 },{}],16:[function(require,module,exports){
 (function(process){"use strict";
 var browserGlobal = (typeof window !== 'undefined') ? window : {};
-
 var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
 var async;
 
-if (typeof process !== 'undefined' &&
-  {}.toString.call(process) === '[object process]') {
-  async = function(callback, binding) {
+// old node
+function useNextTick() {
+  return function(callback, arg) {
     process.nextTick(function() {
-      callback.call(binding);
+      callback(arg);
     });
   };
-} else if (BrowserMutationObserver) {
+}
+
+// node >= 0.10.x
+function useSetImmediate() {
+  return function(callback, arg) {
+    /* global  setImmediate */
+    setImmediate(function(){
+      callback(arg);
+    });
+  };
+}
+
+function useMutationObserver() {
   var queue = [];
 
   var observer = new BrowserMutationObserver(function() {
@@ -900,8 +962,8 @@ if (typeof process !== 'undefined' &&
     queue = [];
 
     toProcess.forEach(function(tuple) {
-      var callback = tuple[0], binding = tuple[1];
-      callback.call(binding);
+      var callback = tuple[0], arg= tuple[1];
+      callback(arg);
     });
   });
 
@@ -912,18 +974,30 @@ if (typeof process !== 'undefined' &&
   window.addEventListener('unload', function(){
     observer.disconnect();
     observer = null;
-  });
+  }, false);
 
-  async = function(callback, binding) {
-    queue.push([callback, binding]);
+  return function(callback, arg) {
+    queue.push([callback, arg]);
     element.setAttribute('drainQueue', 'drainQueue');
   };
-} else {
-  async = function(callback, binding) {
+}
+
+function useSetTimeout() {
+  return function(callback, arg) {
     setTimeout(function() {
-      callback.call(binding);
+      callback(arg);
     }, 1);
   };
+}
+
+if (typeof setImmediate === 'function') {
+  async = useSetImmediate();
+} else if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+  async = useNextTick();
+} else if (BrowserMutationObserver) {
+  async = useMutationObserver();
+} else {
+  async = useSetTimeout();
 }
 
 

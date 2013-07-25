@@ -61,6 +61,36 @@ test 'passes the validation function the value, key, and object being validated'
 
   @validator.validate(@object)
 
+test 'validates as valid when validating attributes with no registered validations', ->
+  expect 1
+
+  @validator.validate(@object, 'iDoNotExist').then (result) =>
+    start()
+    deepEqual result, valid: yes, errors: {}
+  stop()
+
+test 'allows registering dependencies between attributes', ->
+  expect 1
+
+  # always invalid, easy to test
+  @validator.addValidation 'spouseName', (-> no), 'No name is good enough.'
+  @validator.addDependentsFor 'maritalStatus', 'spouseName'
+
+  @validator.validate(@object, 'maritalStatus').then (result) =>
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        spouseName: ['No name is good enough.']
+  stop()
+
+test 'can provide a list of all attributes it is interested in', ->
+  @validator.addValidation 'street1', (-> no), 'Whatever.'
+  @validator.addValidation 'street2', (-> no), 'Whatever.'
+  @validator.addDependentsFor 'mobile', 'street1', 'street2'
+
+  deepEqual @validator.attributes().sort(), ['mobile', 'street1', 'street2']
+
 testValidatesAsExpected = ->
   test 'resolves the promise correctly', ->
     expect 1

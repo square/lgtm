@@ -6,4 +6,11 @@ get = (object, property) ->
   else
     object[property]
 
+uniq = (array) ->
+  result = []
+  for item in array
+    result.push item unless item in result
+  return result
+
 export get
+export uniq

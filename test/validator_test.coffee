@@ -22,16 +22,16 @@ test 'returns an ObjectValidator', ->
   ok @validator instanceof ObjectValidator
 
 
-module 'validator#using'
+module 'validator#using',
+  setup: ->
+    @validator =
+      validator()
+        .validates('password')
+          .using('password', 'passwordConfirmation', ((password, passwordConfirmation) -> password is passwordConfirmation), "Passwords must match.")
+        .build()
 
 test 'passes declared dependencies', ->
   expect 1
-
-  @validator =
-    validator()
-      .validates('password')
-        .using('password', 'passwordConfirmation', ((password, passwordConfirmation) -> password is passwordConfirmation), "Passwords must match.")
-      .build()
 
   @validator.validate(password: 'abc123', passwordConfirmation: 'abc123').then (result) ->
     start()
@@ -41,6 +41,18 @@ test 'passes declared dependencies', ->
     , 'dependent values are passed in'
   stop()
 
+test 'causes dependent attributes to be validated, even when not specified explicitly', ->
+  expect 1
+
+  # we're leaving out "password" but it gets validated anyway because it
+  # depends on "passwordConfirmation"
+  @validator.validate({password: 'abc123'}, 'passwordConfirmation').then (result) ->
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        password: ["Passwords must match."]
+  stop()
 
 module 'validator#when',
   setup: ->
@@ -114,25 +126,66 @@ test 'allows conditionals that return promises', ->
 test 'passes declared dependencies', ->
   expect 5
 
-  @object =
+  object =
     name : 'Brian'
     age  : 30
 
-  @validator =
+  v =
     validator()
       .validates('name')
-        .when('name', 'age', 'unset', (name, age, unset, key, object) =>
+        .when('name', 'age', 'unset', (name, age, unset, key, obj) =>
           strictEqual name, 'Brian'
           strictEqual age, 30
           strictEqual unset, undefined
           strictEqual key, 'name'
-          strictEqual object, @object
+          strictEqual obj, object
           no
         )
         .required("You must enter a name.")
       .build()
 
-  @validator.validate(@object).then (result) ->
+  v.validate(object).then (result) ->
     start()
 
+  stop()
+
+test 'causes dependent attributes to be validated, even when not specified explicitly', ->
+  expect 2
+
+  v =
+    validator()
+      .validates('name')
+        .when('age', -> yes)
+          .required("You must enter a name.")
+      .build()
+
+  # we leave out "name" but it is validated anyway because it depends on "age"
+  v.validate({}, 'age').then (result) ->
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        name: ["You must enter a name."]
+  stop()
+
+
+  v =
+    validator()
+      .validates('name')
+        .when('age', -> yes)
+          .required("You must enter a name.")
+      .validates('age')
+        .when('isBorn', (isBorn) -> isBorn)
+          .required("You must have an age if you've been born.")
+      .build()
+
+  # we leave out "name" and "age" but they are validated anyway because they
+  # both depend on "isBorn", either directly or transitively
+  v.validate({isBorn: yes}, 'isBorn').then (result) ->
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        name: ["You must enter a name."]
+        age: ["You must have an age if you've been born."]
   stop()

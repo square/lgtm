@@ -35,10 +35,15 @@ class ValidatorBuilder
   when: (dependencies..., condition) ->
     dependencies = [@_attr] if dependencies.length is 0
     @_condition = wrapCallbackWithDependencies condition, dependencies
+    for dependency in dependencies when dependency isnt @_attr
+      @_validator.addDependentsFor dependency, @_attr
     return this
 
+  # .using('password', 'passwordConfirmation', ((password, passwordConfirmation) -> password is passwordConfirmation), "Passwords must match.")
   using: (dependencies..., predicate, message) ->
     dependencies = [@_attr] if dependencies.length is 0
+    for dependency in dependencies when dependency isnt @_attr
+      @_validator.addDependentsFor dependency, @_attr
     predicate = wrapCallbackWithCondition predicate, @_condition
     predicate = wrapCallbackWithDependencies predicate, dependencies
     @_validator.addValidation @_attr, predicate, message

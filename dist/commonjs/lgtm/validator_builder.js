@@ -62,20 +62,32 @@ ValidatorBuilder = (function() {
   };
 
   ValidatorBuilder.prototype.when = function() {
-    var condition, dependencies, _i;
+    var condition, dependencies, dependency, _i, _j, _len;
     dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
     if (dependencies.length === 0) {
       dependencies = [this._attr];
     }
     this._condition = wrapCallbackWithDependencies(condition, dependencies);
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
+    }
     return this;
   };
 
   ValidatorBuilder.prototype.using = function() {
-    var dependencies, message, predicate, _i;
+    var dependencies, dependency, message, predicate, _i, _j, _len;
     dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
     if (dependencies.length === 0) {
       dependencies = [this._attr];
+    }
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
     }
     predicate = wrapCallbackWithCondition(predicate, this._condition);
     predicate = wrapCallbackWithDependencies(predicate, dependencies);

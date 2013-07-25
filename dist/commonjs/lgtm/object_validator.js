@@ -1,5 +1,5 @@
 "use strict";
-var ObjectValidator, all, get, resolve, __dependency1__,
+var ObjectValidator, all, get, resolve, uniq, __dependency1__, __dependency2__,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
 
@@ -9,13 +9,20 @@ all = __dependency1__.all;
 
 resolve = __dependency1__.resolve;
 
-get = require("./utils").get;
+__dependency2__ = require("./utils");
+
+get = __dependency2__.get;
+
+uniq = __dependency2__.uniq;
 
 ObjectValidator = (function() {
   ObjectValidator.prototype._validations = null;
 
+  ObjectValidator.prototype._dependencies = null;
+
   function ObjectValidator() {
-    this._validations = [];
+    this._validations = {};
+    this._dependencies = {};
   }
 
   ObjectValidator.prototype.addValidation = function(attr, fn, message) {
@@ -23,6 +30,29 @@ ObjectValidator = (function() {
     list = (_base = this._validations)[attr] || (_base[attr] = []);
     list.push([fn, message]);
     return null;
+  };
+
+  ObjectValidator.prototype.addDependentsFor = function() {
+    var dependentAttributes, parentAttribute, _base, _ref;
+    parentAttribute = arguments[0], dependentAttributes = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    (_ref = ((_base = this._dependencies)[parentAttribute] || (_base[parentAttribute] = []))).push.apply(_ref, dependentAttributes);
+    return null;
+  };
+
+  ObjectValidator.prototype.attributes = function() {
+    var attribute, attributes, parentAttribute, _ref, _ref1;
+    attributes = [];
+    _ref = this._validations;
+    for (attribute in _ref) {
+      if (!__hasProp.call(_ref, attribute)) continue;
+      attributes.push(attribute);
+    }
+    _ref1 = this._dependencies;
+    for (parentAttribute in _ref1) {
+      if (!__hasProp.call(_ref1, parentAttribute)) continue;
+      attributes.push(parentAttribute);
+    }
+    return uniq(attributes);
   };
 
   ObjectValidator.prototype.validate = function() {
@@ -63,21 +93,27 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype._validateAttribute = function(object, attr) {
-    var fn, message, value, _i, _len, _ref, _ref1, _results;
+    var dependent, results, validations, value, _i, _len, _ref;
     value = get(object, attr);
-    _ref = this._validations[attr];
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      _ref1 = _ref[_i], fn = _ref1[0], message = _ref1[1];
-      _results.push((function(message) {
-        return resolve(fn(value, attr, object)).then(function(isValid) {
+    validations = this._validations[attr];
+    results = [];
+    if (validations != null) {
+      validations.forEach(function(_arg) {
+        var fn, message;
+        fn = _arg[0], message = _arg[1];
+        return results.push(resolve(fn(value, attr, object)).then(function(isValid) {
           if (isValid !== true) {
             return [attr, message];
           }
-        });
-      })(message));
+        }));
+      });
     }
-    return _results;
+    _ref = this._getDependentsFor(attr);
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      dependent = _ref[_i];
+      results.push.apply(results, this._validateAttribute(object, dependent));
+    }
+    return results;
   };
 
   ObjectValidator.prototype._collectResults = function(results) {
@@ -97,6 +133,10 @@ ObjectValidator = (function() {
       result.valid = false;
     }
     return result;
+  };
+
+  ObjectValidator.prototype._getDependentsFor = function(parentAttribute) {
+    return (this._dependencies[parentAttribute] || []).slice();
   };
 
   return ObjectValidator;

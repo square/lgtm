@@ -10,8 +10,8 @@ core = require("./lgtm/validations/core");
 
 core.register();
 
-validator = function(object) {
-  return new ValidatorBuilder(object);
+validator = function() {
+  return new ValidatorBuilder();
 };
 
 register = function() {

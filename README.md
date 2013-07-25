@@ -155,6 +155,22 @@ LGTM.validator()
 validated by default if no attributes are specified.
 
 
+### Attributes Used by Validations
+
+The list of attributes your validator cares about will be available with the
+`attributes()` method. All attributes passed to `validates()`, `using()` and
+`when()` will be included.
+
+```coffeescript
+validator = LGTM.validator()
+  .validates('street1')
+    .when('mobile', ((mobile) -> not mobile))
+      .using('street1', 'street2', ((street1, street2) -> street1? if street2), "Enter street address if you have an apartment.")
+  .build()
+
+validator.attributes()  # => ["street1", "mobile", "street2"]
+```
+
 ## Contributing
 
 ### Setup
