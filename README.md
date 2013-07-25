@@ -87,7 +87,7 @@ validation is done asynchronously and the results are returned via a promise:
 ```coffeescript
 formData = name: "Rose", title: "Companion"
 validator.validate(formData).then (result) ->
-  console.log result # { "valid": false, "errors": { "name": "Rose, you can't sign up." } }
+  console.log result # { "valid": false, "errors": { "name": [ "Rose, you can't sign up." ] } }
 ```
 
 If you prefer the callback style, you can use that instead:
