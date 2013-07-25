@@ -4,8 +4,8 @@ import core from './lgtm/validations/core'
 
 core.register()
 
-validator = (object) ->
-  new ValidatorBuilder(object)
+validator = ->
+  new ValidatorBuilder()
 
 register = (args...) ->
   ValidatorBuilder.registerHelper args...
