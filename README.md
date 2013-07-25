@@ -152,7 +152,21 @@ LGTM.validator()
 ```
 
 `using()` and `when()` both implicity pass the value of the attribute being
-validated by default if no attributes are specified.
+validated by default if no attributes are specified. Validating any of the
+attributes passed to `when()` or `using()` will validate the attribute that
+requires them, too:
+
+```coffeescript
+# businesses only need street addresses if they're not mobile
+validator = LGTM.validator()
+  .validates('street1')
+    .when('mobile', ((mobile) -> not mobile))
+      .required("Please enter a street address.")
+  .build()
+
+validator.validate({ mobile: no, street1: '' }, 'mobile').then (result) ->
+  console.log result  # { "valid": false, "errors": { "street1": [ "Please enter a street address." ] } }
+```
 
 
 ### Attributes Used by Validations
