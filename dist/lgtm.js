@@ -40,179 +40,7 @@ exports.validations = validations;
 
 exports.ObjectValidator = ObjectValidator;
 
-},{"./lgtm/object_validator":3,"./lgtm/validations/core":4,"./lgtm/validator_builder":2}],4:[function(require,module,exports){
-"use strict";
-var ValidatorBuilder, register, required;
-
-ValidatorBuilder = require("../validator_builder");
-
-required = function(value) {
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
-  return value !== '' && value !== null && value !== (void 0);
-};
-
-register = function() {
-  return ValidatorBuilder.registerHelper('required', required);
-};
-
-exports.required = required;
-
-exports.register = register;
-
-},{"../validator_builder":2}],5:[function(require,module,exports){
-"use strict";
-var get, uniq,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-get = function(object, property) {
-  if (object == null) {
-
-  } else if (typeof object.get === 'function') {
-    return object.get(property);
-  } else {
-    return object[property];
-  }
-};
-
-uniq = function(array) {
-  var item, result, _i, _len;
-  result = [];
-  for (_i = 0, _len = array.length; _i < _len; _i++) {
-    item = array[_i];
-    if (__indexOf.call(result, item) < 0) {
-      result.push(item);
-    }
-  }
-  return result;
-};
-
-exports.get = get;
-
-exports.uniq = uniq;
-
-},{}],2:[function(require,module,exports){
-"use strict";
-var ObjectValidator, ValidatorBuilder, get, resolve, wrapCallbackWithCondition, wrapCallbackWithDependencies,
-  __slice = [].slice;
-
-ObjectValidator = require("./object_validator");
-
-resolve = require("rsvp").resolve;
-
-get = require("./utils").get;
-
-wrapCallbackWithDependencies = function(callback, dependencies) {
-  if (dependencies.length === 0) {
-    return callback;
-  }
-  return function(value, key, object) {
-    var dep, values;
-    values = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = dependencies.length; _i < _len; _i++) {
-        dep = dependencies[_i];
-        _results.push(get(object, dep));
-      }
-      return _results;
-    })();
-    return callback.apply(null, __slice.call(values).concat([key], [object]));
-  };
-};
-
-wrapCallbackWithCondition = function(callback, condition) {
-  if (condition == null) {
-    return callback;
-  }
-  return function() {
-    var args;
-    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    return resolve(condition.apply(null, args)).then(function(result) {
-      if (result) {
-        return callback.apply(null, args);
-      } else {
-        return true;
-      }
-    });
-  };
-};
-
-ValidatorBuilder = (function() {
-  ValidatorBuilder.prototype._attr = null;
-
-  ValidatorBuilder.prototype._condition = null;
-
-  ValidatorBuilder.prototype._validator = null;
-
-  function ValidatorBuilder() {
-    this._validator = new ObjectValidator();
-  }
-
-  ValidatorBuilder.prototype.validates = function(attr) {
-    this._attr = attr;
-    this._condition = null;
-    return this;
-  };
-
-  ValidatorBuilder.prototype.when = function() {
-    var condition, dependencies, dependency, _i, _j, _len;
-    dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-    this._condition = wrapCallbackWithDependencies(condition, dependencies);
-    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
-      dependency = dependencies[_j];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-    return this;
-  };
-
-  ValidatorBuilder.prototype.using = function() {
-    var dependencies, dependency, message, predicate, _i, _j, _len;
-    dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
-      dependency = dependencies[_j];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-    predicate = wrapCallbackWithCondition(predicate, this._condition);
-    predicate = wrapCallbackWithDependencies(predicate, dependencies);
-    this._validator.addValidation(this._attr, predicate, message);
-    return this;
-  };
-
-  ValidatorBuilder.prototype.build = function() {
-    return this._validator;
-  };
-
-  ValidatorBuilder.registerHelper = function(name, fn) {
-    this.prototype[name] = function(message) {
-      return this.using(fn, message);
-    };
-    return null;
-  };
-
-  ValidatorBuilder.unregisterHelper = function(name) {
-    delete this.prototype[name];
-    return null;
-  };
-
-  return ValidatorBuilder;
-
-})();
-
-module.exports = ValidatorBuilder;
-
-},{"./object_validator":3,"./utils":5,"rsvp":6}],3:[function(require,module,exports){
+},{"./lgtm/object_validator":2,"./lgtm/validations/core":4,"./lgtm/validator_builder":5}],2:[function(require,module,exports){
 "use strict";
 var ObjectValidator, all, get, resolve, uniq, __dependency1__, __dependency2__,
   __slice = [].slice,
@@ -360,7 +188,245 @@ ObjectValidator = (function() {
 
 module.exports = ObjectValidator;
 
-},{"./utils":5,"rsvp":6}],6:[function(require,module,exports){
+},{"./utils":3,"rsvp":7}],3:[function(require,module,exports){
+"use strict";
+var get, uniq,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+get = function(object, property) {
+  if (object == null) {
+
+  } else if (typeof object.get === 'function') {
+    return object.get(property);
+  } else {
+    return object[property];
+  }
+};
+
+uniq = function(array) {
+  var item, result, _i, _len;
+  result = [];
+  for (_i = 0, _len = array.length; _i < _len; _i++) {
+    item = array[_i];
+    if (__indexOf.call(result, item) < 0) {
+      result.push(item);
+    }
+  }
+  return result;
+};
+
+exports.get = get;
+
+exports.uniq = uniq;
+
+},{}],4:[function(require,module,exports){
+"use strict";
+var ValidatorBuilder, email, register, required;
+
+ValidatorBuilder = require("../validator_builder");
+
+required = function(value) {
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+  return value !== '' && value !== null && value !== (void 0);
+};
+
+email = function(value) {
+  var regexp;
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+  regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return regexp.test(value);
+};
+
+register = function() {
+  ValidatorBuilder.registerHelper('required', required);
+  return ValidatorBuilder.registerHelper('email', email);
+};
+
+exports.required = required;
+
+exports.email = email;
+
+exports.register = register;
+
+},{"../validator_builder":5}],5:[function(require,module,exports){
+"use strict";
+var ObjectValidator, ValidatorBuilder, get, resolve, wrapCallbackWithCondition, wrapCallbackWithDependencies,
+  __slice = [].slice;
+
+ObjectValidator = require("./object_validator");
+
+resolve = require("rsvp").resolve;
+
+get = require("./utils").get;
+
+wrapCallbackWithDependencies = function(callback, dependencies) {
+  if (dependencies.length === 0) {
+    return callback;
+  }
+  return function(value, key, object) {
+    var dep, values;
+    values = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = dependencies.length; _i < _len; _i++) {
+        dep = dependencies[_i];
+        _results.push(get(object, dep));
+      }
+      return _results;
+    })();
+    return callback.apply(null, __slice.call(values).concat([key], [object]));
+  };
+};
+
+wrapCallbackWithCondition = function(callback, condition) {
+  if (condition == null) {
+    return callback;
+  }
+  return function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return resolve(condition.apply(null, args)).then(function(result) {
+      if (result) {
+        return callback.apply(null, args);
+      } else {
+        return true;
+      }
+    });
+  };
+};
+
+ValidatorBuilder = (function() {
+  ValidatorBuilder.prototype._attr = null;
+
+  ValidatorBuilder.prototype._condition = null;
+
+  ValidatorBuilder.prototype._validator = null;
+
+  function ValidatorBuilder() {
+    this._validator = new ObjectValidator();
+  }
+
+  ValidatorBuilder.prototype.validates = function(attr) {
+    this._attr = attr;
+    this._condition = null;
+    return this;
+  };
+
+  ValidatorBuilder.prototype.when = function() {
+    var condition, dependencies, dependency, _i, _j, _len;
+    dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
+    if (dependencies.length === 0) {
+      dependencies = [this._attr];
+    }
+    this._condition = wrapCallbackWithDependencies(condition, dependencies);
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
+    }
+    return this;
+  };
+
+  ValidatorBuilder.prototype.using = function() {
+    var dependencies, dependency, message, predicate, _i, _j, _len;
+    dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
+    if (dependencies.length === 0) {
+      dependencies = [this._attr];
+    }
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
+    }
+    predicate = wrapCallbackWithCondition(predicate, this._condition);
+    predicate = wrapCallbackWithDependencies(predicate, dependencies);
+    this._validator.addValidation(this._attr, predicate, message);
+    return this;
+  };
+
+  ValidatorBuilder.prototype.build = function() {
+    return this._validator;
+  };
+
+  ValidatorBuilder.registerHelper = function(name, fn) {
+    this.prototype[name] = function(message) {
+      return this.using(fn, message);
+    };
+    return null;
+  };
+
+  ValidatorBuilder.unregisterHelper = function(name) {
+    delete this.prototype[name];
+    return null;
+  };
+
+  return ValidatorBuilder;
+
+})();
+
+module.exports = ValidatorBuilder;
+
+},{"./object_validator":2,"./utils":3,"rsvp":7}],6:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],7:[function(require,module,exports){
 "use strict";
 var EventTarget = require("./rsvp/events").EventTarget;
 var Promise = require("./rsvp/promise").Promise;
@@ -386,7 +452,159 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":10,"./rsvp/config":13,"./rsvp/defer":12,"./rsvp/events":7,"./rsvp/hash":11,"./rsvp/node":9,"./rsvp/promise":8,"./rsvp/reject":15,"./rsvp/resolve":14}],7:[function(require,module,exports){
+},{"./rsvp/all":8,"./rsvp/config":10,"./rsvp/defer":11,"./rsvp/events":12,"./rsvp/hash":13,"./rsvp/node":14,"./rsvp/promise":15,"./rsvp/reject":16,"./rsvp/resolve":17}],8:[function(require,module,exports){
+(function(){"use strict";
+var Promise = require("./promise").Promise;
+/* global toString */
+
+
+function all(promises) {
+  if (Object.prototype.toString.call(promises) !== "[object Array]") {
+    throw new TypeError('You must pass an array to all.');
+  }
+
+  return new Promise(function(resolve, reject) {
+    var results = [], remaining = promises.length,
+    promise;
+
+    if (remaining === 0) {
+      resolve([]);
+    }
+
+    function resolver(index) {
+      return function(value) {
+        resolveAll(index, value);
+      };
+    }
+
+    function resolveAll(index, value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        resolve(results);
+      }
+    }
+
+    for (var i = 0; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        resolveAll(i, promise);
+      }
+    }
+  });
+}
+
+
+exports.all = all;
+})()
+},{"./promise":15}],9:[function(require,module,exports){
+(function(process){"use strict";
+var browserGlobal = (typeof window !== 'undefined') ? window : {};
+var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
+var async;
+
+// old node
+function useNextTick() {
+  return function(callback, arg) {
+    process.nextTick(function() {
+      callback(arg);
+    });
+  };
+}
+
+// node >= 0.10.x
+function useSetImmediate() {
+  return function(callback, arg) {
+    /* global  setImmediate */
+    setImmediate(function(){
+      callback(arg);
+    });
+  };
+}
+
+function useMutationObserver() {
+  var queue = [];
+
+  var observer = new BrowserMutationObserver(function() {
+    var toProcess = queue.slice();
+    queue = [];
+
+    toProcess.forEach(function(tuple) {
+      var callback = tuple[0], arg= tuple[1];
+      callback(arg);
+    });
+  });
+
+  var element = document.createElement('div');
+  observer.observe(element, { attributes: true });
+
+  // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
+  window.addEventListener('unload', function(){
+    observer.disconnect();
+    observer = null;
+  }, false);
+
+  return function(callback, arg) {
+    queue.push([callback, arg]);
+    element.setAttribute('drainQueue', 'drainQueue');
+  };
+}
+
+function useSetTimeout() {
+  return function(callback, arg) {
+    setTimeout(function() {
+      callback(arg);
+    }, 1);
+  };
+}
+
+if (typeof setImmediate === 'function') {
+  async = useSetImmediate();
+} else if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+  async = useNextTick();
+} else if (BrowserMutationObserver) {
+  async = useMutationObserver();
+} else {
+  async = useSetTimeout();
+}
+
+
+exports.async = async;
+})(require("__browserify_process"))
+},{"__browserify_process":6}],10:[function(require,module,exports){
+"use strict";
+var async = require("./async").async;
+
+var config = {};
+config.async = async;
+
+
+exports.config = config;
+},{"./async":9}],11:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+function defer() {
+  var deferred = {
+    // pre-allocate shape
+    resolve: undefined,
+    reject:  undefined,
+    promise: undefined
+  };
+
+  deferred.promise = new Promise(function(resolve, reject) {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  return deferred;
+}
+
+
+exports.defer = defer;
+},{"./promise":15}],12:[function(require,module,exports){
 "use strict";
 var Event = function(type, options) {
   this.type = type;
@@ -484,7 +702,101 @@ var EventTarget = {
 
 
 exports.EventTarget = EventTarget;
-},{}],8:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
+"use strict";
+var defer = require("./defer").defer;
+
+function size(object) {
+  var s = 0;
+
+  for (var prop in object) {
+    s++;
+  }
+
+  return s;
+}
+
+function hash(promises) {
+  var results = {}, deferred = defer(), remaining = size(promises);
+
+  if (remaining === 0) {
+    deferred.resolve({});
+  }
+
+  var resolver = function(prop) {
+    return function(value) {
+      resolveAll(prop, value);
+    };
+  };
+
+  var resolveAll = function(prop, value) {
+    results[prop] = value;
+    if (--remaining === 0) {
+      deferred.resolve(results);
+    }
+  };
+
+  var rejectAll = function(error) {
+    deferred.reject(error);
+  };
+
+  for (var prop in promises) {
+    if (promises[prop] && typeof promises[prop].then === 'function') {
+      promises[prop].then(resolver(prop), rejectAll);
+    } else {
+      resolveAll(prop, promises[prop]);
+    }
+  }
+
+  return deferred.promise;
+}
+
+
+exports.hash = hash;
+},{"./defer":11}],14:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+var all = require("./all").all;
+
+function makeNodeCallbackFor(resolve, reject) {
+  return function (error, value) {
+    if (error) {
+      reject(error);
+    } else if (arguments.length > 2) {
+      resolve(Array.prototype.slice.call(arguments, 1));
+    } else {
+      resolve(value);
+    }
+  };
+}
+
+function denodeify(nodeFunc) {
+  return function()  {
+    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
+    var thisArg = this;
+
+    var promise = new Promise(function(nodeResolve, nodeReject) {
+      resolve = nodeResolve;
+      reject = nodeReject;
+    });
+
+    all(nodeArgs).then(function(nodeArgs) {
+      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
+
+      try {
+        nodeFunc.apply(thisArg, nodeArgs);
+      } catch(e) {
+        reject(e);
+      }
+    });
+
+    return promise;
+  };
+}
+
+
+exports.denodeify = denodeify;
+},{"./all":8,"./promise":15}],15:[function(require,module,exports){
 "use strict";
 var config = require("./config").config;
 var EventTarget = require("./events").EventTarget;
@@ -679,191 +991,7 @@ function reject(promise, value) {
 
 
 exports.Promise = Promise;
-},{"./config":13,"./events":7}],9:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-var all = require("./all").all;
-
-function makeNodeCallbackFor(resolve, reject) {
-  return function (error, value) {
-    if (error) {
-      reject(error);
-    } else if (arguments.length > 2) {
-      resolve(Array.prototype.slice.call(arguments, 1));
-    } else {
-      resolve(value);
-    }
-  };
-}
-
-function denodeify(nodeFunc) {
-  return function()  {
-    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
-    var thisArg = this;
-
-    var promise = new Promise(function(nodeResolve, nodeReject) {
-      resolve = nodeResolve;
-      reject = nodeReject;
-    });
-
-    all(nodeArgs).then(function(nodeArgs) {
-      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
-
-      try {
-        nodeFunc.apply(thisArg, nodeArgs);
-      } catch(e) {
-        reject(e);
-      }
-    });
-
-    return promise;
-  };
-}
-
-
-exports.denodeify = denodeify;
-},{"./all":10,"./promise":8}],10:[function(require,module,exports){
-(function(){"use strict";
-var Promise = require("./promise").Promise;
-/* global toString */
-
-
-function all(promises) {
-  if (Object.prototype.toString.call(promises) !== "[object Array]") {
-    throw new TypeError('You must pass an array to all.');
-  }
-
-  return new Promise(function(resolve, reject) {
-    var results = [], remaining = promises.length,
-    promise;
-
-    if (remaining === 0) {
-      resolve([]);
-    }
-
-    function resolver(index) {
-      return function(value) {
-        resolveAll(index, value);
-      };
-    }
-
-    function resolveAll(index, value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        resolve(results);
-      }
-    }
-
-    for (var i = 0; i < promises.length; i++) {
-      promise = promises[i];
-
-      if (promise && typeof promise.then === 'function') {
-        promise.then(resolver(i), reject);
-      } else {
-        resolveAll(i, promise);
-      }
-    }
-  });
-}
-
-
-exports.all = all;
-})()
-},{"./promise":8}],11:[function(require,module,exports){
-"use strict";
-var defer = require("./defer").defer;
-
-function size(object) {
-  var s = 0;
-
-  for (var prop in object) {
-    s++;
-  }
-
-  return s;
-}
-
-function hash(promises) {
-  var results = {}, deferred = defer(), remaining = size(promises);
-
-  if (remaining === 0) {
-    deferred.resolve({});
-  }
-
-  var resolver = function(prop) {
-    return function(value) {
-      resolveAll(prop, value);
-    };
-  };
-
-  var resolveAll = function(prop, value) {
-    results[prop] = value;
-    if (--remaining === 0) {
-      deferred.resolve(results);
-    }
-  };
-
-  var rejectAll = function(error) {
-    deferred.reject(error);
-  };
-
-  for (var prop in promises) {
-    if (promises[prop] && typeof promises[prop].then === 'function') {
-      promises[prop].then(resolver(prop), rejectAll);
-    } else {
-      resolveAll(prop, promises[prop]);
-    }
-  }
-
-  return deferred.promise;
-}
-
-
-exports.hash = hash;
-},{"./defer":12}],12:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-
-function defer() {
-  var deferred = {
-    // pre-allocate shape
-    resolve: undefined,
-    reject:  undefined,
-    promise: undefined
-  };
-
-  deferred.promise = new Promise(function(resolve, reject) {
-    deferred.resolve = resolve;
-    deferred.reject = reject;
-  });
-
-  return deferred;
-}
-
-
-exports.defer = defer;
-},{"./promise":8}],13:[function(require,module,exports){
-"use strict";
-var async = require("./async").async;
-
-var config = {};
-config.async = async;
-
-
-exports.config = config;
-},{"./async":16}],14:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-
-function resolve(thenable) {
-  return new Promise(function(resolve, reject) {
-    resolve(thenable);
-  });
-}
-
-
-exports.resolve = resolve;
-},{"./promise":8}],15:[function(require,module,exports){
+},{"./config":10,"./events":12}],16:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -875,134 +1003,18 @@ function reject(reason) {
 
 
 exports.reject = reject;
-},{"./promise":8}],17:[function(require,module,exports){
-// shim for using process in browser
+},{"./promise":15}],17:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
 
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-
-},{}],16:[function(require,module,exports){
-(function(process){"use strict";
-var browserGlobal = (typeof window !== 'undefined') ? window : {};
-var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
-var async;
-
-// old node
-function useNextTick() {
-  return function(callback, arg) {
-    process.nextTick(function() {
-      callback(arg);
-    });
-  };
-}
-
-// node >= 0.10.x
-function useSetImmediate() {
-  return function(callback, arg) {
-    /* global  setImmediate */
-    setImmediate(function(){
-      callback(arg);
-    });
-  };
-}
-
-function useMutationObserver() {
-  var queue = [];
-
-  var observer = new BrowserMutationObserver(function() {
-    var toProcess = queue.slice();
-    queue = [];
-
-    toProcess.forEach(function(tuple) {
-      var callback = tuple[0], arg= tuple[1];
-      callback(arg);
-    });
+function resolve(thenable) {
+  return new Promise(function(resolve, reject) {
+    resolve(thenable);
   });
-
-  var element = document.createElement('div');
-  observer.observe(element, { attributes: true });
-
-  // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-  window.addEventListener('unload', function(){
-    observer.disconnect();
-    observer = null;
-  }, false);
-
-  return function(callback, arg) {
-    queue.push([callback, arg]);
-    element.setAttribute('drainQueue', 'drainQueue');
-  };
-}
-
-function useSetTimeout() {
-  return function(callback, arg) {
-    setTimeout(function() {
-      callback(arg);
-    }, 1);
-  };
-}
-
-if (typeof setImmediate === 'function') {
-  async = useSetImmediate();
-} else if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
-  async = useNextTick();
-} else if (BrowserMutationObserver) {
-  async = useMutationObserver();
-} else {
-  async = useSetTimeout();
 }
 
 
-exports.async = async;
-})(require("__browserify_process"))
-},{"__browserify_process":17}]},{},[1])(1)
+exports.resolve = resolve;
+},{"./promise":15}]},{},[1])(1)
 });
 ;
