@@ -221,7 +221,7 @@ exports.uniq = uniq;
 
 },{}],4:[function(require,module,exports){
 "use strict";
-var ValidatorBuilder, email, register, required;
+var ValidatorBuilder, email, maxLength, minLength, register, required;
 
 ValidatorBuilder = require("../validator_builder");
 
@@ -241,14 +241,46 @@ email = function(value) {
   return regexp.test(value);
 };
 
+minLength = function(minLength) {
+  if (arguments.length === 0) {
+    throw new Error('must specify a min length');
+  }
+  return function(value) {
+    if (value != null) {
+      return value.length >= minLength;
+    } else {
+      return false;
+    }
+  };
+};
+
+maxLength = function(maxLength) {
+  if (arguments.length === 0) {
+    throw new Error('must specify a max length');
+  }
+  return function(value) {
+    if (value != null) {
+      return value.length <= maxLength;
+    } else {
+      return false;
+    }
+  };
+};
+
 register = function() {
   ValidatorBuilder.registerHelper('required', required);
-  return ValidatorBuilder.registerHelper('email', email);
+  ValidatorBuilder.registerHelper('email', email);
+  ValidatorBuilder.registerHelper('minLength', minLength);
+  return ValidatorBuilder.registerHelper('maxLength', maxLength);
 };
 
 exports.required = required;
 
 exports.email = email;
+
+exports.minLength = minLength;
+
+exports.maxLength = maxLength;
 
 exports.register = register;
 
@@ -355,8 +387,14 @@ ValidatorBuilder = (function() {
   };
 
   ValidatorBuilder.registerHelper = function(name, fn) {
-    this.prototype[name] = function(message) {
-      return this.using(fn, message);
+    this.prototype[name] = function() {
+      var message, options, _i;
+      options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), message = arguments[_i++];
+      if (arguments.length === 1) {
+        return this.using(fn, message);
+      } else {
+        return this.using(fn.apply(null, options), message);
+      }
     };
     return null;
   };
