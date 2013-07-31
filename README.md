@@ -27,11 +27,11 @@ validator =
 # Validate all attributes and return results with a promise.
 validator.validate(person).then (result) ->
   if not result.valid
-    alert JSON.stringify(result.errors) # { "lastName": ["You must enter a last name."] }
+    alert JSON.stringify(result.errors) # { "firstName": [ ], "lastName": ["You must enter a last name."], "age": [ ] }
 
 # Specify the attributes to validate, this time using a callback.
 validator.validate person, 'firstName', 'age', (result) ->
-  alert JSON.stringify(result) # { "valid": true, "errors": {} }
+  alert JSON.stringify(result) # { "valid": true, "errors": { "firstName": [ ], "age": [ ] } }
 ```
 
 ## Installing
@@ -87,7 +87,7 @@ validation is done asynchronously and the results are returned via a promise:
 ```coffeescript
 formData = name: "Rose", title: "Companion"
 validator.validate(formData).then (result) ->
-  console.log result # { "valid": false, "errors": { "name": [ "Rose, you can't sign up." ] } }
+  console.log result # { "valid": false, "errors": { "name": [ "Rose, you can't sign up." ], "title": [ ] } }
 ```
 
 If you prefer the callback style, you can use that instead:
@@ -165,9 +165,15 @@ validator = LGTM.validator()
   .build()
 
 validator.validate({ mobile: no, street1: '' }, 'mobile').then (result) ->
-  console.log result  # { "valid": false, "errors": { "street1": [ "Please enter a street address." ] } }
+  console.log result  # { "valid": false, "errors": { "mobile": [ ], "street1": [ "Please enter a street address." ] } }
 ```
 
+The `errors` object will also contain errors (or empty arrays if valid) for any non-direct validations carried through dependencies.
+
+```coffeescript
+validator.validate({ mobile: no, street1: '123 Fake St' }, 'mobile').then (result) ->
+  console.log result  # { "valid": true, "errors": { "mobile": [ ], "street1": [ ] } }
+```
 
 ### Attributes Used by Validations
 
