@@ -59,8 +59,10 @@ class ObjectValidator
     if validations?
       validations.forEach ([fn, message]) ->
         results.push resolve(fn(value, attr, object)).then(
-          (isValid) -> [ attr, message ] if isValid isnt yes
+          (isValid) -> [ attr, if isValid then null else message ]
         )
+    else
+      results.push([ attr, null ]) if attr in @attributes()
 
     for dependent in @_getDependentsFor(attr)
       results.push @_validateAttribute(object, dependent)...
@@ -75,8 +77,9 @@ class ObjectValidator
     for attrMessage in results when attrMessage?
       [ attr, message ] = attrMessage
       messages = result.errors[attr] ||= []
-      messages.push message
-      result.valid = no
+      if message?
+        messages.push message
+        result.valid = no
 
     return result
 

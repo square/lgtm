@@ -48,6 +48,21 @@ test 'can validate a specific list of attributes', ->
     stop()
   stop()
 
+test 'returns a hash of empty error arrays when valid', ->
+  expect 1
+
+  @validator.addValidation 'firstName', core.required, 'Missing first name!'
+  @validator.addValidation 'lastName', core.required, 'Missing last name!'
+
+  @validator.validate(firstName: 'Bah', lastName: 'Humbug').then (result) =>
+    start()
+    deepEqual result,
+      valid: yes
+      errors:
+        firstName: []
+        lastName: []
+  stop()
+
 test 'passes the validation function the value, key, and object being validated', ->
   expect 4
 
@@ -81,6 +96,7 @@ test 'allows registering dependencies between attributes', ->
     deepEqual result,
       valid: no
       errors:
+        maritalStatus: []
         spouseName: ['No name is good enough.']
   stop()
 
@@ -111,6 +127,7 @@ testValidatesAsExpected = ->
         valid: no
         errors:
           firstName: ["Sorry, your first name isn't Han."]
+          lastName: []
       start()
     stop()
 

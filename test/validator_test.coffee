@@ -54,12 +54,13 @@ test 'passes declared dependencies', ->
     start()
     deepEqual result,
       valid: yes
-      errors: {}
+      errors:
+        password: []
     , 'dependent values are passed in'
   stop()
 
 test 'causes dependent attributes to be validated, even when not specified explicitly', ->
-  expect 1
+  expect 2
 
   # we're leaving out "password" but it gets validated anyway because it
   # depends on "passwordConfirmation"
@@ -69,6 +70,17 @@ test 'causes dependent attributes to be validated, even when not specified expli
       valid: no
       errors:
         password: ["Passwords must match."]
+        passwordConfirmation: []
+  stop()
+
+  @validator.validate({password: 'abc123', passwordConfirmation: 'abc123'}, 'passwordConfirmation').then (result) ->
+    start()
+    deepEqual result,
+      valid: yes
+      errors:
+        password: []
+        passwordConfirmation: []
+    , 'returns empty error messages for dependent attributes as well'
   stop()
 
 module 'validator#when',
@@ -107,6 +119,7 @@ test 'allows conditionally running validations', ->
         valid: no
         errors:
           name: ["You must provide a name."]
+          age: []
       , 'validations not matching their clause are not run'
     stop()
 
@@ -135,7 +148,8 @@ test 'allows conditionals that return promises', ->
       start()
       deepEqual result,
         valid: yes
-        errors: {}
+        errors:
+          name: []
       , 'promise conditions are respected'
     stop()
   stop()
@@ -167,7 +181,7 @@ test 'passes declared dependencies', ->
   stop()
 
 test 'causes dependent attributes to be validated, even when not specified explicitly', ->
-  expect 2
+  expect 3
 
   v =
     validator()
@@ -182,6 +196,7 @@ test 'causes dependent attributes to be validated, even when not specified expli
     deepEqual result,
       valid: no
       errors:
+        age: []
         name: ["You must enter a name."]
   stop()
 
@@ -203,8 +218,20 @@ test 'causes dependent attributes to be validated, even when not specified expli
     deepEqual result,
       valid: no
       errors:
+        isBorn: []
         name: ["You must enter a name."]
         age: ["You must have an age if you've been born."]
+  stop()
+
+  v.validate({isBorn: yes, name: "Winnie the Pooh", age: 10}, 'isBorn').then (result) ->
+    start()
+    deepEqual result,
+      valid: yes
+      errors:
+        isBorn: []
+        name: []
+        age: []
+    , 'returns empty error messages for dependent attributes as well'
   stop()
 
 test 'used with #using specifying attributes in both', ->
@@ -221,6 +248,7 @@ test 'used with #using specifying attributes in both', ->
     deepEqual result,
       valid: no
       errors:
+        password: []
         passwordConfirmation: ["Passwords must match!"]
     , 'returns the correct results for all attributes'
   stop()

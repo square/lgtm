@@ -40,7 +40,7 @@ exports.validations = validations;
 
 exports.ObjectValidator = ObjectValidator;
 
-},{"./lgtm/object_validator":3,"./lgtm/validations/core":4,"./lgtm/validator_builder":2}],4:[function(require,module,exports){
+},{"./lgtm/object_validator":2,"./lgtm/validations/core":4,"./lgtm/validator_builder":3}],4:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder, email, maxLength, minLength, register, required;
 
@@ -105,7 +105,7 @@ exports.maxLength = maxLength;
 
 exports.register = register;
 
-},{"../validator_builder":2}],5:[function(require,module,exports){
+},{"../validator_builder":3}],5:[function(require,module,exports){
 "use strict";
 var get, getProperties, uniq,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -149,6 +149,112 @@ exports.getProperties = getProperties;
 exports.uniq = uniq;
 
 },{}],3:[function(require,module,exports){
+"use strict";
+var ObjectValidator, ValidatorBuilder, getProperties, resolve,
+  __slice = [].slice;
+
+ObjectValidator = require("./object_validator");
+
+resolve = require("rsvp").resolve;
+
+getProperties = require("./utils").getProperties;
+
+ValidatorBuilder = (function() {
+  ValidatorBuilder.prototype._attr = null;
+
+  ValidatorBuilder.prototype._condition = null;
+
+  ValidatorBuilder.prototype._validator = null;
+
+  function ValidatorBuilder() {
+    this._validator = new ObjectValidator();
+  }
+
+  ValidatorBuilder.prototype.validates = function(attr) {
+    this._attr = attr;
+    this._condition = null;
+    return this;
+  };
+
+  ValidatorBuilder.prototype.when = function() {
+    var condition, dependencies, dependency, _i, _j, _len;
+    dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
+    if (dependencies.length === 0) {
+      dependencies = [this._attr];
+    }
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
+    }
+    this._condition = condition;
+    this._conditionDependencies = dependencies;
+    return this;
+  };
+
+  ValidatorBuilder.prototype.using = function() {
+    var condition, conditionDependencies, dependencies, dependency, message, predicate, validation, validationWithCondition, _i, _j, _len;
+    dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
+    if (dependencies.length === 0) {
+      dependencies = [this._attr];
+    }
+    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
+      dependency = dependencies[_j];
+      if (dependency !== this._attr) {
+        this._validator.addDependentsFor(dependency, this._attr);
+      }
+    }
+    validation = function(value, attr, object) {
+      return predicate.apply(null, __slice.call(getProperties(object, dependencies)).concat([attr], [object]));
+    };
+    condition = this._condition;
+    conditionDependencies = this._conditionDependencies;
+    validationWithCondition = function(value, attr, object) {
+      var args;
+      args = getProperties(object, conditionDependencies);
+      args.push(attr, object);
+      return resolve(condition.apply(null, args)).then(function(result) {
+        if (result) {
+          return validation(value, attr, object);
+        } else {
+          return true;
+        }
+      });
+    };
+    this._validator.addValidation(this._attr, (condition != null ? validationWithCondition : validation), message);
+    return this;
+  };
+
+  ValidatorBuilder.prototype.build = function() {
+    return this._validator;
+  };
+
+  ValidatorBuilder.registerHelper = function(name, fn) {
+    this.prototype[name] = function() {
+      var message, options, _i;
+      options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), message = arguments[_i++];
+      if (options.length === 0) {
+        return this.using(fn, message);
+      } else {
+        return this.using(fn.apply(null, options), message);
+      }
+    };
+    return null;
+  };
+
+  ValidatorBuilder.unregisterHelper = function(name) {
+    delete this.prototype[name];
+    return null;
+  };
+
+  return ValidatorBuilder;
+
+})();
+
+module.exports = ValidatorBuilder;
+
+},{"./object_validator":2,"./utils":5,"rsvp":6}],2:[function(require,module,exports){
 "use strict";
 var ObjectValidator, all, get, resolve, uniq, __dependency1__, __dependency2__,
   __slice = [].slice,
@@ -260,11 +366,13 @@ ObjectValidator = (function() {
         var fn, message;
         fn = _arg[0], message = _arg[1];
         return results.push(resolve(fn(value, attr, object)).then(function(isValid) {
-          if (isValid !== true) {
-            return [attr, message];
-          }
+          return [attr, isValid ? null : message];
         }));
       });
+    } else {
+      if (__indexOf.call(this.attributes(), attr) >= 0) {
+        results.push([attr, null]);
+      }
     }
     _ref = this._getDependentsFor(attr);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -287,8 +395,10 @@ ObjectValidator = (function() {
       }
       attr = attrMessage[0], message = attrMessage[1];
       messages = (_base = result.errors)[attr] || (_base[attr] = []);
-      messages.push(message);
-      result.valid = false;
+      if (message != null) {
+        messages.push(message);
+        result.valid = false;
+      }
     }
     return result;
   };
@@ -303,113 +413,7 @@ ObjectValidator = (function() {
 
 module.exports = ObjectValidator;
 
-},{"./utils":5,"rsvp":6}],2:[function(require,module,exports){
-"use strict";
-var ObjectValidator, ValidatorBuilder, getProperties, resolve,
-  __slice = [].slice;
-
-ObjectValidator = require("./object_validator");
-
-resolve = require("rsvp").resolve;
-
-getProperties = require("./utils").getProperties;
-
-ValidatorBuilder = (function() {
-  ValidatorBuilder.prototype._attr = null;
-
-  ValidatorBuilder.prototype._condition = null;
-
-  ValidatorBuilder.prototype._validator = null;
-
-  function ValidatorBuilder() {
-    this._validator = new ObjectValidator();
-  }
-
-  ValidatorBuilder.prototype.validates = function(attr) {
-    this._attr = attr;
-    this._condition = null;
-    return this;
-  };
-
-  ValidatorBuilder.prototype.when = function() {
-    var condition, dependencies, dependency, _i, _j, _len;
-    dependencies = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), condition = arguments[_i++];
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
-      dependency = dependencies[_j];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-    this._condition = condition;
-    this._conditionDependencies = dependencies;
-    return this;
-  };
-
-  ValidatorBuilder.prototype.using = function() {
-    var condition, conditionDependencies, dependencies, dependency, message, predicate, validation, validationWithCondition, _i, _j, _len;
-    dependencies = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), predicate = arguments[_i++], message = arguments[_i++];
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-    for (_j = 0, _len = dependencies.length; _j < _len; _j++) {
-      dependency = dependencies[_j];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-    validation = function(value, attr, object) {
-      return predicate.apply(null, __slice.call(getProperties(object, dependencies)).concat([attr], [object]));
-    };
-    condition = this._condition;
-    conditionDependencies = this._conditionDependencies;
-    validationWithCondition = function(value, attr, object) {
-      var args;
-      args = getProperties(object, conditionDependencies);
-      args.push(attr, object);
-      return resolve(condition.apply(null, args)).then(function(result) {
-        if (result) {
-          return validation(value, attr, object);
-        } else {
-          return true;
-        }
-      });
-    };
-    this._validator.addValidation(this._attr, (condition != null ? validationWithCondition : validation), message);
-    return this;
-  };
-
-  ValidatorBuilder.prototype.build = function() {
-    return this._validator;
-  };
-
-  ValidatorBuilder.registerHelper = function(name, fn) {
-    this.prototype[name] = function() {
-      var message, options, _i;
-      options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), message = arguments[_i++];
-      if (options.length === 0) {
-        return this.using(fn, message);
-      } else {
-        return this.using(fn.apply(null, options), message);
-      }
-    };
-    return null;
-  };
-
-  ValidatorBuilder.unregisterHelper = function(name) {
-    delete this.prototype[name];
-    return null;
-  };
-
-  return ValidatorBuilder;
-
-})();
-
-module.exports = ValidatorBuilder;
-
-},{"./object_validator":3,"./utils":5,"rsvp":6}],6:[function(require,module,exports){
+},{"./utils":5,"rsvp":6}],6:[function(require,module,exports){
 "use strict";
 var EventTarget = require("./rsvp/events").EventTarget;
 var Promise = require("./rsvp/promise").Promise;
@@ -533,147 +537,7 @@ var EventTarget = {
 
 
 exports.EventTarget = EventTarget;
-},{}],10:[function(require,module,exports){
-(function(){"use strict";
-var Promise = require("./promise").Promise;
-/* global toString */
-
-
-function all(promises) {
-  if(toString.call(promises) !== "[object Array]") {
-    throw new TypeError('You must pass an array to all.');
-  }
-  return new Promise(function(resolve, reject) {
-    var results = [], remaining = promises.length,
-    promise;
-
-    if (remaining === 0) {
-      resolve([]);
-    }
-
-    function resolver(index) {
-      return function(value) {
-        resolveAll(index, value);
-      };
-    }
-
-    function resolveAll(index, value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        resolve(results);
-      }
-    }
-
-    for (var i = 0; i < promises.length; i++) {
-      promise = promises[i];
-
-      if (promise && typeof promise.then === 'function') {
-        promise.then(resolver(i), reject);
-      } else {
-        resolveAll(i, promise);
-      }
-    }
-  });
-}
-
-
-exports.all = all;
-})()
-},{"./promise":8}],9:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-var all = require("./all").all;
-
-function makeNodeCallbackFor(resolve, reject) {
-  return function (error, value) {
-    if (error) {
-      reject(error);
-    } else if (arguments.length > 2) {
-      resolve(Array.prototype.slice.call(arguments, 1));
-    } else {
-      resolve(value);
-    }
-  };
-}
-
-function denodeify(nodeFunc) {
-  return function()  {
-    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
-    var thisArg = this;
-
-    var promise = new Promise(function(nodeResolve, nodeReject) {
-      resolve = nodeResolve;
-      reject = nodeReject;
-    });
-
-    all(nodeArgs).then(function(nodeArgs) {
-      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
-
-      try {
-        nodeFunc.apply(thisArg, nodeArgs);
-      } catch(e) {
-        reject(e);
-      }
-    });
-
-    return promise;
-  };
-}
-
-
-exports.denodeify = denodeify;
-},{"./all":10,"./promise":8}],11:[function(require,module,exports){
-"use strict";
-var defer = require("./defer").defer;
-
-function size(object) {
-  var s = 0;
-
-  for (var prop in object) {
-    s++;
-  }
-
-  return s;
-}
-
-function hash(promises) {
-  var results = {}, deferred = defer(), remaining = size(promises);
-
-  if (remaining === 0) {
-    deferred.resolve({});
-  }
-
-  var resolver = function(prop) {
-    return function(value) {
-      resolveAll(prop, value);
-    };
-  };
-
-  var resolveAll = function(prop, value) {
-    results[prop] = value;
-    if (--remaining === 0) {
-      deferred.resolve(results);
-    }
-  };
-
-  var rejectAll = function(error) {
-    deferred.reject(error);
-  };
-
-  for (var prop in promises) {
-    if (promises[prop] && typeof promises[prop].then === 'function') {
-      promises[prop].then(resolver(prop), rejectAll);
-    } else {
-      resolveAll(prop, promises[prop]);
-    }
-  }
-
-  return deferred.promise;
-}
-
-
-exports.hash = hash;
-},{"./defer":12}],8:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 var config = require("./config").config;
 var EventTarget = require("./events").EventTarget;
@@ -855,7 +719,147 @@ function reject(promise, value) {
 
 
 exports.Promise = Promise;
-},{"./config":13,"./events":7}],12:[function(require,module,exports){
+},{"./config":13,"./events":7}],10:[function(require,module,exports){
+(function(){"use strict";
+var Promise = require("./promise").Promise;
+/* global toString */
+
+
+function all(promises) {
+  if(toString.call(promises) !== "[object Array]") {
+    throw new TypeError('You must pass an array to all.');
+  }
+  return new Promise(function(resolve, reject) {
+    var results = [], remaining = promises.length,
+    promise;
+
+    if (remaining === 0) {
+      resolve([]);
+    }
+
+    function resolver(index) {
+      return function(value) {
+        resolveAll(index, value);
+      };
+    }
+
+    function resolveAll(index, value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        resolve(results);
+      }
+    }
+
+    for (var i = 0; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        resolveAll(i, promise);
+      }
+    }
+  });
+}
+
+
+exports.all = all;
+})()
+},{"./promise":8}],9:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+var all = require("./all").all;
+
+function makeNodeCallbackFor(resolve, reject) {
+  return function (error, value) {
+    if (error) {
+      reject(error);
+    } else if (arguments.length > 2) {
+      resolve(Array.prototype.slice.call(arguments, 1));
+    } else {
+      resolve(value);
+    }
+  };
+}
+
+function denodeify(nodeFunc) {
+  return function()  {
+    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
+    var thisArg = this;
+
+    var promise = new Promise(function(nodeResolve, nodeReject) {
+      resolve = nodeResolve;
+      reject = nodeReject;
+    });
+
+    all(nodeArgs).then(function(nodeArgs) {
+      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
+
+      try {
+        nodeFunc.apply(thisArg, nodeArgs);
+      } catch(e) {
+        reject(e);
+      }
+    });
+
+    return promise;
+  };
+}
+
+
+exports.denodeify = denodeify;
+},{"./all":10,"./promise":8}],11:[function(require,module,exports){
+"use strict";
+var defer = require("./defer").defer;
+
+function size(object) {
+  var s = 0;
+
+  for (var prop in object) {
+    s++;
+  }
+
+  return s;
+}
+
+function hash(promises) {
+  var results = {}, deferred = defer(), remaining = size(promises);
+
+  if (remaining === 0) {
+    deferred.resolve({});
+  }
+
+  var resolver = function(prop) {
+    return function(value) {
+      resolveAll(prop, value);
+    };
+  };
+
+  var resolveAll = function(prop, value) {
+    results[prop] = value;
+    if (--remaining === 0) {
+      deferred.resolve(results);
+    }
+  };
+
+  var rejectAll = function(error) {
+    deferred.reject(error);
+  };
+
+  for (var prop in promises) {
+    if (promises[prop] && typeof promises[prop].then === 'function') {
+      promises[prop].then(resolver(prop), rejectAll);
+    } else {
+      resolveAll(prop, promises[prop]);
+    }
+  }
+
+  return deferred.promise;
+}
+
+
+exports.hash = hash;
+},{"./defer":12}],12:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -882,25 +886,7 @@ config.async = async;
 
 
 exports.config = config;
-},{"./async":16}],15:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-
-
-function objectOrFunction(x) {
-  return typeof x === "function" || (typeof x === "object" && x !== null);
-}
-
-
-function reject(reason) {
-  return new Promise(function (resolve, reject) {
-    reject(reason);
-  });
-}
-
-
-exports.reject = reject;
-},{"./promise":8}],14:[function(require,module,exports){
+},{"./async":16}],14:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -940,6 +926,24 @@ function resolve(thenable) {
 
 
 exports.resolve = resolve;
+},{"./promise":8}],15:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+
+function objectOrFunction(x) {
+  return typeof x === "function" || (typeof x === "object" && x !== null);
+}
+
+
+function reject(reason) {
+  return new Promise(function (resolve, reject) {
+    reject(reason);
+  });
+}
+
+
+exports.reject = reject;
 },{"./promise":8}],17:[function(require,module,exports){
 // shim for using process in browser
 

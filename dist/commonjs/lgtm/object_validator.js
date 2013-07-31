@@ -109,11 +109,13 @@ ObjectValidator = (function() {
         var fn, message;
         fn = _arg[0], message = _arg[1];
         return results.push(resolve(fn(value, attr, object)).then(function(isValid) {
-          if (isValid !== true) {
-            return [attr, message];
-          }
+          return [attr, isValid ? null : message];
         }));
       });
+    } else {
+      if (__indexOf.call(this.attributes(), attr) >= 0) {
+        results.push([attr, null]);
+      }
     }
     _ref = this._getDependentsFor(attr);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -136,8 +138,10 @@ ObjectValidator = (function() {
       }
       attr = attrMessage[0], message = attrMessage[1];
       messages = (_base = result.errors)[attr] || (_base[attr] = []);
-      messages.push(message);
-      result.valid = false;
+      if (message != null) {
+        messages.push(message);
+        result.valid = false;
+      }
     }
     return result;
   };
