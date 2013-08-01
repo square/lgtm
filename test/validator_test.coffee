@@ -189,3 +189,21 @@ test 'causes dependent attributes to be validated, even when not specified expli
         name: ["You must enter a name."]
         age: ["You must have an age if you've been born."]
   stop()
+
+test 'used with #using specifying attributes in both', ->
+  v = validator()
+        .validates('passwordConfirmation')
+          .when('password', ((password) -> console.log 'called condition with', [].slice(arguments...); password?.length > 0))
+          .using('password', 'passwordConfirmation',
+            ((password, passwordConfirmation) -> console.log 'called validation with', [].slice(arguments...); password is passwordConfirmation),
+            "Passwords must match!")
+        .build()
+
+  v.validate({password: 'letmein'}, 'password').then (result) ->
+    start()
+    deepEqual result,
+      valid: no
+      errors:
+        passwordConfirmation: ["Passwords must match!"]
+    , 'returns the correct results for all attributes'
+  stop()

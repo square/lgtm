@@ -6,6 +6,9 @@ get = (object, property) ->
   else
     object[property]
 
+getProperties = (object, properties) ->
+  get object, prop for prop in properties
+
 uniq = (array) ->
   result = []
   for item in array
@@ -13,4 +16,5 @@ uniq = (array) ->
   return result
 
 export get
+export getProperties
 export uniq

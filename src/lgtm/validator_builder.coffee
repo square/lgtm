@@ -1,23 +1,6 @@
 import ObjectValidator from './object_validator'
 import { resolve } from 'rsvp'
-import { get } from './utils'
-
-wrapCallbackWithDependencies = (callback, dependencies) ->
-  return callback if dependencies.length is 0
-
-  (value, key, object) ->
-    values = (get object, dep for dep in dependencies)
-    callback values..., key, object
-
-wrapCallbackWithCondition = (callback, condition) ->
-  return callback unless condition?
-
-  (args...) ->
-    resolve(condition(args...)).then (result) ->
-      if result
-        callback(args...)
-      else
-        yes
+import { getProperties } from './utils'
 
 class ValidatorBuilder
   _attr      : null
@@ -34,19 +17,38 @@ class ValidatorBuilder
 
   when: (dependencies..., condition) ->
     dependencies = [@_attr] if dependencies.length is 0
-    @_condition = wrapCallbackWithDependencies condition, dependencies
     for dependency in dependencies when dependency isnt @_attr
       @_validator.addDependentsFor dependency, @_attr
+
+    @_condition = condition
+    @_conditionDependencies = dependencies
     return this
 
-  # .using('password', 'passwordConfirmation', ((password, passwordConfirmation) -> password is passwordConfirmation), "Passwords must match.")
   using: (dependencies..., predicate, message) ->
     dependencies = [@_attr] if dependencies.length is 0
     for dependency in dependencies when dependency isnt @_attr
       @_validator.addDependentsFor dependency, @_attr
-    predicate = wrapCallbackWithCondition predicate, @_condition
-    predicate = wrapCallbackWithDependencies predicate, dependencies
-    @_validator.addValidation @_attr, predicate, message
+
+    validation = (value, attr, object) ->
+      predicate getProperties(object, dependencies)..., attr, object
+
+    condition = @_condition
+    conditionDependencies = @_conditionDependencies
+
+    validationWithCondition = (value, attr, object) ->
+      args = getProperties object, conditionDependencies
+      args.push attr, object
+      resolve(condition(args...)).then (result) ->
+        if result
+          # condition resolved to a truthy value, so continue with validation
+          validation value, attr, object
+        else
+          # condition resolved to a falsy value, so just return as valid
+          yes
+
+    @_validator.addValidation @_attr,
+      (if condition? then validationWithCondition else validation),
+      message
     return this
 
   build: ->

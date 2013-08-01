@@ -1,6 +1,7 @@
 "use strict";
 var ObjectValidator, all, get, resolve, uniq, __dependency1__, __dependency2__,
   __slice = [].slice,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty;
 
 __dependency1__ = require("rsvp");
@@ -33,9 +34,15 @@ ObjectValidator = (function() {
   };
 
   ObjectValidator.prototype.addDependentsFor = function() {
-    var dependentAttributes, parentAttribute, _base, _ref;
+    var attr, dependentAttributes, dependentsForParent, parentAttribute, _base, _i, _len;
     parentAttribute = arguments[0], dependentAttributes = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    (_ref = ((_base = this._dependencies)[parentAttribute] || (_base[parentAttribute] = []))).push.apply(_ref, dependentAttributes);
+    dependentsForParent = (_base = this._dependencies)[parentAttribute] || (_base[parentAttribute] = []);
+    for (_i = 0, _len = dependentAttributes.length; _i < _len; _i++) {
+      attr = dependentAttributes[_i];
+      if (__indexOf.call(dependentsForParent, attr) < 0) {
+        dependentsForParent.push(attr);
+      }
+    }
     return null;
   };
 

@@ -16,7 +16,9 @@ class ObjectValidator
 
   # e.g. spouseName (dependentAttribute) depends on maritalStatus (parentAttribute)
   addDependentsFor: (parentAttribute, dependentAttributes...) ->
-    (@_dependencies[parentAttribute] ||= []).push dependentAttributes...
+    dependentsForParent = @_dependencies[parentAttribute] ||= []
+    for attr in dependentAttributes
+      dependentsForParent.push attr unless attr in dependentsForParent
     return null
 
   attributes: ->

@@ -1,5 +1,5 @@
 "use strict";
-var get, uniq,
+var get, getProperties, uniq,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 get = function(object, property) {
@@ -10,6 +10,16 @@ get = function(object, property) {
   } else {
     return object[property];
   }
+};
+
+getProperties = function(object, properties) {
+  var prop, _i, _len, _results;
+  _results = [];
+  for (_i = 0, _len = properties.length; _i < _len; _i++) {
+    prop = properties[_i];
+    _results.push(get(object, prop));
+  }
+  return _results;
 };
 
 uniq = function(array) {
@@ -25,5 +35,7 @@ uniq = function(array) {
 };
 
 exports.get = get;
+
+exports.getProperties = getProperties;
 
 exports.uniq = uniq;
