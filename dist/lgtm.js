@@ -42,7 +42,7 @@ exports.ObjectValidator = ObjectValidator;
 
 },{"./lgtm/object_validator":3,"./lgtm/validations/core":4,"./lgtm/validator_builder":2}],4:[function(require,module,exports){
 "use strict";
-var ValidatorBuilder, register, required;
+var ValidatorBuilder, email, register, required;
 
 ValidatorBuilder = require("../validator_builder");
 
@@ -53,11 +53,23 @@ required = function(value) {
   return value !== '' && value !== null && value !== (void 0);
 };
 
+email = function(value) {
+  var regexp;
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+  regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return regexp.test(value);
+};
+
 register = function() {
-  return ValidatorBuilder.registerHelper('required', required);
+  ValidatorBuilder.registerHelper('required', required);
+  return ValidatorBuilder.registerHelper('email', email);
 };
 
 exports.required = required;
+
+exports.email = email;
 
 exports.register = register;
 
@@ -385,7 +397,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":9,"./rsvp/config":13,"./rsvp/defer":12,"./rsvp/events":7,"./rsvp/hash":11,"./rsvp/node":10,"./rsvp/promise":8,"./rsvp/reject":15,"./rsvp/resolve":14}],7:[function(require,module,exports){
+},{"./rsvp/all":10,"./rsvp/config":12,"./rsvp/defer":13,"./rsvp/events":7,"./rsvp/hash":11,"./rsvp/node":9,"./rsvp/promise":8,"./rsvp/reject":15,"./rsvp/resolve":14}],7:[function(require,module,exports){
 "use strict";
 var Event = function(type, options) {
   this.type = type;
@@ -678,7 +690,50 @@ function reject(promise, value) {
 
 
 exports.Promise = Promise;
-},{"./config":13,"./events":7}],9:[function(require,module,exports){
+},{"./config":12,"./events":7}],9:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+var all = require("./all").all;
+
+function makeNodeCallbackFor(resolve, reject) {
+  return function (error, value) {
+    if (error) {
+      reject(error);
+    } else if (arguments.length > 2) {
+      resolve(Array.prototype.slice.call(arguments, 1));
+    } else {
+      resolve(value);
+    }
+  };
+}
+
+function denodeify(nodeFunc) {
+  return function()  {
+    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
+    var thisArg = this;
+
+    var promise = new Promise(function(nodeResolve, nodeReject) {
+      resolve = nodeResolve;
+      reject = nodeReject;
+    });
+
+    all(nodeArgs).then(function(nodeArgs) {
+      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
+
+      try {
+        nodeFunc.apply(thisArg, nodeArgs);
+      } catch(e) {
+        reject(e);
+      }
+    });
+
+    return promise;
+  };
+}
+
+
+exports.denodeify = denodeify;
+},{"./all":10,"./promise":8}],10:[function(require,module,exports){
 (function(){"use strict";
 var Promise = require("./promise").Promise;
 /* global toString */
@@ -776,50 +831,7 @@ function hash(promises) {
 
 
 exports.hash = hash;
-},{"./defer":12}],10:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-var all = require("./all").all;
-
-function makeNodeCallbackFor(resolve, reject) {
-  return function (error, value) {
-    if (error) {
-      reject(error);
-    } else if (arguments.length > 2) {
-      resolve(Array.prototype.slice.call(arguments, 1));
-    } else {
-      resolve(value);
-    }
-  };
-}
-
-function denodeify(nodeFunc) {
-  return function()  {
-    var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
-    var thisArg = this;
-
-    var promise = new Promise(function(nodeResolve, nodeReject) {
-      resolve = nodeResolve;
-      reject = nodeReject;
-    });
-
-    all(nodeArgs).then(function(nodeArgs) {
-      nodeArgs.push(makeNodeCallbackFor(resolve, reject));
-
-      try {
-        nodeFunc.apply(thisArg, nodeArgs);
-      } catch(e) {
-        reject(e);
-      }
-    });
-
-    return promise;
-  };
-}
-
-
-exports.denodeify = denodeify;
-},{"./all":9,"./promise":8}],13:[function(require,module,exports){
+},{"./defer":13}],12:[function(require,module,exports){
 "use strict";
 var async = require("./async").async;
 
@@ -828,7 +840,7 @@ config.async = async;
 
 
 exports.config = config;
-},{"./async":16}],12:[function(require,module,exports){
+},{"./async":16}],13:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
