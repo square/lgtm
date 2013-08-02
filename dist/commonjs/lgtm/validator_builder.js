@@ -103,7 +103,7 @@ ValidatorBuilder = (function() {
     this.prototype[name] = function() {
       var message, options, _i;
       options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), message = arguments[_i++];
-      if (arguments.length === 1) {
+      if (options.length === 0) {
         return this.using(fn, message);
       } else {
         return this.using(fn.apply(null, options), message);

@@ -15,24 +15,24 @@ email = (value) ->
   regexp.test(value)
 
 minLength = (minLength) ->
-  if arguments.length is 0
-    throw new Error ('must specify a min length')
+  if not minLength?
+    throw new Error('must specify a min length')
 
-  return (value) ->
+  (value) ->
     if value?
       value.length >= minLength
     else
-      false
+      no
 
 maxLength = (maxLength) ->
-  if arguments.length is 0
-    throw new Error ('must specify a max length')
+  if not maxLength?
+    throw new Error('must specify a max length')
 
-  return (value) ->
+  (value) ->
     if value?
       value.length <= maxLength
     else
-      false
+      no
 
 register = ->
   ValidatorBuilder.registerHelper 'required', required

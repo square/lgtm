@@ -242,7 +242,7 @@ email = function(value) {
 };
 
 minLength = function(minLength) {
-  if (arguments.length === 0) {
+  if (minLength == null) {
     throw new Error('must specify a min length');
   }
   return function(value) {
@@ -255,7 +255,7 @@ minLength = function(minLength) {
 };
 
 maxLength = function(maxLength) {
-  if (arguments.length === 0) {
+  if (maxLength == null) {
     throw new Error('must specify a max length');
   }
   return function(value) {
@@ -390,7 +390,7 @@ ValidatorBuilder = (function() {
     this.prototype[name] = function() {
       var message, options, _i;
       options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), message = arguments[_i++];
-      if (arguments.length === 1) {
+      if (options.length === 0) {
         return this.using(fn, message);
       } else {
         return this.using(fn.apply(null, options), message);

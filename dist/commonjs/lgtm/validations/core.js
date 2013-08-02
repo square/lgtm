@@ -20,7 +20,7 @@ email = function(value) {
 };
 
 minLength = function(minLength) {
-  if (arguments.length === 0) {
+  if (minLength == null) {
     throw new Error('must specify a min length');
   }
   return function(value) {
@@ -33,7 +33,7 @@ minLength = function(minLength) {
 };
 
 maxLength = function(maxLength) {
-  if (arguments.length === 0) {
+  if (maxLength == null) {
     throw new Error('must specify a max length');
   }
   return function(value) {

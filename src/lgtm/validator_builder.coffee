@@ -54,7 +54,7 @@ class ValidatorBuilder
 
   @registerHelper: (name, fn) ->
     @::[name] = (options..., message) ->
-      if arguments.length is 1
+      if options.length is 0
         @using fn, message
       else
         @using fn(options...), message
