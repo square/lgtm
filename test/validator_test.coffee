@@ -21,6 +21,23 @@ test 'provides an easy way to build a validator', ->
 test 'returns an ObjectValidator', ->
   ok @validator instanceof ObjectValidator
 
+module 'validator#paramCoreValidators',
+  setup: ->
+    @validator =
+      validator()
+        .validates('theString')
+          .minLength(5, 'too short')
+        .build()
+
+test 'performs validation with specified param in mind', ->
+  expect 1
+  @validator.validate(theString: '1234').then (result) ->
+    start()
+    deepEqual result,
+      valid: no,
+      errors:
+        theString: ['too short']
+  stop()
 
 module 'validator#using',
   setup: ->

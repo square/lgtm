@@ -20,3 +20,21 @@ test 'email', ->
   ok ! core.email('anything@paypal'), 'returns false for missing . in domain part'
   ok ! core.email('!$23@screwedup'), 'returns false for invalid characters'
   ok ! core.email(''), 'returns false for empty string'
+
+test 'minLength', ->
+  ok core.minLength(5)('12345'), 'returns true for 5-characters long strength calling with 5'
+  ok ! core.minLength(6)('12345'), 'returns false for 5-characters long strength calling with 6'
+  ok ! core.minLength(5)(''), 'returns false for empty string'
+  ok ! core.minLength(5)(undefined), 'returns false for undefined'
+  ok ! core.minLength(5)(null), 'returns false for null'
+
+  throws ( -> core.minLength()('something') ), 'not specifying a min length throws an error'
+
+test 'maxLength', ->
+  ok core.maxLength(5)('12345'), 'returns true for 5-characters long strength calling with 5'
+  ok core.maxLength(5)(''), 'returns true for empty string'
+  ok ! core.maxLength(4)('12345'), 'returns false for 5-characters long strength calling with 4'
+  ok ! core.maxLength(5)(undefined), 'returns false for undefined'
+  ok ! core.maxLength(5)(null), 'returns false for null'
+
+  throws ( -> core.maxLength()('something') ), 'not specifying a max length throws an error'
