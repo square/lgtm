@@ -15,4 +15,5 @@ unregister = (args...) ->
 
 validations = { core, register, unregister }
 
+export { configure } from 'rsvp'
 export { validator, validations, ObjectValidator }

@@ -1,5 +1,5 @@
 "use strict";
-var ObjectValidator, ValidatorBuilder, core, register, unregister, validations, validator,
+var ObjectValidator, ValidatorBuilder, core, register, unregister, validations, validator, __reexport1__,
   __slice = [].slice;
 
 ValidatorBuilder = require("./lgtm/validator_builder");
@@ -7,6 +7,8 @@ ValidatorBuilder = require("./lgtm/validator_builder");
 ObjectValidator = require("./lgtm/object_validator");
 
 core = require("./lgtm/validations/core");
+
+__reexport1__ = require("rsvp");
 
 core.register();
 
@@ -31,6 +33,8 @@ validations = {
   register: register,
   unregister: unregister
 };
+
+exports.configure = __reexport1__.configure;
 
 exports.validator = validator;
 
