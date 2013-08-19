@@ -1,13 +1,5 @@
-"use strict";
-var __dependency1__ = require("rsvp");
-var all = __dependency1__.all;
-var resolve = __dependency1__.resolve;
-var __dependency2__ = require("./utils");
-var contains = __dependency2__.contains;
-var keys = __dependency2__.keys;
-var forEach = __dependency2__.forEach;
-var get = __dependency2__.get;
-var uniq = __dependency2__.uniq;
+import { all, resolve } from 'rsvp';
+import { contains, keys, forEach, get, uniq } from './utils';
 
 function ObjectValidator() {
   this._validations  = {};
@@ -148,5 +140,4 @@ ObjectValidator.prototype = {
   }
 };
 
-
-module.exports = ObjectValidator;
+export default ObjectValidator;

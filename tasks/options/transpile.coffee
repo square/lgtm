@@ -4,6 +4,6 @@ module.exports =
     files: [
       expand: yes
       cwd: 'src'
-      src: '**/*.coffee'
-      dest: 'tmp/commonjs'
+      src: '**/*.js'
+      dest: 'dist/commonjs'
     ]
