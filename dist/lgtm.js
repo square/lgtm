@@ -57,7 +57,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":9,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":8,"./rsvp/promise":7,"./rsvp/reject":13,"./rsvp/resolve":14}],4:[function(require,module,exports){
+},{"./rsvp/all":9,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":8,"./rsvp/promise":7,"./rsvp/reject":14,"./rsvp/resolve":13}],4:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
 
@@ -514,67 +514,7 @@ function denodeify(nodeFunc) {
 
 
 exports.denodeify = denodeify;
-},{"./all":9,"./promise":7}],10:[function(require,module,exports){
-"use strict";
-var defer = require("./defer").defer;
-
-function size(object) {
-  var s = 0;
-
-  for (var prop in object) {
-    s++;
-  }
-
-  return s;
-}
-
-function hash(promises) {
-  var results = {}, deferred = defer(), remaining = size(promises);
-
-  if (remaining === 0) {
-    deferred.resolve({});
-  }
-
-  var resolver = function(prop) {
-    return function(value) {
-      resolveAll(prop, value);
-    };
-  };
-
-  var resolveAll = function(prop, value) {
-    results[prop] = value;
-    if (--remaining === 0) {
-      deferred.resolve(results);
-    }
-  };
-
-  var rejectAll = function(error) {
-    deferred.reject(error);
-  };
-
-  for (var prop in promises) {
-    if (promises[prop] && typeof promises[prop].then === 'function') {
-      promises[prop].then(resolver(prop), rejectAll);
-    } else {
-      resolveAll(prop, promises[prop]);
-    }
-  }
-
-  return deferred.promise;
-}
-
-
-exports.hash = hash;
-},{"./defer":11}],12:[function(require,module,exports){
-"use strict";
-var async = require("./async").async;
-
-var config = {};
-config.async = async;
-
-
-exports.config = config;
-},{"./async":16}],9:[function(require,module,exports){
+},{"./all":9,"./promise":7}],9:[function(require,module,exports){
 (function(){"use strict";
 var Promise = require("./promise").Promise;
 /* global toString */
@@ -638,25 +578,67 @@ function defer() {
 
 
 exports.defer = defer;
-},{"./promise":7}],13:[function(require,module,exports){
+},{"./promise":7}],10:[function(require,module,exports){
 "use strict";
-var Promise = require("./promise").Promise;
+var defer = require("./defer").defer;
 
+function size(object) {
+  var s = 0;
 
-function objectOrFunction(x) {
-  return typeof x === "function" || (typeof x === "object" && x !== null);
+  for (var prop in object) {
+    s++;
+  }
+
+  return s;
+}
+
+function hash(promises) {
+  var results = {}, deferred = defer(), remaining = size(promises);
+
+  if (remaining === 0) {
+    deferred.resolve({});
+  }
+
+  var resolver = function(prop) {
+    return function(value) {
+      resolveAll(prop, value);
+    };
+  };
+
+  var resolveAll = function(prop, value) {
+    results[prop] = value;
+    if (--remaining === 0) {
+      deferred.resolve(results);
+    }
+  };
+
+  var rejectAll = function(error) {
+    deferred.reject(error);
+  };
+
+  for (var prop in promises) {
+    if (promises[prop] && typeof promises[prop].then === 'function') {
+      promises[prop].then(resolver(prop), rejectAll);
+    } else {
+      resolveAll(prop, promises[prop]);
+    }
+  }
+
+  return deferred.promise;
 }
 
 
-function reject(reason) {
-  return new Promise(function (resolve, reject) {
-    reject(reason);
-  });
-}
+exports.hash = hash;
+},{"./defer":11}],12:[function(require,module,exports){
+"use strict";
+var async = require("./async").async;
+
+var config = {};
+config.async = async;
 
 
-exports.reject = reject;
-},{"./promise":7}],14:[function(require,module,exports){
+exports.config = config;
+},{"./async":16}],13:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -696,6 +678,24 @@ function resolve(thenable) {
 
 
 exports.resolve = resolve;
+},{"./promise":7}],14:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+
+function objectOrFunction(x) {
+  return typeof x === "function" || (typeof x === "object" && x !== null);
+}
+
+
+function reject(reason) {
+  return new Promise(function (resolve, reject) {
+    reject(reason);
+  });
+}
+
+
+exports.reject = reject;
 },{"./promise":7}],17:[function(require,module,exports){
 // shim for using process in browser
 
