@@ -289,7 +289,53 @@ exports.keys = keys;
 exports.get = get;
 exports.getProperties = getProperties;
 exports.uniq = uniq;
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+(function(){"use strict";
+var Promise = require("./promise").Promise;
+/* global toString */
+
+
+function all(promises) {
+  if(toString.call(promises) !== "[object Array]") {
+    throw new TypeError('You must pass an array to all.');
+  }
+  return new Promise(function(resolve, reject) {
+    var results = [], remaining = promises.length,
+    promise;
+
+    if (remaining === 0) {
+      resolve([]);
+    }
+
+    function resolver(index) {
+      return function(value) {
+        resolveAll(index, value);
+      };
+    }
+
+    function resolveAll(index, value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        resolve(results);
+      }
+    }
+
+    for (var i = 0; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        resolveAll(i, promise);
+      }
+    }
+  });
+}
+
+
+exports.all = all;
+})()
+},{"./promise":7}],7:[function(require,module,exports){
 "use strict";
 var config = require("./config").config;
 var EventTarget = require("./events").EventTarget;
@@ -514,71 +560,7 @@ function denodeify(nodeFunc) {
 
 
 exports.denodeify = denodeify;
-},{"./all":9,"./promise":7}],9:[function(require,module,exports){
-(function(){"use strict";
-var Promise = require("./promise").Promise;
-/* global toString */
-
-
-function all(promises) {
-  if(toString.call(promises) !== "[object Array]") {
-    throw new TypeError('You must pass an array to all.');
-  }
-  return new Promise(function(resolve, reject) {
-    var results = [], remaining = promises.length,
-    promise;
-
-    if (remaining === 0) {
-      resolve([]);
-    }
-
-    function resolver(index) {
-      return function(value) {
-        resolveAll(index, value);
-      };
-    }
-
-    function resolveAll(index, value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        resolve(results);
-      }
-    }
-
-    for (var i = 0; i < promises.length; i++) {
-      promise = promises[i];
-
-      if (promise && typeof promise.then === 'function') {
-        promise.then(resolver(i), reject);
-      } else {
-        resolveAll(i, promise);
-      }
-    }
-  });
-}
-
-
-exports.all = all;
-})()
-},{"./promise":7}],11:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-
-function defer() {
-  var deferred = {};
-
-  var promise = new Promise(function(resolve, reject) {
-    deferred.resolve = resolve;
-    deferred.reject = reject;
-  });
-
-  deferred.promise = promise;
-  return deferred;
-}
-
-
-exports.defer = defer;
-},{"./promise":7}],10:[function(require,module,exports){
+},{"./all":9,"./promise":7}],10:[function(require,module,exports){
 "use strict";
 var defer = require("./defer").defer;
 
@@ -629,7 +611,25 @@ function hash(promises) {
 
 
 exports.hash = hash;
-},{"./defer":11}],12:[function(require,module,exports){
+},{"./defer":11}],11:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+function defer() {
+  var deferred = {};
+
+  var promise = new Promise(function(resolve, reject) {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  deferred.promise = promise;
+  return deferred;
+}
+
+
+exports.defer = defer;
+},{"./promise":7}],12:[function(require,module,exports){
 "use strict";
 var async = require("./async").async;
 
@@ -976,6 +976,7 @@ ObjectValidator.prototype = {
     var attributes = [].slice.apply(arguments);
     var object = attributes.shift();
     var callback = attributes.pop();
+    var self = this;
 
     if (typeof callback === 'string') {
       attributes.push(callback);
@@ -993,12 +994,12 @@ ObjectValidator.prototype = {
     }
 
     var promise = all(validationPromises).then(function(results) {
-      results = this._collectResults(results);
+      results = self._collectResults(results);
       if (callback) {
         callback(results);
       }
       return results;
-    }.bind(this));
+    });
 
     if (!callback) {
       return promise;

@@ -45,18 +45,18 @@ test('can validate a specific list of attributes', function() {
         lastName: ["Missing last name!"]
       }
     });
+  });
+  stop();
 
-    this.validator.validate(this.object, 'firstName').then(function(result) {
-      start();
-      deepEqual(result, {
-        valid: false,
-        errors: {
-          firstName: ["Missing first name!"]
-        }
-      });
+  this.validator.validate(this.object, 'firstName').then(function(result) {
+    start();
+    deepEqual(result, {
+      valid: false,
+      errors: {
+        firstName: ["Missing first name!"]
+      }
     });
-    stop();
-  }.bind(this));
+  });
   stop();
 });
 
@@ -75,23 +75,24 @@ test('returns a hash of empty error arrays when valid', function() {
         lastName: []
       }
     });
-  }.bind(this));
+  });
   stop();
 });
 
 test('passes the validation function the value, key, and object being validated', function() {
   expect(4);
 
-  this.object.firstName = 'Han';
+  var object = this.object;
+  object.firstName = 'Han';
 
-  this.validator.addValidation('firstName', function(value, key, object) {
+  this.validator.addValidation('firstName', function(value, key, obj) {
     strictEqual(arguments.length, 3, 'passes three arguments');
-    strictEqual(value,  'Han',       '1st argument is value');
-    strictEqual(key,    'firstName', '2nd argument is key');
-    strictEqual(object, this.object, '3rd argument is object');
-  }.bind(this));
+    strictEqual(value, 'Han',       '1st argument is value');
+    strictEqual(key,   'firstName', '2nd argument is key');
+    strictEqual(obj,   object, '3rd argument is object');
+  });
 
-  this.validator.validate(this.object);
+  this.validator.validate(object);
 });
 
 test('validates as valid when validating attributes with no registered validations', function() {

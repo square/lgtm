@@ -59,6 +59,7 @@ ObjectValidator.prototype = {
     var attributes = [].slice.apply(arguments);
     var object = attributes.shift();
     var callback = attributes.pop();
+    var self = this;
 
     if (typeof callback === 'string') {
       attributes.push(callback);
@@ -76,12 +77,12 @@ ObjectValidator.prototype = {
     }
 
     var promise = all(validationPromises).then(function(results) {
-      results = this._collectResults(results);
+      results = self._collectResults(results);
       if (callback) {
         callback(results);
       }
       return results;
-    }.bind(this));
+    });
 
     if (!callback) {
       return promise;

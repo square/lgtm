@@ -1,6 +1,6 @@
 module.exports = {
   options: {
-    nospawn: yes
+    nospawn: true
   },
 
   test: {

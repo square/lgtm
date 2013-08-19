@@ -123,9 +123,11 @@ QUnit.module('validator#when', {
 test('allows conditionally running validations', function() {
   expect(2);
 
-  this.object.age = 10; // even numbered ages are validated
+  var self = this;
 
-  this.validator.validate(this.object).then(function(result) {
+  self.object.age = 10; // even numbered ages are validated
+
+  self.validator.validate(self.object).then(function(result) {
     start();
     deepEqual(result, {
       valid: false,
@@ -135,9 +137,9 @@ test('allows conditionally running validations', function() {
       }
     }, 'validations matching their when clause are run');
 
-    this.object.age = 7; // odd numbered ages aren't validated
+    self.object.age = 7; // odd numbered ages aren't validated
 
-    this.validator.validate(this.object).then(function(result) {
+    self.validator.validate(self.object).then(function(result) {
       start();
       deepEqual(result, {
         valid: false,
@@ -148,22 +150,24 @@ test('allows conditionally running validations', function() {
       }, 'validations not matching their clause are not run');
     });
     stop();
-  }.bind(this));
+  });
 
   stop();
 });
 
 test('allows conditionals that return promises', function() {
-  this.validator =
+  var self = this;
+
+  self.validator =
     validator()
       .validates('name')
         .when(function(name){ return resolve(name.length % 2 !== 0); })
           .using(function(name){ return name === 'Han'; }, "Your name is not Han!")
       .build();
 
-  this.object.name = 'Brian'; // odd length names are validated
+  self.object.name = 'Brian'; // odd length names are validated
 
-  this.validator.validate(this.object).then(function(result) {
+  self.validator.validate(self.object).then(function(result) {
     start();
     deepEqual(result, {
       valid: false,
@@ -172,9 +176,9 @@ test('allows conditionals that return promises', function() {
       }
     });
 
-    this.object.name = 'Fred'; // even length names are not validated
+    self.object.name = 'Fred'; // even length names are not validated
 
-    this.validator.validate(this.object).then(function(result) {
+    self.validator.validate(self.object).then(function(result) {
       start();
       deepEqual(result, {
         valid: true,
@@ -184,7 +188,7 @@ test('allows conditionals that return promises', function() {
       }, 'promise conditions are respected');
     });
     stop();
-  }.bind(this));
+  });
   stop();
 });
 
