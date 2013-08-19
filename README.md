@@ -5,33 +5,37 @@ LGTM is a simple JavaScript library for validating objects and collecting error 
 
 ## Example
 
-```coffeescript
-person =
-  firstName : 'Brian'
-  lastName  : null
+```js
+var person = {
+  firstName : 'Brian',
+  lastName  : null,
   age       : 30
+};
 
-lastNameRequired = yes
+var lastNameRequired = true;
 
-validator =
+var validator =
   LGTM.validator()
     .validates('firstName')
       .required("You must enter a first name.")
     .validates('lastName')
-      .when(-> lastNameRequired)
+      .when(function(){ return lastNameRequired; })
         .required("You must enter a last name.")
     .validates('age')
-      .using(((age) -> age > 18), "You must be over 18.")
-    .build()
+      .using(function(age){ return age > 18; }, "You must be over 18.")
+    .build();
 
 # Validate all attributes and return results with a promise.
-validator.validate(person).then (result) ->
-  if not result.valid
-    alert JSON.stringify(result.errors) # { "firstName": [ ], "lastName": ["You must enter a last name."], "age": [ ] }
+validator.validate(person).then(function(result) {
+  if (!result.valid) {
+    console.log(result.errors); // { "firstName": [ ], "lastName": ["You must enter a last name."], "age": [ ] }
+  }
+});
 
 # Specify the attributes to validate, this time using a callback.
-validator.validate person, 'firstName', 'age', (result) ->
-  alert JSON.stringify(result) # { "valid": true, "errors": { "firstName": [ ], "age": [ ] } }
+validator.validate(person, 'firstName', 'age', function(result) {
+  console.log(result); // { "valid": true, "errors": { "firstName": [ ], "age": [ ] } }
+});
 ```
 
 ## Installing
@@ -62,39 +66,41 @@ You need to make a validator and then tell it what attributes you want to
 validate. You can use the `LGTM.validator()` function which returns a builder
 to help you build a validator:
 
-```coffeescript
-validator =
+```js
+var validator =
   LGTM.validator()
-    # until the next validates(), all validations apply to 'name'
+    // until the next validates(), all validations apply to 'name'
     .validates('name')
-      # using() takes a predicate function that does the validation and an associated error message
-      .using(((name) -> name isnt 'Rose'), "Rose, you can't sign up.")
-      # you can call using() as many times as you want for a given attribute
-      .using(((name) -> name[0] isnt 'A'), "Your name starts with an 'A', you can't sign up.")
+      // using() takes a predicate function that does the validation and an associated error message
+      .using(function(name){ return name !== 'Rose'; }, "Rose, you can't sign up.")
+      // you can call using() as many times as you want for a given attribute
+      .using(function(name){ name[0] !== 'A'; }, "Your name starts with an 'A', you can't sign up.")
 
-    # call validates() again to start adding validations for another attribute
+    // call validates() again to start adding validations for another attribute
     .validates('title')
-      # required() is one of the built-in core validations
+      // required() is one of the built-in core validations
       .required("You must enter a title.")
 
-    # remember to call build() at the end to get the actual validator and not the builder
-    .build()
+    // remember to call build() at the end to get the actual validator and not the builder
+    .build();
 ```
 
 Once you have the validator you can use it on any object you want. All
 validation is done asynchronously and the results are returned via a promise:
 
-```coffeescript
-formData = name: "Rose", title: "Companion"
-validator.validate(formData).then (result) ->
-  console.log result # { "valid": false, "errors": { "name": [ "Rose, you can't sign up." ], "title": [ ] } }
+```js
+var formData = { name: "Rose", title: "Companion" };
+validator.validate(formData).then(function(result) {
+  console.log(result); // { "valid": false, "errors": { "name": [ "Rose, you can't sign up." ], "title": [ ] } }
+});
 ```
 
 If you prefer the callback style, you can use that instead:
 
-```coffeescript
-validator.validate formData, (result) ->
-  # ...
+```js
+validator.validate(formData, function(result) {
+  // ...
+});
 ```
 
 
@@ -104,18 +110,19 @@ If you find yourself using the same validations in several places you can
 register your custom validation and use it just like the built-in `register()`
 validation:
 
-```coffeescript
-LGTM.validations.register 'isEven', (value) ->
-  value % 2 is 0
+```js
+LGTM.validations.register('isEven', function(value) {
+  return value % 2 === 0;
+});
 ```
 
 Then just go ahead and use it just like any other validation:
 
-```coffeescript
+```js
 LGTM.validator()
   .validates('age')
     .isEven("You must have an even age!")
-  .build()
+  .build();
 ```
 
 Note that `isEven()` on the builder is not the same as the `isEven()` you
@@ -130,25 +137,25 @@ other property on the object. In cases like that you can use the additional
 arguments passed to validations to access more information about the object
 being validated:
 
-```coffeescript
-# businesses only need street addresses if they're not mobile
+```js
+// businesses only need street addresses if they're not mobile
 LGTM.validator()
   .validates('street1')
-    .using('street1', 'mobile', ((street1, mobile) -> street1? or mobile), "Please enter a street address.")
-  .build()
+    .using('street1', 'mobile', function(street1, mobile){ return street1 || mobile; }, "Please enter a street address.")
+  .build();
 ```
 
-The downside of this approach is that we're using `street1?` as a substitute
+The downside of this approach is that we're using `street1` as a substitute
 for `required()`, though they aren't quite equivalent. Fortunately, we can
 still use `required()` with a little bit of help from `when()`:
 
-```coffeescript
-# businesses only need street addresses if they're not mobile
+```js
+// businesses only need street addresses if they're not mobile
 LGTM.validator()
   .validates('street1')
-    .when('mobile', ((mobile) -> not mobile))
+    .when('mobile', function(mobile){ return !mobile; })
       .required("Please enter a street address.")
-  .build()
+  .build();
 ```
 
 `using()` and `when()` both implicity pass the value of the attribute being
@@ -156,23 +163,25 @@ validated by default if no attributes are specified. Validating any of the
 attributes passed to `when()` or `using()` will validate the attribute that
 requires them, too:
 
-```coffeescript
-# businesses only need street addresses if they're not mobile
-validator = LGTM.validator()
+```js
+// businesses only need street addresses if they're not mobile
+var validator = LGTM.validator()
   .validates('street1')
-    .when('mobile', ((mobile) -> not mobile))
+    .when('mobile', function(mobile){ return !mobile; })
       .required("Please enter a street address.")
-  .build()
+  .build();
 
-validator.validate({ mobile: no, street1: '' }, 'mobile').then (result) ->
-  console.log result  # { "valid": false, "errors": { "mobile": [ ], "street1": [ "Please enter a street address." ] } }
+validator.validate({ mobile: false, street1: '' }, 'mobile').then(function(result) {
+  console.log(result);  // { "valid": false, "errors": { "mobile": [ ], "street1": [ "Please enter a street address." ] } }
+});
 ```
 
 The `errors` object will also contain errors (or empty arrays if valid) for any non-direct validations carried through dependencies.
 
-```coffeescript
-validator.validate({ mobile: no, street1: '123 Fake St' }, 'mobile').then (result) ->
-  console.log result  # { "valid": true, "errors": { "mobile": [ ], "street1": [ ] } }
+```js
+validator.validate({ mobile: false, street1: '123 Fake St' }, 'mobile').then(function(result) {
+  console.log(result);  // { "valid": true, "errors": { "mobile": [ ], "street1": [ ] } }
+});
 ```
 
 ### Attributes Used by Validations
@@ -181,14 +190,14 @@ The list of attributes your validator cares about will be available with the
 `attributes()` method. All attributes passed to `validates()`, `using()` and
 `when()` will be included.
 
-```coffeescript
+```js
 validator = LGTM.validator()
   .validates('street1')
-    .when('mobile', 'street2', ((mobile, street2) -> not mobile and street2?))
+    .when('mobile', 'street2', function(mobile, street2){ return !mobile && street2; })
       .required("Enter street address if you have an apartment.")
-  .build()
+  .build();
 
-validator.attributes()  # => ["street1", "mobile", "street2"]
+validator.attributes();  // => ["street1", "mobile", "street2"]
 ```
 
 ## Contributing
