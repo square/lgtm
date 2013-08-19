@@ -6,7 +6,7 @@ module.exports =
       standalone: 'LGTM'
 
   test:
-    src: 'test/**/*.coffee'
+    src: 'test/**/*.{js,coffee}'
     dest: 'tmp/test/lgtm_test.js'
     options:
       transform: ['coffeeify']

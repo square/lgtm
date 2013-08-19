@@ -3,5 +3,5 @@ module.exports =
     nospawn: yes
 
   test:
-    files: ['src/**/*.js', 'test/**/*.coffee']
+    files: ['src/**/*.js', 'test/**/*.{js,coffee}']
     tasks: ['build']

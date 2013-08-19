@@ -57,7 +57,7 @@ exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":8,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":9,"./rsvp/promise":7,"./rsvp/reject":14,"./rsvp/resolve":13}],4:[function(require,module,exports){
+},{"./rsvp/all":9,"./rsvp/config":12,"./rsvp/defer":11,"./rsvp/events":6,"./rsvp/hash":10,"./rsvp/node":8,"./rsvp/promise":7,"./rsvp/reject":13,"./rsvp/resolve":14}],4:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
 
@@ -472,52 +472,6 @@ function reject(promise, value) {
 
 exports.Promise = Promise;
 },{"./config":12,"./events":6}],8:[function(require,module,exports){
-(function(){"use strict";
-var Promise = require("./promise").Promise;
-/* global toString */
-
-
-function all(promises) {
-  if(toString.call(promises) !== "[object Array]") {
-    throw new TypeError('You must pass an array to all.');
-  }
-  return new Promise(function(resolve, reject) {
-    var results = [], remaining = promises.length,
-    promise;
-
-    if (remaining === 0) {
-      resolve([]);
-    }
-
-    function resolver(index) {
-      return function(value) {
-        resolveAll(index, value);
-      };
-    }
-
-    function resolveAll(index, value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        resolve(results);
-      }
-    }
-
-    for (var i = 0; i < promises.length; i++) {
-      promise = promises[i];
-
-      if (promise && typeof promise.then === 'function') {
-        promise.then(resolver(i), reject);
-      } else {
-        resolveAll(i, promise);
-      }
-    }
-  });
-}
-
-
-exports.all = all;
-})()
-},{"./promise":7}],9:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 var all = require("./all").all;
@@ -560,25 +514,7 @@ function denodeify(nodeFunc) {
 
 
 exports.denodeify = denodeify;
-},{"./all":8,"./promise":7}],11:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-
-function defer() {
-  var deferred = {};
-
-  var promise = new Promise(function(resolve, reject) {
-    deferred.resolve = resolve;
-    deferred.reject = reject;
-  });
-
-  deferred.promise = promise;
-  return deferred;
-}
-
-
-exports.defer = defer;
-},{"./promise":7}],10:[function(require,module,exports){
+},{"./all":9,"./promise":7}],10:[function(require,module,exports){
 "use strict";
 var defer = require("./defer").defer;
 
@@ -638,7 +574,89 @@ config.async = async;
 
 
 exports.config = config;
-},{"./async":16}],13:[function(require,module,exports){
+},{"./async":16}],9:[function(require,module,exports){
+(function(){"use strict";
+var Promise = require("./promise").Promise;
+/* global toString */
+
+
+function all(promises) {
+  if(toString.call(promises) !== "[object Array]") {
+    throw new TypeError('You must pass an array to all.');
+  }
+  return new Promise(function(resolve, reject) {
+    var results = [], remaining = promises.length,
+    promise;
+
+    if (remaining === 0) {
+      resolve([]);
+    }
+
+    function resolver(index) {
+      return function(value) {
+        resolveAll(index, value);
+      };
+    }
+
+    function resolveAll(index, value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        resolve(results);
+      }
+    }
+
+    for (var i = 0; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        resolveAll(i, promise);
+      }
+    }
+  });
+}
+
+
+exports.all = all;
+})()
+},{"./promise":7}],11:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+function defer() {
+  var deferred = {};
+
+  var promise = new Promise(function(resolve, reject) {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  deferred.promise = promise;
+  return deferred;
+}
+
+
+exports.defer = defer;
+},{"./promise":7}],13:[function(require,module,exports){
+"use strict";
+var Promise = require("./promise").Promise;
+
+
+function objectOrFunction(x) {
+  return typeof x === "function" || (typeof x === "object" && x !== null);
+}
+
+
+function reject(reason) {
+  return new Promise(function (resolve, reject) {
+    reject(reason);
+  });
+}
+
+
+exports.reject = reject;
+},{"./promise":7}],14:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 
@@ -678,24 +696,6 @@ function resolve(thenable) {
 
 
 exports.resolve = resolve;
-},{"./promise":7}],14:[function(require,module,exports){
-"use strict";
-var Promise = require("./promise").Promise;
-
-
-function objectOrFunction(x) {
-  return typeof x === "function" || (typeof x === "object" && x !== null);
-}
-
-
-function reject(reason) {
-  return new Promise(function (resolve, reject) {
-    reject(reason);
-  });
-}
-
-
-exports.reject = reject;
 },{"./promise":7}],17:[function(require,module,exports){
 // shim for using process in browser
 
