@@ -1,4 +1,3 @@
-"use strict";
 function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
     iterable.forEach(iterator);
@@ -61,10 +60,9 @@ function uniq(array) {
   return result;
 }
 
-
-exports.contains = contains;
-exports.forEach = forEach;
-exports.keys = keys;
-exports.get = get;
-exports.getProperties = getProperties;
-exports.uniq = uniq;
+export contains;
+export forEach;
+export keys;
+export get;
+export getProperties;
+export uniq;

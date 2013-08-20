@@ -1,5 +1,4 @@
-"use strict";
-var ValidatorBuilder = require("../validator_builder");
+import ValidatorBuilder from '../validator_builder';
 
 function required(value) {
   if (typeof value === 'string') {
@@ -54,9 +53,4 @@ function register() {
   ValidatorBuilder.registerHelper('maxLength', maxLength);
 }
 
-
-exports.required = required;
-exports.email = email;
-exports.minLength = minLength;
-exports.maxLength = maxLength;
-exports.register = register;
+export { required, email, minLength, maxLength, register };

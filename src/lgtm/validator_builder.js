@@ -1,7 +1,6 @@
-"use strict";
-var ObjectValidator = require("./object_validator");
-var resolve = require("rsvp").resolve;
-var getProperties = require("./utils").getProperties;
+import ObjectValidator from './object_validator';
+import { resolve } from 'rsvp';
+import { getProperties } from './utils';
 
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();
@@ -108,5 +107,4 @@ ValidatorBuilder.unregisterHelper = function(name) {
   return null;
 };
 
-
-module.exports = ValidatorBuilder;
+export default ValidatorBuilder;
