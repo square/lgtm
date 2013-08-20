@@ -1,0 +1,14 @@
+{
+  "name": "lgtm",
+  "version": "0.0.0",
+  "main": "dist/lgtm.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src",
+    "tasks",
+    "test",
+    "tests"
+  ]
+}
