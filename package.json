@@ -14,7 +14,7 @@
     "validation"
   ],
   "author": "Square, Inc.",
-  "license": "BSD",
+  "license": "Apache 2.0",
   "devDependencies": {
     "grunt": "~0.4.1",
     "string": "~1.4.0",
