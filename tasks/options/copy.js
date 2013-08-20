@@ -13,8 +13,8 @@ module.exports = {
 
   afterBrowserify: {
     files: [{
-      src: 'dist/lgtm.js',
-      dest: 'tmp/test/lgtm.js'
+      src: 'dist/lgtm-standalone.js',
+      dest: 'tmp/test/lgtm-standalone.js'
     }]
   }
 };

@@ -1,7 +1,8 @@
 "use strict";
 var ObjectValidator = require("./object_validator");
-var resolve = require("rsvp").resolve;
-var getProperties = require("./utils").getProperties;
+var __dependency1__ = require("./utils");
+var getProperties = __dependency1__.getProperties;
+var resolve = __dependency1__.resolve;
 
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();

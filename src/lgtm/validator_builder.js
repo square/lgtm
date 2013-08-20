@@ -1,6 +1,5 @@
 import ObjectValidator from './object_validator';
-import { resolve } from 'rsvp';
-import { getProperties } from './utils';
+import { getProperties, resolve } from './utils';
 
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();

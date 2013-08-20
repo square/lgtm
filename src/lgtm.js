@@ -1,6 +1,7 @@
 import ValidatorBuilder from './lgtm/validator_builder';
 import ObjectValidator from './lgtm/object_validator';
 import core from './lgtm/validations/core';
+import config from './lgtm/config';
 
 core.register();
 
@@ -22,5 +23,8 @@ var validations = {
   unregister : unregister
 };
 
-export { configure } from 'rsvp';
-export { validator, validations, ObjectValidator };
+function configure(key, value) {
+  config[key] = value;
+}
+
+export { configure, validator, validations, ObjectValidator };

@@ -1,4 +1,10 @@
 "use strict";
+var config = require("./config");
+
+/**
+ * Iteration
+ */
+
 function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
     iterable.forEach(iterator);
@@ -28,6 +34,12 @@ function keys(object) {
   }
 }
 
+
+
+/**
+ * Property access
+ */
+
 function get(object, property) {
   if (object === null || object === undefined) {
     return;
@@ -43,6 +55,12 @@ function getProperties(object, properties) {
     return get(object, prop);
   });
 }
+
+
+
+/**
+ * Array manipulation
+ */
 
 function contains(array, object) {
   return array.indexOf(object) > -1;
@@ -62,9 +80,49 @@ function uniq(array) {
 }
 
 
-exports.contains = contains;
+
+/**
+ * Promises
+ */
+
+function resolve(thenable) {
+  var deferred = config.defer();
+  deferred.resolve(thenable);
+  return deferred.promise;
+}
+
+function all(thenables) {
+  if (thenables.length === 0) {
+    return resolve([]);
+  }
+
+  var results = [];
+  var remaining = thenables.length;
+  var deferred = config.defer();
+
+  function resolver(index) {
+    return function(value) {
+      results[index] = value;
+      if (--remaining === 0) {
+        deferred.resolve(results);
+      }
+    };
+  }
+
+  for (var i = 0; i < thenables.length; i++) {
+    var thenable = thenables[i];
+    resolve(thenable).then(resolver(i), deferred.reject);
+  }
+
+  return deferred.promise;
+}
+
+
 exports.forEach = forEach;
 exports.keys = keys;
 exports.get = get;
 exports.getProperties = getProperties;
+exports.contains = contains;
 exports.uniq = uniq;
+exports.resolve = resolve;
+exports.all = all;

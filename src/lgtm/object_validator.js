@@ -1,5 +1,5 @@
-import { all, resolve } from 'rsvp';
-import { contains, keys, forEach, get, uniq } from './utils';
+import config from './config';
+import { all, resolve, contains, keys, forEach, get, uniq } from './utils';
 
 function ObjectValidator() {
   this._validations  = {};

@@ -1,13 +1,13 @@
 "use strict";
-var __dependency1__ = require("rsvp");
+var config = require("./config");
+var __dependency1__ = require("./utils");
 var all = __dependency1__.all;
 var resolve = __dependency1__.resolve;
-var __dependency2__ = require("./utils");
-var contains = __dependency2__.contains;
-var keys = __dependency2__.keys;
-var forEach = __dependency2__.forEach;
-var get = __dependency2__.get;
-var uniq = __dependency2__.uniq;
+var contains = __dependency1__.contains;
+var keys = __dependency1__.keys;
+var forEach = __dependency1__.forEach;
+var get = __dependency1__.get;
+var uniq = __dependency1__.uniq;
 
 function ObjectValidator() {
   this._validations  = {};

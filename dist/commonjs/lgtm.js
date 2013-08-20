@@ -2,7 +2,7 @@
 var ValidatorBuilder = require("./lgtm/validator_builder");
 var ObjectValidator = require("./lgtm/object_validator");
 var core = require("./lgtm/validations/core");
-var __reexport1__ = require("rsvp");
+var config = require("./lgtm/config");
 
 core.register();
 
@@ -24,8 +24,12 @@ var validations = {
   unregister : unregister
 };
 
+function configure(key, value) {
+  config[key] = value;
+}
 
-exports.configure = __reexport1__.configure;
+
+exports.configure = configure;
 exports.validator = validator;
 exports.validations = validations;
 exports.ObjectValidator = ObjectValidator;
