@@ -25,14 +25,14 @@ var validator =
       .using(function(age){ return age > 18; }, "You must be over 18.")
     .build();
 
-# Validate all attributes and return results with a promise.
+// Validate all attributes and return results with a promise.
 validator.validate(person).then(function(result) {
   if (!result.valid) {
     console.log(result.errors); // { "firstName": [ ], "lastName": ["You must enter a last name."], "age": [ ] }
   }
 });
 
-# Specify the attributes to validate, this time using a callback.
+// Specify the attributes to validate, this time using a callback.
 validator.validate(person, 'firstName', 'age', function(result) {
   console.log(result); // { "valid": true, "errors": { "firstName": [ ], "age": [ ] } }
 });
