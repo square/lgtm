@@ -42,11 +42,24 @@ validator.validate(person, 'firstName', 'age', function(result) {
 
 ### Browser
 
-Just copy the [dist/lgtm.js](dist/lgtm.js) file into your project and load it
-as normal. LGTM uses [browserify](http://browserify.org/), so LGTM will
-register itself with any CommonJS or AMD setup you have. If it doesn't find
-either of those it will export `LGTM` as a global with the object you would
-normally get by using `require('lgtm')`.
+Just copy the [dist/lgtm-standalone.js](dist/lgtm-standalone.js) file into your
+project and load it as normal. LGTM uses [browserify](http://browserify.org/),
+so LGTM will register itself with any CommonJS or AMD setup you have. If it
+doesn't find either of those it will export `LGTM` as a global with the object
+you would normally get by using `require('lgtm')`.
+
+If you already have a promise library in your application and don't want the
+bundled one that comes with LGTM
+([RSVP.js](https://github.com/tildeio/rsvp.js)) then you can configure LGTM to
+use it by providing a `defer` function:
+
+```js
+// use LGTM with Q
+LGTM.configure('defer', Q.defer);
+
+// use LGTM with Ember's bundled RSVP
+LGTM.configure('defer', Ember.RSVP.defer);
+```
 
 ### Node.js
 
