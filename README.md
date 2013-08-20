@@ -1,6 +1,9 @@
 # LGTM
 
-LGTM is a simple JavaScript library for validating objects and collecting error messages.
+LGTM is a simple JavaScript library for validating objects and collecting error
+messages. It leaves the display, behavior, and error messages in your hands,
+focusing on letting you describe your validations cleanly and concisely for
+whatever environment you're using.
 
 
 ## Example
@@ -37,6 +40,7 @@ validator.validate(person, 'firstName', 'age', function(result) {
   console.log(result); // { "valid": true, "errors": { "firstName": [ ], "age": [ ] } }
 });
 ```
+
 
 ## Installing
 
@@ -116,6 +120,22 @@ validator.validate(formData, function(result) {
 });
 ```
 
+LGTM supports async using
+[promises](http://blog.parse.com/2013/01/29/whats-so-great-about-javascript-promises/).
+If the result of a validation function is a thenable (read: promise) then the
+result of that validation will be whatever the promise resolves to. This could
+allow you to check with your server for usernames being taken, for example:
+
+```js
+var validator =
+  LGTM.validator()
+    .validates('username')
+      .using(function(username) {
+        return $.getJSON('/check-username', { username: username })
+                .then(function(response){ return !response.taken; });
+      })
+    .build();
+```
 
 ### Custom Validations
 
@@ -239,7 +259,7 @@ $ grunt test
 
 As you make changes you may find it useful to have everything automatically
 compiled and ready to test interactively in the browser. You can do that using
-the `develop` grunt test:
+the `develop` grunt task:
 
 ```
 $ grunt develop
@@ -250,6 +270,20 @@ override the default port).
 
 ### Pull Requests
 
-Contributions via pull requests are very welcome! Follow the steps in
-Developing above, then add your feature or bugfix with tests to cover it, push
-to a branch, and open a pull request.
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
+Any contributors to the master lgtm repository must sign the [Individual
+Contributor License Agreement (CLA)][cla].  It's a short form that covers our
+bases and makes sure you're eligible to contribute.
+
+[cla]: https://spreadsheets.google.com/spreadsheet/viewform?formkey=dDViT2xzUHAwRkI3X3k5Z0lQM091OGc6MQ&ndplr=1
+
+When you have a change you'd like to see in the master repository, [send a pull
+request](https://github.com/square/lgtm/pulls). Before we merge your request,
+we'll make sure you're in the list of people who have signed a CLA.
+
+Thanks, and enjoy validating all the things!
