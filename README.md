@@ -52,6 +52,12 @@ so LGTM will register itself with any CommonJS or AMD setup you have. If it
 doesn't find either of those it will export `LGTM` as a global with the object
 you would normally get by using `require('lgtm')`.
 
+You can also install it with bower:
+
+```
+$ bower install lgtm
+```
+
 If you already have a promise library in your application and don't want the
 bundled one that comes with LGTM
 ([RSVP.js](https://github.com/tildeio/rsvp.js)) then you can configure LGTM to
@@ -67,8 +73,11 @@ LGTM.configure('defer', Ember.RSVP.defer);
 
 ### Node.js
 
-This package can be used just like any normal Node.js package, just
-`require('lgtm')`.
+```
+$ npm install lgtm
+$ node
+> var LGTM = require('lgtm');
+```
 
 
 ## Usage
