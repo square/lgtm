@@ -68,13 +68,20 @@ ObjectValidator.prototype = {
       validationPromises = validationPromises.concat(this._validateAttribute(object, attr));
     }
 
-    var promise = all(validationPromises).then(function(results) {
-      results = self._collectResults(results);
-      if (callback) {
-        callback(results);
-      }
-      return results;
-    });
+    var promise = all(validationPromises).then(
+      function(results) {
+        results = self._collectResults(results);
+        if (callback) {
+          callback(null, results);
+        }
+        return results;
+      },
+      function(err) {
+        if (callback) {
+          callback(err);
+        }
+        throw err;
+      });
 
     if (!callback) {
       return promise;
@@ -90,11 +97,16 @@ ObjectValidator.prototype = {
       validations.forEach(function(pair) {
         var fn      = pair[0];
         var message = pair[1];
-        results.push(resolve(fn(value, attr, object)).then(
-          function(isValid) {
-            return [ attr, isValid ? null : message ];
+
+        var promise = resolve()
+          .then(function() {
+            return fn(value, attr, object);
           })
-        );
+          .then(function(isValid) {
+            return [ attr, isValid ? null : message ];
+          });
+
+        results.push(promise);
       });
     } else if (contains(this.attributes(), attr)) {
       results.push([ attr, null ]);

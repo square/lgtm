@@ -11,7 +11,7 @@ QUnit.module('ObjectValidator', {
 test('calls back when given a callback', function() {
   expect(2);
 
-  var returnValue = this.validator.validate(this.object, function(result) {
+  var returnValue = this.validator.validate(this.object, function(err, result) {
     start();
     ok(result.valid, 'properly returns results');
   });
@@ -86,6 +86,7 @@ test('passes the validation function the value, key, and object being validated'
   object.firstName = 'Han';
 
   this.validator.addValidation('firstName', function(value, key, obj) {
+    start();
     strictEqual(arguments.length, 3, 'passes three arguments');
     strictEqual(value, 'Han',       '1st argument is value');
     strictEqual(key,   'firstName', '2nd argument is key');
@@ -93,6 +94,7 @@ test('passes the validation function the value, key, and object being validated'
   });
 
   this.validator.validate(object);
+  stop();
 });
 
 test('validates as valid when validating attributes with no registered validations', function() {
@@ -131,6 +133,37 @@ test('can provide a list of all attributes it is interested in', function() {
   this.validator.addDependentsFor('mobile', 'street1', 'street2');
 
   deepEqual(this.validator.attributes().sort(), ['mobile', 'street1', 'street2']);
+});
+
+test('passes exceptions thrown by validations as the first argument to the callback', function() {
+  expect(2);
+
+  this.validator.addValidation('firstName', function(){ throw new Error("OH NO!"); });
+
+  this.validator.validate(this.object, function(err, result) {
+    start();
+    equal(err.message, "OH NO!", "passes the thrown error through");
+    ok(!result, "does not send any result");
+  });
+  stop();
+});
+
+test('passes exceptions through as a rejected promise', function() {
+  expect(1);
+
+  this.validator.addValidation('firstName', function(){ throw new Error("OH NO!"); });
+
+  this.validator.validate(this.object).then(
+    function() {
+      start();
+      ok(false, 'this function should not have been called');
+    },
+    function(err) {
+      start();
+      equal(err.message, "OH NO!", "passes the thrown error through");
+    }
+  );
+  stop();
 });
 
 function testValidatesAsExpected() {

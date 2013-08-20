@@ -36,7 +36,7 @@ validator.validate(person).then(function(result) {
 });
 
 // Specify the attributes to validate, this time using a callback.
-validator.validate(person, 'firstName', 'age', function(result) {
+validator.validate(person, 'firstName', 'age', function(err, result) {
   console.log(result); // { "valid": true, "errors": { "firstName": [ ], "age": [ ] } }
 });
 ```
@@ -115,10 +115,16 @@ validator.validate(formData).then(function(result) {
 If you prefer the callback style, you can use that instead:
 
 ```js
-validator.validate(formData, function(result) {
+validator.validate(formData, function(err, result) {
   // ...
 });
 ```
+
+When using the callback style, LGTM follows the node.js convention of passing
+any exception thrown or runtime error generated as the first argument. If there
+is no exception then `err` will be `null`, even if the validated object turned
+out to be invalid. When using the promise style runtime errors will be handled
+as a rejected promise.
 
 LGTM supports async using
 [promises](http://blog.parse.com/2013/01/29/whats-so-great-about-javascript-promises/).
