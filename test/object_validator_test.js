@@ -1,5 +1,5 @@
 var ObjectValidator = LGTM.ObjectValidator;
-var core            = LGTM.validations.core;
+var core            = LGTM.helpers.core;
 
 QUnit.module('ObjectValidator', {
   setup: function() {
@@ -33,8 +33,8 @@ test('returns a promise when no callback is given', function() {
 test('can validate a specific list of attributes', function() {
   expect(2);
 
-  this.validator.addValidation('firstName', core.required, "Missing first name!");
-  this.validator.addValidation('lastName', core.required, "Missing last name!");
+  this.validator.addValidation('firstName', core.present, "Missing first name!");
+  this.validator.addValidation('lastName', core.present, "Missing last name!");
 
   this.validator.validate(this.object).then(function(result) {
     start();
@@ -63,8 +63,8 @@ test('can validate a specific list of attributes', function() {
 test('returns a hash of empty error arrays when valid', function() {
   expect(1);
 
-  this.validator.addValidation('firstName', core.required, 'Missing first name!');
-  this.validator.addValidation('lastName', core.required, 'Missing last name!');
+  this.validator.addValidation('firstName', core.present, 'Missing first name!');
+  this.validator.addValidation('lastName', core.present, 'Missing last name!');
 
   this.validator.validate({ firstName: 'Bah', lastName: 'Humbug' }).then(function(result) {
     start();

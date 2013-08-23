@@ -305,3 +305,22 @@ test('used with #using specifying attributes in both', function() {
   });
   stop();
 });
+
+test('is used by #optional to prevent subsequent validations from firing when a value is absent', function() {
+  var v = validator()
+        .validates('email')
+          .optional()
+          .email("That's no email!")
+        .build();
+
+  v.validate({ email: ' ' }).then(function(result) {
+    start();
+    deepEqual(result, {
+      valid: true,
+      errors: {
+        email: []
+      }
+    }, 'accepts missing values as valid');
+  });
+  stop();
+});

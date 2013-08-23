@@ -25,7 +25,8 @@ var validator =
       .when(function(){ return lastNameRequired; })
         .required("You must enter a last name.")
     .validates('age')
-      .using(function(age){ return age > 18; }, "You must be over 18.")
+      .optional()
+        .using(function(age){ return age > 18; }, "You must be over 18.")
     .build();
 
 // Validate all attributes and return results with a promise.
@@ -86,20 +87,13 @@ LGTM can be used in either a browser or Node.js environment. These examples
 will use the `LGTM` export from the main file as if it were a global in the
 browser or you had done `var LGTM = require('lgtm');` in your Node.js files.
 
-### Built-in Validations
+### Built-in Helpers
 
-The list of built-in validations is pretty short right now:
+See the list of built-in helpers [on the wiki][built-in-helpers]. Check out the
+Contributing section below if you have a generally-useful validation you think
+fits in core.
 
-* `required`
-* `email`
-* `minLength(n)`
-* `maxLength(n)`
-
-See the [core validations][core-validations], and check out the Contributing
-section below if you have a globally-useful validation you think fits in
-core.
-
-[core-validations]: src/lgtm/validations/core.js
+[built-in-helpers]: https://github.com/square/lgtm/wiki/Helpers
 
 ### Basic Validation
 

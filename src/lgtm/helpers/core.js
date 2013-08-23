@@ -1,7 +1,6 @@
-"use strict";
-var ValidatorBuilder = require("../validator_builder");
+import ValidatorBuilder from '../validator_builder';
 
-function required(value) {
+function present(value) {
   if (typeof value === 'string') {
     value = value.trim();
   }
@@ -9,7 +8,7 @@ function required(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
-function email(value) {
+function checkEmail(value) {
   if (typeof value === 'string') {
     value = value.trim();
   }
@@ -19,7 +18,7 @@ function email(value) {
   return regexp.test(value);
 }
 
-function minLength(minLength) {
+function checkMinLength(minLength) {
   if (minLength === null || minLength === undefined) {
     throw new Error('must specify a min length')
   }
@@ -33,7 +32,7 @@ function minLength(minLength) {
   };
 }
 
-function maxLength(maxLength) {
+function checkMaxLength(maxLength) {
   if (maxLength === null || maxLength === undefined) {
     throw new Error('must specify a max length')
   }
@@ -48,15 +47,25 @@ function maxLength(maxLength) {
 }
 
 function register() {
-  ValidatorBuilder.registerHelper('required',  required);
-  ValidatorBuilder.registerHelper('email',     email);
-  ValidatorBuilder.registerHelper('minLength', minLength);
-  ValidatorBuilder.registerHelper('maxLength', maxLength);
+  ValidatorBuilder.registerHelper('required', function(message) {
+    this.using(present, message);
+  });
+
+  ValidatorBuilder.registerHelper('optional', function() {
+    this.when(present);
+  });
+
+  ValidatorBuilder.registerHelper('email', function(message) {
+    this.using(checkEmail, message);
+  });
+
+  ValidatorBuilder.registerHelper('minLength', function(minLength, message) {
+    this.using(checkMinLength(minLength), message);
+  });
+
+  ValidatorBuilder.registerHelper('maxLength', function(maxLength, message) {
+    this.using(checkMaxLength(maxLength), message);
+  });
 }
 
-
-exports.required = required;
-exports.email = email;
-exports.minLength = minLength;
-exports.maxLength = maxLength;
-exports.register = register;
+export { present, checkEmail, checkMinLength, checkMaxLength, register };

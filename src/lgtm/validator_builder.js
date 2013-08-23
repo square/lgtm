@@ -88,15 +88,9 @@ ValidatorBuilder.prototype = {
 };
 
 ValidatorBuilder.registerHelper = function(name, fn) {
-  this.prototype[name] = function(/* ...options, message */) {
-    var options = [].slice.apply(arguments);
-    var message = options.pop();
-
-    if (options.length === 0) {
-      return this.using(fn, message);
-    } else {
-      return this.using(fn.apply(null, options), message);
-    }
+  this.prototype[name] = function() {
+    fn.apply(this, arguments);
+    return this;
   };
   return null;
 };

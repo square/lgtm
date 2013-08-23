@@ -4,7 +4,7 @@ return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 var __dependency1__ = require("./lgtm");
 var configure = __dependency1__.configure;
 var validator = __dependency1__.validator;
-var validations = __dependency1__.validations;
+var helpers = __dependency1__.helpers;
 var ObjectValidator = __dependency1__.ObjectValidator;
 var defer = require("rsvp").defer;
 // TODO: use this instead: export * from './lgtm';
@@ -14,13 +14,13 @@ configure('defer', defer);
 
 exports.configure = configure;
 exports.validator = validator;
-exports.validations = validations;
+exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
 },{"./lgtm":2,"rsvp":9}],2:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder = require("./lgtm/validator_builder");
 var ObjectValidator = require("./lgtm/object_validator");
-var core = require("./lgtm/validations/core");
+var core = require("./lgtm/helpers/core");
 var config = require("./lgtm/config");
 
 core.register();
@@ -37,7 +37,7 @@ function unregister() {
   ValidatorBuilder.unregisterHelper.apply(ValidatorBuilder, arguments);
 }
 
-var validations = {
+var helpers = {
   core       : core,
   register   : register,
   unregister : unregister
@@ -50,14 +50,92 @@ function configure(key, value) {
 
 exports.configure = configure;
 exports.validator = validator;
-exports.validations = validations;
+exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
-},{"./lgtm/config":3,"./lgtm/object_validator":4,"./lgtm/validations/core":6,"./lgtm/validator_builder":7}],3:[function(require,module,exports){
+},{"./lgtm/config":3,"./lgtm/helpers/core":4,"./lgtm/object_validator":5,"./lgtm/validator_builder":7}],3:[function(require,module,exports){
 "use strict";
 var config = {};
 
 module.exports = config;
 },{}],4:[function(require,module,exports){
+"use strict";
+var ValidatorBuilder = require("../validator_builder");
+
+function present(value) {
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+
+  return value !== '' && value !== null && value !== undefined;
+}
+
+function checkEmail(value) {
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+
+  // http://stackoverflow.com/a/46181/11236
+  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  return regexp.test(value);
+}
+
+function checkMinLength(minLength) {
+  if (minLength === null || minLength === undefined) {
+    throw new Error('must specify a min length')
+  }
+
+  return function(value) {
+    if (value !== null && value !== undefined) {
+      return value.length >= minLength;
+    } else {
+      return false;
+    }
+  };
+}
+
+function checkMaxLength(maxLength) {
+  if (maxLength === null || maxLength === undefined) {
+    throw new Error('must specify a max length')
+  }
+
+  return function(value) {
+    if (value !== null && value !== undefined) {
+      return value.length <= maxLength;
+    } else {
+      return false;
+    }
+  };
+}
+
+function register() {
+  ValidatorBuilder.registerHelper('required', function(message) {
+    this.using(present, message);
+  });
+
+  ValidatorBuilder.registerHelper('optional', function() {
+    this.when(present);
+  });
+
+  ValidatorBuilder.registerHelper('email', function(message) {
+    this.using(checkEmail, message);
+  });
+
+  ValidatorBuilder.registerHelper('minLength', function(minLength, message) {
+    this.using(checkMinLength(minLength), message);
+  });
+
+  ValidatorBuilder.registerHelper('maxLength', function(maxLength, message) {
+    this.using(checkMaxLength(maxLength), message);
+  });
+}
+
+
+exports.present = present;
+exports.checkEmail = checkEmail;
+exports.checkMinLength = checkMinLength;
+exports.checkMaxLength = checkMaxLength;
+exports.register = register;
+},{"../validator_builder":7}],5:[function(require,module,exports){
 "use strict";
 var config = require("./config");
 var __dependency1__ = require("./utils");
@@ -223,7 +301,7 @@ ObjectValidator.prototype = {
 
 
 module.exports = ObjectValidator;
-},{"./config":3,"./utils":5}],5:[function(require,module,exports){
+},{"./config":3,"./utils":6}],6:[function(require,module,exports){
 "use strict";
 var config = require("./config");
 
@@ -352,70 +430,7 @@ exports.contains = contains;
 exports.uniq = uniq;
 exports.resolve = resolve;
 exports.all = all;
-},{"./config":3}],6:[function(require,module,exports){
-"use strict";
-var ValidatorBuilder = require("../validator_builder");
-
-function required(value) {
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
-
-  return value !== '' && value !== null && value !== undefined;
-}
-
-function email(value) {
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
-
-  // http://stackoverflow.com/a/46181/11236
-  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  return regexp.test(value);
-}
-
-function minLength(minLength) {
-  if (minLength === null || minLength === undefined) {
-    throw new Error('must specify a min length')
-  }
-
-  return function(value) {
-    if (value !== null && value !== undefined) {
-      return value.length >= minLength;
-    } else {
-      return false;
-    }
-  };
-}
-
-function maxLength(maxLength) {
-  if (maxLength === null || maxLength === undefined) {
-    throw new Error('must specify a max length')
-  }
-
-  return function(value) {
-    if (value !== null && value !== undefined) {
-      return value.length <= maxLength;
-    } else {
-      return false;
-    }
-  };
-}
-
-function register() {
-  ValidatorBuilder.registerHelper('required',  required);
-  ValidatorBuilder.registerHelper('email',     email);
-  ValidatorBuilder.registerHelper('minLength', minLength);
-  ValidatorBuilder.registerHelper('maxLength', maxLength);
-}
-
-
-exports.required = required;
-exports.email = email;
-exports.minLength = minLength;
-exports.maxLength = maxLength;
-exports.register = register;
-},{"../validator_builder":7}],7:[function(require,module,exports){
+},{"./config":3}],7:[function(require,module,exports){
 "use strict";
 var ObjectValidator = require("./object_validator");
 var __dependency1__ = require("./utils");
@@ -509,15 +524,9 @@ ValidatorBuilder.prototype = {
 };
 
 ValidatorBuilder.registerHelper = function(name, fn) {
-  this.prototype[name] = function(/* ...options, message */) {
-    var options = [].slice.apply(arguments);
-    var message = options.pop();
-
-    if (options.length === 0) {
-      return this.using(fn, message);
-    } else {
-      return this.using(fn.apply(null, options), message);
-    }
+  this.prototype[name] = function() {
+    fn.apply(this, arguments);
+    return this;
   };
   return null;
 };
@@ -529,7 +538,7 @@ ValidatorBuilder.unregisterHelper = function(name) {
 
 
 module.exports = ValidatorBuilder;
-},{"./object_validator":4,"./utils":5}],8:[function(require,module,exports){
+},{"./object_validator":5,"./utils":6}],8:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};

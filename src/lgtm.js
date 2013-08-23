@@ -1,6 +1,6 @@
 import ValidatorBuilder from './lgtm/validator_builder';
 import ObjectValidator from './lgtm/object_validator';
-import core from './lgtm/validations/core';
+import core from './lgtm/helpers/core';
 import config from './lgtm/config';
 
 core.register();
@@ -17,7 +17,7 @@ function unregister() {
   ValidatorBuilder.unregisterHelper.apply(ValidatorBuilder, arguments);
 }
 
-var validations = {
+var helpers = {
   core       : core,
   register   : register,
   unregister : unregister
@@ -27,4 +27,4 @@ function configure(key, value) {
   config[key] = value;
 }
 
-export { configure, validator, validations, ObjectValidator };
+export { configure, validator, helpers, ObjectValidator };
