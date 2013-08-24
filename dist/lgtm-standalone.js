@@ -47,12 +47,22 @@ function configure(key, value) {
   config[key] = value;
 }
 
+// This kinda sucks, but I don't think ES6 has the ability to require modules
+// that may not exist. And we may be in node or in the browser.
+if (typeof RSVP !== 'undefined') {
+  configure('defer', RSVP.defer);
+} else if (typeof require === 'function') {
+  try {
+    configure('defer', require('rsvp').defer);
+  } catch (e) {}
+}
+
 
 exports.configure = configure;
 exports.validator = validator;
 exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
-},{"./lgtm/config":3,"./lgtm/helpers/core":4,"./lgtm/object_validator":5,"./lgtm/validator_builder":7}],3:[function(require,module,exports){
+},{"./lgtm/config":3,"./lgtm/helpers/core":4,"./lgtm/object_validator":5,"./lgtm/validator_builder":7,"rsvp":9}],3:[function(require,module,exports){
 "use strict";
 var config = {};
 
