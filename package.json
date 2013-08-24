@@ -2,7 +2,7 @@
   "name": "lgtm",
   "version": "0.0.1",
   "description": "Simple JavaScript validation for objects.",
-  "main": "dist/commonjs/lgtm.js",
+  "main": "dist/lgtm.js",
   "scripts": {
     "test": "grunt test",
     "prepublish": "grunt test"
