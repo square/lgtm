@@ -4,6 +4,7 @@
   "main": "dist/lgtm.js",
   "ignore": [
     "**/.*",
+    "dist/commonjs",
     "node_modules",
     "bower_components",
     "src",
