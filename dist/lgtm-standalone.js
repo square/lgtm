@@ -487,6 +487,10 @@ ValidatorBuilder.prototype = {
     var message      = dependencies.pop();
     var predicate    = dependencies.pop();
 
+    if (typeof message === 'function' && typeof predicate === 'undefined') {
+      throw new Error('missing expected argument `message` after predicate function');
+    }
+
     if (dependencies.length === 0) {
       dependencies = [this._attr];
     }
@@ -609,6 +613,7 @@ var Promise = require("./rsvp/promise").Promise;
 var denodeify = require("./rsvp/node").denodeify;
 var all = require("./rsvp/all").all;
 var hash = require("./rsvp/hash").hash;
+var rethrow = require("./rsvp/rethrow").rethrow;
 var defer = require("./rsvp/defer").defer;
 var config = require("./rsvp/config").config;
 var resolve = require("./rsvp/resolve").resolve;
@@ -623,12 +628,13 @@ exports.Promise = Promise;
 exports.EventTarget = EventTarget;
 exports.all = all;
 exports.hash = hash;
+exports.rethrow = rethrow;
 exports.defer = defer;
 exports.denodeify = denodeify;
 exports.configure = configure;
 exports.resolve = resolve;
 exports.reject = reject;
-},{"./rsvp/all":10,"./rsvp/config":12,"./rsvp/defer":13,"./rsvp/events":14,"./rsvp/hash":15,"./rsvp/node":16,"./rsvp/promise":17,"./rsvp/reject":18,"./rsvp/resolve":19}],10:[function(require,module,exports){
+},{"./rsvp/all":10,"./rsvp/config":12,"./rsvp/defer":13,"./rsvp/events":14,"./rsvp/hash":15,"./rsvp/node":16,"./rsvp/promise":17,"./rsvp/reject":18,"./rsvp/resolve":19,"./rsvp/rethrow":20}],10:[function(require,module,exports){
 "use strict";
 var Promise = require("./promise").Promise;
 /* global toString */
@@ -675,10 +681,11 @@ function all(promises) {
 
 exports.all = all;
 },{"./promise":17}],11:[function(require,module,exports){
-var process=require("__browserify_process");"use strict";
+var process=require("__browserify_process"),global=self;"use strict";
 var browserGlobal = (typeof window !== 'undefined') ? window : {};
 var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
 var async;
+var local = (typeof global !== 'undefined') ? global : this;
 
 // old node
 function useNextTick() {
@@ -729,7 +736,7 @@ function useMutationObserver() {
 
 function useSetTimeout() {
   return function(callback, arg) {
-    setTimeout(function() {
+    local.setTimeout(function() {
       callback(arg);
     }, 1);
   };
@@ -1007,10 +1014,6 @@ var Promise = function(resolver) {
     reject(promise, value);
   };
 
-  this.on('promise:resolved', function(event) {
-    this.trigger('success', { detail: event.detail });
-  }, this);
-
   this.on('promise:failed', function(event) {
     this.trigger('error', { detail: event.detail });
   }, this);
@@ -1094,6 +1097,10 @@ Promise.prototype = {
     });
 
     return thenPromise;
+  },
+
+  fail: function(fail) {
+    return this.then(null, fail);
   }
 };
 
@@ -1189,6 +1196,19 @@ function resolve(thenable) {
 
 
 exports.resolve = resolve;
-},{"./promise":17}]},{},[1])(1)
+},{"./promise":17}],20:[function(require,module,exports){
+var global=self;"use strict";
+var local = (typeof global === "undefined") ? this : global;
+
+function rethrow(reason) {
+  local.setTimeout(function() {
+    throw reason;
+  });
+  throw reason;
+}
+
+
+exports.rethrow = rethrow;
+},{}]},{},[1])(1)
 });
 ;

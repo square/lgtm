@@ -41,6 +41,10 @@ ValidatorBuilder.prototype = {
     var message      = dependencies.pop();
     var predicate    = dependencies.pop();
 
+    if (typeof message === 'function' && typeof predicate === 'undefined') {
+      throw new Error('missing expected argument `message` after predicate function');
+    }
+
     if (dependencies.length === 0) {
       dependencies = [this._attr];
     }
