@@ -60,6 +60,13 @@ module.exports = config;
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
 
+/**
+ * Checks that the given value is present. That is, whether it is a
+ * non-whitespace string, non-null, and non-undefined.
+ *
+ * @param {object} value
+ * @return {boolean}
+ */
 function present(value) {
   if (typeof value === 'string') {
     value = value.trim();
@@ -68,6 +75,13 @@ function present(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
+/**
+ * Checks that the given value is an email address. Strings will be trimmed
+ * before checking.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
 function checkEmail(value) {
   if (typeof value === 'string') {
     value = value.trim();
@@ -78,6 +92,13 @@ function checkEmail(value) {
   return regexp.test(value);
 }
 
+/**
+ * Generates a function that checks that its argument contains at least
+ * minLength characters.
+ *
+ * @param {number} minLength
+ * @return {function(string)}
+ */
 function checkMinLength(minLength) {
   if (minLength === null || minLength === undefined) {
     throw new Error('must specify a min length')
@@ -92,6 +113,13 @@ function checkMinLength(minLength) {
   };
 }
 
+/**
+ * Generates a function that checks that its argument contains at most
+ * maxLength characters.
+ *
+ * @param {number} maxLength
+ * @return {function(string)}
+ */
 function checkMaxLength(maxLength) {
   if (maxLength === null || maxLength === undefined) {
     throw new Error('must specify a max length')
@@ -106,6 +134,9 @@ function checkMaxLength(maxLength) {
   };
 }
 
+/**
+ * Registers the core helpers with ValidatorBuilder.
+ */
 function register() {
   ValidatorBuilder.registerHelper('required', function(message) {
     this.using(present, message);
@@ -146,156 +177,237 @@ var forEach = __dependency1__.forEach;
 var get = __dependency1__.get;
 var uniq = __dependency1__.uniq;
 
+/**
+ * Represents validations for named object attributes.
+ *
+ * @constructor
+ */
 function ObjectValidator() {
   this._validations  = {};
   this._dependencies = {};
 }
 
-ObjectValidator.prototype = {
-  _validations  : null,
-  _dependencies : null,
+/**
+ * Maps attribute names to a list of predicate/message pairs.
+ *
+ * @type {object}
+ * @private
+ */
+ObjectValidator.prototype._validations = null;
 
-  addValidation: function(attr, fn, message) {
-    var list = this._validations[attr];
+/**
+ * Maps attribute names to a list of dependent attributes.
+ *
+ * @type {object}
+ * @private
+ */
+ObjectValidator.prototype._dependencies = null;
 
-    if (!list) {
-      list = this._validations[attr] = [];
-    }
+/**
+ * Add a validation for the given attribute.
+ *
+ * @param {string} attr
+ * @param {function(object, string, object)} fn
+ * @param {object} message
+ */
+ObjectValidator.prototype.addValidation = function(attr, fn, message) {
+  var list = this._validations[attr];
 
-    list.push([fn, message]);
-  },
-
-  // e.g. spouseName (dependentAttribute) depends on maritalStatus (parentAttribute)
-  addDependentsFor: function(/* parentAttribute, ...dependentAttributes */) {
-    var dependentAttributes = [].slice.apply(arguments);
-    var parentAttribute = dependentAttributes.shift();
-
-    var dependentsForParent = this._dependencies[parentAttribute];
-
-    if (!dependentsForParent) {
-      dependentsForParent = this._dependencies[parentAttribute] = [];
-    }
-
-    for (var i = 0; i < dependentAttributes.length; i++) {
-      var attr = dependentAttributes[i];
-      if (!contains(dependentsForParent, attr)) {
-        dependentsForParent.push(attr)
-      }
-    }
-  },
-
-  attributes: function() {
-    return uniq(
-      keys(this._validations).concat(
-        keys(this._dependencies)
-      )
-    );
-  },
-
-  validate: function(/* object, attributes..., callback */) {
-    var attributes = [].slice.apply(arguments);
-    var object = attributes.shift();
-    var callback = attributes.pop();
-    var self = this;
-
-    if (typeof callback === 'string') {
-      attributes.push(callback);
-      callback = null;
-    }
-
-    if (attributes.length === 0) {
-      attributes = keys(this._validations);
-    }
-
-    var validationPromises = [];
-    for (var i = 0; i < attributes.length; i++) {
-      var attr = attributes[i];
-      validationPromises = validationPromises.concat(this._validateAttribute(object, attr));
-    }
-
-    var promise = all(validationPromises).then(
-      function(results) {
-        results = self._collectResults(results);
-        if (callback) {
-          callback(null, results);
-        }
-        return results;
-      },
-      function(err) {
-        if (callback) {
-          callback(err);
-        }
-        throw err;
-      });
-
-    if (!callback) {
-      return promise;
-    }
-  },
-
-  _validateAttribute: function(object, attr) {
-    var value       = get(object, attr);
-    var validations = this._validations[attr];
-    var results     = [];
-
-    if (validations) {
-      validations.forEach(function(pair) {
-        var fn      = pair[0];
-        var message = pair[1];
-
-        var promise = resolve()
-          .then(function() {
-            return fn(value, attr, object);
-          })
-          .then(function(isValid) {
-            return [ attr, isValid ? null : message ];
-          });
-
-        results.push(promise);
-      });
-    } else if (contains(this.attributes(), attr)) {
-      results.push([ attr, null ]);
-    }
-
-    var dependents = this._getDependentsFor(attr);
-    for (var i = 0; i < dependents.length; i++) {
-      var dependent = dependents[i];
-      results = results.concat(this._validateAttribute(object, dependent));
-    }
-
-    return results;
-  },
-
-  _collectResults: function(results) {
-    var result = {
-      valid  : true,
-      errors : {}
-    };
-
-    for (var i = 0; i < results.length; i++) {
-      if (!results[i]){ continue; }
-
-      var attr = results[i][0];
-      var message = results[i][1];
-      var messages = result.errors[attr];
-
-      if (!messages) {
-        messages = result.errors[attr] = [];
-      }
-
-      if (message) {
-        messages.push(message);
-        result.valid = false;
-      }
-    }
-
-    return result;
-  },
-
-  // e.g. getDependents("maritalStatus")  # => ["spouseName"]
-  _getDependentsFor: function(parentAttribute) {
-    return (this._dependencies[parentAttribute] || []).slice();
+  if (!list) {
+    list = this._validations[attr] = [];
   }
+
+  list.push([fn, message]);
+};
+
+/**
+ * Register dependents of the given attribute.
+ *
+ * @param {string} parentAttribute
+ * @param {string...} dependentAttributes
+ */
+ObjectValidator.prototype.addDependentsFor = function(/* parentAttribute, ...dependentAttributes */) {
+  var dependentAttributes = [].slice.apply(arguments);
+  var parentAttribute = dependentAttributes.shift();
+
+  var dependentsForParent = this._dependencies[parentAttribute];
+
+  if (!dependentsForParent) {
+    dependentsForParent = this._dependencies[parentAttribute] = [];
+  }
+
+  for (var i = 0; i < dependentAttributes.length; i++) {
+    var attr = dependentAttributes[i];
+    if (!contains(dependentsForParent, attr)) {
+      dependentsForParent.push(attr)
+    }
+  }
+};
+
+/**
+ * Retrieves the list of attributes this validator knows about. This includes
+ * all attributes for which there is a validation plus all the attributes which
+ * are dependended on by other attributes.
+ *
+ * @return {array<string>}
+ */
+ObjectValidator.prototype.attributes = function() {
+  return uniq(
+    keys(this._validations).concat(
+      keys(this._dependencies)
+    )
+  );
+};
+
+/**
+ * Validates the given object. By default all attributes will be validated, but
+ * you can specify the attributes you wish to validate by passing additional
+ * attribute names as arguments.
+ *
+ *    validator.validate(obj, 'name', 'age');
+ *
+ * If you pass a callback function it will be called with an error, if any
+ * occurred while validating, followed by the validation results.
+ *
+ *    validator.validate(obj, function(error, results){});
+ *
+ * If no callback function is given then a promise will be returned that will
+ * resolve to the validation result or, in the event of an error while
+ * validating, will be rejected with the exception that was thrown.
+ *
+ *    validator.validate(obj).then(function(result){}, function(error){});
+ *
+ * @param {object} object
+ * @param {string...} attributes
+ * @param {function(object, object)} callback
+ * @return {object}
+ */
+ObjectValidator.prototype.validate = function(/* object, attributes..., callback */) {
+  var attributes = [].slice.apply(arguments);
+  var object = attributes.shift();
+  var callback = attributes.pop();
+  var self = this;
+
+  if (typeof callback === 'string') {
+    attributes.push(callback);
+    callback = null;
+  }
+
+  if (attributes.length === 0) {
+    attributes = keys(this._validations);
+  }
+
+  var validationPromises = [];
+  for (var i = 0; i < attributes.length; i++) {
+    var attr = attributes[i];
+    validationPromises = validationPromises.concat(this._validateAttribute(object, attr));
+  }
+
+  var promise = all(validationPromises).then(
+    function(results) {
+      results = self._collectResults(results);
+      if (callback) {
+        callback(null, results);
+      }
+      return results;
+    },
+    function(err) {
+      if (callback) {
+        callback(err);
+      }
+      throw err;
+    });
+
+  if (!callback) {
+    return promise;
+  }
+};
+
+/**
+ * Runs all validations for a particular attribute and all of its dependents on
+ * the given object. Returns an array of promises, one entry for each
+ * validation, resolving to attribute name/message pairs, where the message is
+ * null if validation passed or there were no validations for an attribute.
+ *
+ * @param {object} object
+ * @param {string} attr
+ * @return {array}
+ * @private
+ */
+ObjectValidator.prototype._validateAttribute = function(object, attr) {
+  var value       = get(object, attr);
+  var validations = this._validations[attr];
+  var results     = [];
+
+  if (validations) {
+    forEach(validations, function(pair) {
+      var fn      = pair[0];
+      var message = pair[1];
+
+      var promise = resolve()
+        .then(function() {
+          return fn(value, attr, object);
+        })
+        .then(function(isValid) {
+          return [ attr, isValid ? null : message ];
+        });
+
+      results.push(promise);
+    });
+  } else if (contains(this.attributes(), attr)) {
+    results.push([ attr, null ]);
+  }
+
+  var dependents = this._getDependentsFor(attr);
+  for (var i = 0; i < dependents.length; i++) {
+    var dependent = dependents[i];
+    results = results.concat(this._validateAttribute(object, dependent));
+  }
+
+  return results;
+};
+
+/**
+ * Helper method to build the final result based on the individual validation
+ * results for each validated attribute.
+ *
+ * @param {array} results
+ * @return {object}
+ */
+ObjectValidator.prototype._collectResults = function(results) {
+  var result = {
+    valid  : true,
+    errors : {}
+  };
+
+  for (var i = 0; i < results.length; i++) {
+    if (!results[i]){ continue; }
+
+    var attr = results[i][0];
+    var message = results[i][1];
+    var messages = result.errors[attr];
+
+    if (!messages) {
+      messages = result.errors[attr] = [];
+    }
+
+    if (message) {
+      messages.push(message);
+      result.valid = false;
+    }
+  }
+
+  return result;
+};
+
+/**
+ * Gets all attributes dependent on the given attribute.
+ *
+ * @param {string} parentAttribute
+ * @return {array<string>}
+ */
+ObjectValidator.prototype._getDependentsFor = function(parentAttribute) {
+  return (this._dependencies[parentAttribute] || []).slice();
 };
 
 
@@ -308,6 +420,12 @@ var config = require("./config");
  * Iteration
  */
 
+/**
+ * Iterates over the given object's entries using the given iterator.
+ *
+ * @param {object|array} iterable
+ * @param {function(object, string|number)} iterator
+ */
 function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
     iterable.forEach(iterator);
@@ -325,6 +443,12 @@ function forEach(iterable, iterator) {
   }
 }
 
+/**
+ * Returns all the keys this object has not on its prototype.
+ *
+ * @param {object} object
+ * @return {array<string>}
+ */
 function keys(object) {
   if (Object.getOwnPropertyNames) {
     return Object.getOwnPropertyNames(object);
@@ -343,6 +467,16 @@ function keys(object) {
  * Property access
  */
 
+/**
+ * Gets the given property from the given object. If the object has a method
+ * named "get" then it will be used to retrieve the value, otherwise direct
+ * property access will be used. If object is null or undefined then undefined
+ * will be returned.
+ *
+ * @param {object} object
+ * @param {string} property
+ * @return {object}
+ */
 function get(object, property) {
   if (object === null || object === undefined) {
     return;
@@ -353,6 +487,13 @@ function get(object, property) {
   }
 }
 
+/**
+ * Get a list of property values from the given object with the given names.
+ *
+ * @param {object} object
+ * @param {array<string>} properties
+ * @return {array<object>}
+ */
 function getProperties(object, properties) {
   return properties.map(function(prop) {
     return get(object, prop);
@@ -365,10 +506,24 @@ function getProperties(object, properties) {
  * Array manipulation
  */
 
+/**
+ * Determines whether the given array contains the given object.
+ *
+ * @param {array} array
+ * @param {object} object
+ * @return {boolean}
+ */
 function contains(array, object) {
   return array.indexOf(object) > -1;
 }
 
+/**
+ * Returns an array with duplicate values in the given array removed. Only the
+ * first instance of any value will be kept.
+ *
+ * @param {array} array
+ * @return {array}
+ */
 function uniq(array) {
   var result = [];
 
@@ -388,19 +543,34 @@ function uniq(array) {
  * Promises
  */
 
-function resolve(thenable) {
+/**
+ * Generates a promise resolving to the given object or, if the object is
+ * itself a promise, resolving to the final value of that promise.
+ *
+ * @param {object} promiseOrValue
+ * @return {object}
+ */
+function resolve(promiseOrValue) {
   var deferred = config.defer();
-  deferred.resolve(thenable);
+  deferred.resolve(promiseOrValue);
   return deferred.promise;
 }
 
-function all(thenables) {
-  if (thenables.length === 0) {
+/**
+ * Generates a promise that resolves to an array of values. Any non-promises
+ * among the given array will be used as-is, and any promises among the given
+ * array will be replaced by their final resolved value.
+ *
+ * @param {array<object>} promisesOrValues
+ * @return {object}
+ */
+function all(promisesOrValues) {
+  if (promisesOrValues.length === 0) {
     return resolve([]);
   }
 
   var results = [];
-  var remaining = thenables.length;
+  var remaining = promisesOrValues.length;
   var deferred = config.defer();
 
   function resolver(index) {
@@ -412,9 +582,9 @@ function all(thenables) {
     };
   }
 
-  for (var i = 0; i < thenables.length; i++) {
-    var thenable = thenables[i];
-    resolve(thenable).then(resolver(i), deferred.reject);
+  for (var i = 0; i < promisesOrValues.length; i++) {
+    var promiseOrValue = promisesOrValues[i];
+    resolve(promiseOrValue).then(resolver(i), deferred.reject);
   }
 
   return deferred.promise;
@@ -436,107 +606,170 @@ var __dependency1__ = require("./utils");
 var getProperties = __dependency1__.getProperties;
 var resolve = __dependency1__.resolve;
 
+/**
+ * This object builds an ObjectValidator using the builder pattern. The result
+ * is intended to read more or less as a sentence – a description of what the
+ * validator will do.
+ *
+ * @constructor
+ */
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();
 }
 
-ValidatorBuilder.prototype = {
-  _attr      : null,
-  _condition : null,
-  _validator : null,
+/**
+ * The current validated attribute – the last value passed to validates().
+ *
+ * @type {string}
+ * @private
+ */
+ValidatorBuilder.prototype._attr = null;
 
-  validates: function(attr) {
-    this._attr = attr;
-    this._condition = null;
-    return this;
-  },
+/**
+ * The current condition function – the last value passed to when().
+ *
+ * @type {function}
+ * @private
+ */
+ValidatorBuilder.prototype._condition = null;
 
-  when: function(/* ...dependencies, condition */) {
-    var dependencies = [].slice.apply(arguments);
-    var condition    = dependencies.pop();
+/**
+ * The ObjectValidator being built. Returned by build().
+ *
+ * @type {ObjectValidator}
+ * @private
+ */
+ValidatorBuilder.prototype._validator = null;
 
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-
-    for (var i = 0; i < dependencies.length; i++) {
-      var dependency = dependencies[i];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-
-    this._condition = condition;
-    this._conditionDependencies = dependencies;
-    return this;
-  },
-
-  using: function(/* ...dependencies, predicate, message */) {
-    var dependencies = [].slice.apply(arguments);
-    var message      = dependencies.pop();
-    var predicate    = dependencies.pop();
-
-    if (typeof message === 'function' && typeof predicate === 'undefined') {
-      throw new Error('missing expected argument `message` after predicate function');
-    }
-
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-
-    for (var i = 0; i < dependencies.length; i++) {
-      var dependency = dependencies[i];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-
-    function validation(value, attr, object) {
-      var properties = getProperties(object, dependencies);
-      return predicate.apply(null, properties.concat([attr, object]));
-    }
-
-    var condition = this._condition;
-    var conditionDependencies = this._conditionDependencies;
-
-    function validationWithCondition(value, attr, object) {
-      var properties = getProperties(object, conditionDependencies);
-      var conditionResult = condition.apply(null, properties.concat([attr, object]));
-      return resolve(conditionResult).then(function(result) {
-        if (result) {
-          // condition resolved to a truthy value, so continue with validation
-          return validation(value, attr, object);
-        } else {
-          // condition resolved to a falsy value, so just return as valid
-          return true;
-        }
-      });
-    }
-
-    this._validator.addValidation(
-      this._attr,
-      condition ? validationWithCondition : validation,
-      message
-    );
-    return this;
-  },
-
-  build: function() {
-    return this._validator;
-  }
+/**
+ * Configures the builder to start building validation for the given attribute.
+ *
+ * @param {string} attr
+ * @return {ValidatorBuilder}
+ */
+ValidatorBuilder.prototype.validates = function(attr) {
+  this._attr = attr;
+  this._condition = null;
+  return this;
 };
 
+/**
+ * Configures the builder to make subsequent validations for the current
+ * attribute conditional based on the given predicate function.
+ *
+ * @param {string...} dependencies Attributes this condition depends on.
+ * @param {function} condition The condition used to gate validations.
+ * @return {ValidatorBuilder}
+ */
+ValidatorBuilder.prototype.when = function(/* ...dependencies, condition */) {
+  var dependencies = [].slice.apply(arguments);
+  var condition    = dependencies.pop();
+
+  if (dependencies.length === 0) {
+    dependencies = [this._attr];
+  }
+
+  for (var i = 0; i < dependencies.length; i++) {
+    var dependency = dependencies[i];
+    if (dependency !== this._attr) {
+      this._validator.addDependentsFor(dependency, this._attr);
+    }
+  }
+
+  this._condition = condition;
+  this._conditionDependencies = dependencies;
+  return this;
+};
+
+/**
+ * Register a validation for the current attribute.
+ *
+ * @param {string...} dependencies Attributes this validation depends on.
+ * @param {function} predicate The function to validate the current attribute.
+ * @param {object} message A message, usually a string, to pass when invalid.
+ * @return {ValidatorBuilder}
+ */
+ValidatorBuilder.prototype.using = function(/* ...dependencies, predicate, message */) {
+  var dependencies = [].slice.apply(arguments);
+  var message      = dependencies.pop();
+  var predicate    = dependencies.pop();
+
+  if (typeof message === 'function' && typeof predicate === 'undefined') {
+    throw new Error('missing expected argument `message` after predicate function');
+  }
+
+  if (dependencies.length === 0) {
+    dependencies = [this._attr];
+  }
+
+  for (var i = 0; i < dependencies.length; i++) {
+    var dependency = dependencies[i];
+    if (dependency !== this._attr) {
+      this._validator.addDependentsFor(dependency, this._attr);
+    }
+  }
+
+  function validation(value, attr, object) {
+    var properties = getProperties(object, dependencies);
+    return predicate.apply(null, properties.concat([attr, object]));
+  }
+
+  var condition = this._condition;
+  var conditionDependencies = this._conditionDependencies;
+
+  function validationWithCondition(value, attr, object) {
+    var properties = getProperties(object, conditionDependencies);
+    var conditionResult = condition.apply(null, properties.concat([attr, object]));
+    return resolve(conditionResult).then(function(result) {
+      if (result) {
+        // condition resolved to a truthy value, so continue with validation
+        return validation(value, attr, object);
+      } else {
+        // condition resolved to a falsy value, so just return as valid
+        return true;
+      }
+    });
+  }
+
+  this._validator.addValidation(
+    this._attr,
+    condition ? validationWithCondition : validation,
+    message
+  );
+  return this;
+};
+
+/**
+ * Build the ObjectValidator for use with validation.
+ *
+ * @return {ObjectValidator}
+ */
+ValidatorBuilder.prototype.build = function() {
+  return this._validator;
+};
+
+/**
+ * Registers a helper to extend the DSL offered by ValidatorBuilder.
+ *
+ * @param {string} name The name to use for the DSL method.
+ * @param {function} fn A callback for when the helper is used.
+ */
 ValidatorBuilder.registerHelper = function(name, fn) {
   this.prototype[name] = function() {
     fn.apply(this, arguments);
     return this;
   };
-  return null;
 };
 
+/**
+ * Unregisters an existing DSL helper. Existing ObjectValidators built using
+ * the helper will continue to function, but new ValidatorBuilder instances
+ * will not have the helper.
+ *
+ * @param {string} name
+ */
 ValidatorBuilder.unregisterHelper = function(name) {
   delete this.prototype[name];
-  return null;
 };
 
 

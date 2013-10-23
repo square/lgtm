@@ -1,6 +1,13 @@
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
 
+/**
+ * Checks that the given value is present. That is, whether it is a
+ * non-whitespace string, non-null, and non-undefined.
+ *
+ * @param {object} value
+ * @return {boolean}
+ */
 function present(value) {
   if (typeof value === 'string') {
     value = value.trim();
@@ -9,6 +16,13 @@ function present(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
+/**
+ * Checks that the given value is an email address. Strings will be trimmed
+ * before checking.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
 function checkEmail(value) {
   if (typeof value === 'string') {
     value = value.trim();
@@ -19,6 +33,13 @@ function checkEmail(value) {
   return regexp.test(value);
 }
 
+/**
+ * Generates a function that checks that its argument contains at least
+ * minLength characters.
+ *
+ * @param {number} minLength
+ * @return {function(string)}
+ */
 function checkMinLength(minLength) {
   if (minLength === null || minLength === undefined) {
     throw new Error('must specify a min length')
@@ -33,6 +54,13 @@ function checkMinLength(minLength) {
   };
 }
 
+/**
+ * Generates a function that checks that its argument contains at most
+ * maxLength characters.
+ *
+ * @param {number} maxLength
+ * @return {function(string)}
+ */
 function checkMaxLength(maxLength) {
   if (maxLength === null || maxLength === undefined) {
     throw new Error('must specify a max length')
@@ -47,6 +75,9 @@ function checkMaxLength(maxLength) {
   };
 }
 
+/**
+ * Registers the core helpers with ValidatorBuilder.
+ */
 function register() {
   ValidatorBuilder.registerHelper('required', function(message) {
     this.using(present, message);
