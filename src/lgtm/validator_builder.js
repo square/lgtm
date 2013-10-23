@@ -150,7 +150,7 @@ ValidatorBuilder.prototype.build = function() {
  * @param {function} fn A callback for when the helper is used.
  */
 ValidatorBuilder.registerHelper = function(name, fn) {
-  this.prototype[name] = function() {
+  ValidatorBuilder.prototype[name] = function() {
     fn.apply(this, arguments);
     return this;
   };
@@ -164,7 +164,7 @@ ValidatorBuilder.registerHelper = function(name, fn) {
  * @param {string} name
  */
 ValidatorBuilder.unregisterHelper = function(name) {
-  delete this.prototype[name];
+  delete ValidatorBuilder.prototype[name];
 };
 
 export default ValidatorBuilder;
