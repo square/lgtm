@@ -33,7 +33,8 @@ if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
 } else if (typeof require === 'function') {
   try {
-    configure('defer', require('rsvp').defer);
+    var rsvpSoBrowserifyCannotSeeIt = 'rsvp';
+    configure('defer', require(rsvpSoBrowserifyCannotSeeIt).defer);
   } catch (e) {}
 }
 

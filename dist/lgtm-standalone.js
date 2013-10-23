@@ -53,7 +53,8 @@ if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
 } else if (typeof require === 'function') {
   try {
-    configure('defer', require('rsvp').defer);
+    var rsvpSoBrowserifyCannotSeeIt = 'rsvp';
+    configure('defer', require(rsvpSoBrowserifyCannotSeeIt).defer);
   } catch (e) {}
 }
 
@@ -62,9 +63,14 @@ exports.configure = configure;
 exports.validator = validator;
 exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
-},{"./lgtm/config":3,"./lgtm/helpers/core":4,"./lgtm/object_validator":5,"./lgtm/validator_builder":7,"rsvp":9}],3:[function(require,module,exports){
+},{"./lgtm/config":3,"./lgtm/helpers/core":4,"./lgtm/object_validator":5,"./lgtm/validator_builder":7}],3:[function(require,module,exports){
 "use strict";
 var config = {};
+
+config.defer = function() {
+  throw new Error('No "defer" function provided to LGTM! Please use lgtm-standalone.js or call LGTM.configure("defer", myDeferFunction) e.g. to use with Q, use Q.defer.');
+};
+
 
 module.exports = config;
 },{}],4:[function(require,module,exports){
