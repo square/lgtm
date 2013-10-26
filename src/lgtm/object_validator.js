@@ -14,7 +14,7 @@ function ObjectValidator() {
 /**
  * Maps attribute names to a list of predicate/message pairs.
  *
- * @type {object}
+ * @type {Object}
  * @private
  */
 ObjectValidator.prototype._validations = null;
@@ -22,7 +22,7 @@ ObjectValidator.prototype._validations = null;
 /**
  * Maps attribute names to a list of dependent attributes.
  *
- * @type {object}
+ * @type {Object}
  * @private
  */
 ObjectValidator.prototype._dependencies = null;
@@ -30,9 +30,9 @@ ObjectValidator.prototype._dependencies = null;
 /**
  * Add a validation for the given attribute.
  *
- * @param {string} attr
- * @param {function(object, string, object)} fn
- * @param {object} message
+ * @param {String} attr
+ * @param {function(Object, String, Object)} fn
+ * @param {Object} message
  */
 ObjectValidator.prototype.addValidation = function(attr, fn, message) {
   var list = this._validations[attr];
@@ -47,8 +47,8 @@ ObjectValidator.prototype.addValidation = function(attr, fn, message) {
 /**
  * Register dependents of the given attribute.
  *
- * @param {string} parentAttribute
- * @param {string...} dependentAttributes
+ * @param {String} parentAttribute
+ * @param {...[String]} dependentAttributes
  */
 ObjectValidator.prototype.addDependentsFor = function(/* parentAttribute, ...dependentAttributes */) {
   var dependentAttributes = [].slice.apply(arguments);
@@ -73,7 +73,7 @@ ObjectValidator.prototype.addDependentsFor = function(/* parentAttribute, ...dep
  * all attributes for which there is a validation plus all the attributes which
  * are dependended on by other attributes.
  *
- * @return {array<string>}
+ * @return {Array.<String>}
  */
 ObjectValidator.prototype.attributes = function() {
   return uniq(
@@ -101,10 +101,10 @@ ObjectValidator.prototype.attributes = function() {
  *
  *    validator.validate(obj).then(function(result){}, function(error){});
  *
- * @param {object} object
- * @param {string...} attributes
- * @param {function(object, object)} callback
- * @return {object}
+ * @param {Object} object
+ * @param {...[String]} attributes
+ * @param {function(Object, Object)} callback
+ * @return {Object}
  */
 ObjectValidator.prototype.validate = function(/* object, attributes..., callback */) {
   var attributes = [].slice.apply(arguments);
@@ -153,9 +153,9 @@ ObjectValidator.prototype.validate = function(/* object, attributes..., callback
  * validation, resolving to attribute name/message pairs, where the message is
  * null if validation passed or there were no validations for an attribute.
  *
- * @param {object} object
- * @param {string} attr
- * @return {array}
+ * @param {Object} object
+ * @param {String} attr
+ * @return {Array.<*>}
  * @private
  */
 ObjectValidator.prototype._validateAttribute = function(object, attr) {
@@ -195,8 +195,8 @@ ObjectValidator.prototype._validateAttribute = function(object, attr) {
  * Helper method to build the final result based on the individual validation
  * results for each validated attribute.
  *
- * @param {array} results
- * @return {object}
+ * @param {Array.<*>} results
+ * @return {Object}
  */
 ObjectValidator.prototype._collectResults = function(results) {
   var result = {
@@ -227,8 +227,8 @@ ObjectValidator.prototype._collectResults = function(results) {
 /**
  * Gets all attributes dependent on the given attribute.
  *
- * @param {string} parentAttribute
- * @return {array<string>}
+ * @param {String} parentAttribute
+ * @return {Array.<String>}
  */
 ObjectValidator.prototype._getDependentsFor = function(parentAttribute) {
   return (this._dependencies[parentAttribute] || []).slice();

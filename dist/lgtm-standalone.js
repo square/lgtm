@@ -207,7 +207,7 @@ function ObjectValidator() {
 /**
  * Maps attribute names to a list of predicate/message pairs.
  *
- * @type {object}
+ * @type {Object}
  * @private
  */
 ObjectValidator.prototype._validations = null;
@@ -215,7 +215,7 @@ ObjectValidator.prototype._validations = null;
 /**
  * Maps attribute names to a list of dependent attributes.
  *
- * @type {object}
+ * @type {Object}
  * @private
  */
 ObjectValidator.prototype._dependencies = null;
@@ -223,9 +223,9 @@ ObjectValidator.prototype._dependencies = null;
 /**
  * Add a validation for the given attribute.
  *
- * @param {string} attr
- * @param {function(object, string, object)} fn
- * @param {object} message
+ * @param {String} attr
+ * @param {function(Object, String, Object)} fn
+ * @param {Object} message
  */
 ObjectValidator.prototype.addValidation = function(attr, fn, message) {
   var list = this._validations[attr];
@@ -240,8 +240,8 @@ ObjectValidator.prototype.addValidation = function(attr, fn, message) {
 /**
  * Register dependents of the given attribute.
  *
- * @param {string} parentAttribute
- * @param {string...} dependentAttributes
+ * @param {String} parentAttribute
+ * @param {...[String]} dependentAttributes
  */
 ObjectValidator.prototype.addDependentsFor = function(/* parentAttribute, ...dependentAttributes */) {
   var dependentAttributes = [].slice.apply(arguments);
@@ -266,7 +266,7 @@ ObjectValidator.prototype.addDependentsFor = function(/* parentAttribute, ...dep
  * all attributes for which there is a validation plus all the attributes which
  * are dependended on by other attributes.
  *
- * @return {array<string>}
+ * @return {Array.<String>}
  */
 ObjectValidator.prototype.attributes = function() {
   return uniq(
@@ -294,10 +294,10 @@ ObjectValidator.prototype.attributes = function() {
  *
  *    validator.validate(obj).then(function(result){}, function(error){});
  *
- * @param {object} object
- * @param {string...} attributes
- * @param {function(object, object)} callback
- * @return {object}
+ * @param {Object} object
+ * @param {...[String]} attributes
+ * @param {function(Object, Object)} callback
+ * @return {Object}
  */
 ObjectValidator.prototype.validate = function(/* object, attributes..., callback */) {
   var attributes = [].slice.apply(arguments);
@@ -346,9 +346,9 @@ ObjectValidator.prototype.validate = function(/* object, attributes..., callback
  * validation, resolving to attribute name/message pairs, where the message is
  * null if validation passed or there were no validations for an attribute.
  *
- * @param {object} object
- * @param {string} attr
- * @return {array}
+ * @param {Object} object
+ * @param {String} attr
+ * @return {Array.<*>}
  * @private
  */
 ObjectValidator.prototype._validateAttribute = function(object, attr) {
@@ -388,8 +388,8 @@ ObjectValidator.prototype._validateAttribute = function(object, attr) {
  * Helper method to build the final result based on the individual validation
  * results for each validated attribute.
  *
- * @param {array} results
- * @return {object}
+ * @param {Array.<*>} results
+ * @return {Object}
  */
 ObjectValidator.prototype._collectResults = function(results) {
   var result = {
@@ -420,8 +420,8 @@ ObjectValidator.prototype._collectResults = function(results) {
 /**
  * Gets all attributes dependent on the given attribute.
  *
- * @param {string} parentAttribute
- * @return {array<string>}
+ * @param {String} parentAttribute
+ * @return {Array.<String>}
  */
 ObjectValidator.prototype._getDependentsFor = function(parentAttribute) {
   return (this._dependencies[parentAttribute] || []).slice();
@@ -440,8 +440,8 @@ var config = require("./config");
 /**
  * Iterates over the given object's entries using the given iterator.
  *
- * @param {object|array} iterable
- * @param {function(object, string|number)} iterator
+ * @param {(Object|Array.<*>)} iterable
+ * @param {function(Object, (String|Number))} iterator
  */
 function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
@@ -463,8 +463,8 @@ function forEach(iterable, iterator) {
 /**
  * Returns all the keys this object has not on its prototype.
  *
- * @param {object} object
- * @return {array<string>}
+ * @param {Object} object
+ * @return {Array.<String>}
  */
 function keys(object) {
   if (Object.getOwnPropertyNames) {
@@ -490,9 +490,9 @@ function keys(object) {
  * property access will be used. If object is null or undefined then undefined
  * will be returned.
  *
- * @param {object} object
- * @param {string} property
- * @return {object}
+ * @param {Object} object
+ * @param {String} property
+ * @return {Object}
  */
 function get(object, property) {
   if (object === null || object === undefined) {
@@ -507,9 +507,9 @@ function get(object, property) {
 /**
  * Get a list of property values from the given object with the given names.
  *
- * @param {object} object
- * @param {array<string>} properties
- * @return {array<object>}
+ * @param {Object} object
+ * @param {Array.<String>} properties
+ * @return {Array.<*>}
  */
 function getProperties(object, properties) {
   return properties.map(function(prop) {
@@ -526,9 +526,9 @@ function getProperties(object, properties) {
 /**
  * Determines whether the given array contains the given object.
  *
- * @param {array} array
- * @param {object} object
- * @return {boolean}
+ * @param {Array.<*>} array
+ * @param {*} object
+ * @return {Boolean}
  */
 function contains(array, object) {
   return array.indexOf(object) > -1;
@@ -538,8 +538,8 @@ function contains(array, object) {
  * Returns an array with duplicate values in the given array removed. Only the
  * first instance of any value will be kept.
  *
- * @param {array} array
- * @return {array}
+ * @param {Array.<*>} array
+ * @return {Array.<*>}
  */
 function uniq(array) {
   var result = [];
@@ -564,8 +564,8 @@ function uniq(array) {
  * Generates a promise resolving to the given object or, if the object is
  * itself a promise, resolving to the final value of that promise.
  *
- * @param {object} promiseOrValue
- * @return {object}
+ * @param {Object} promiseOrValue
+ * @return {Object}
  */
 function resolve(promiseOrValue) {
   var deferred = config.defer();
@@ -578,8 +578,8 @@ function resolve(promiseOrValue) {
  * among the given array will be used as-is, and any promises among the given
  * array will be replaced by their final resolved value.
  *
- * @param {array<object>} promisesOrValues
- * @return {object}
+ * @param {[*]} promisesOrValues
+ * @return {Object}
  */
 function all(promisesOrValues) {
   if (promisesOrValues.length === 0) {
@@ -637,7 +637,7 @@ function ValidatorBuilder() {
 /**
  * The current validated attribute – the last value passed to validates().
  *
- * @type {string}
+ * @type {String}
  * @private
  */
 ValidatorBuilder.prototype._attr = null;
@@ -645,7 +645,7 @@ ValidatorBuilder.prototype._attr = null;
 /**
  * The current condition function – the last value passed to when().
  *
- * @type {function}
+ * @type {function(...[*], String, Object)}
  * @private
  */
 ValidatorBuilder.prototype._condition = null;
@@ -661,7 +661,7 @@ ValidatorBuilder.prototype._validator = null;
 /**
  * Configures the builder to start building validation for the given attribute.
  *
- * @param {string} attr
+ * @param {String} attr
  * @return {ValidatorBuilder}
  */
 ValidatorBuilder.prototype.validates = function(attr) {
@@ -674,8 +674,8 @@ ValidatorBuilder.prototype.validates = function(attr) {
  * Configures the builder to make subsequent validations for the current
  * attribute conditional based on the given predicate function.
  *
- * @param {string...} dependencies Attributes this condition depends on.
- * @param {function} condition The condition used to gate validations.
+ * @param {...[String]} dependencies Attributes this condition depends on.
+ * @param {function(...[*], String, Object)} condition The condition used to gate validations.
  * @return {ValidatorBuilder}
  */
 ValidatorBuilder.prototype.when = function(/* ...dependencies, condition */) {
@@ -701,9 +701,9 @@ ValidatorBuilder.prototype.when = function(/* ...dependencies, condition */) {
 /**
  * Register a validation for the current attribute.
  *
- * @param {string...} dependencies Attributes this validation depends on.
- * @param {function} predicate The function to validate the current attribute.
- * @param {object} message A message, usually a string, to pass when invalid.
+ * @param {...[String]} dependencies Attributes this validation depends on.
+ * @param {function(...[*], String, Object)} predicate The function to validate the current attribute.
+ * @param {Object} message A message, usually a string, to pass when invalid.
  * @return {ValidatorBuilder}
  */
 ValidatorBuilder.prototype.using = function(/* ...dependencies, predicate, message */) {
@@ -768,8 +768,8 @@ ValidatorBuilder.prototype.build = function() {
 /**
  * Registers a helper to extend the DSL offered by ValidatorBuilder.
  *
- * @param {string} name The name to use for the DSL method.
- * @param {function} fn A callback for when the helper is used.
+ * @param {String} name The name to use for the DSL method.
+ * @param {function(...[*])} fn A callback for when the helper is used.
  */
 ValidatorBuilder.registerHelper = function(name, fn) {
   ValidatorBuilder.prototype[name] = function() {
@@ -783,7 +783,7 @@ ValidatorBuilder.registerHelper = function(name, fn) {
  * the helper will continue to function, but new ValidatorBuilder instances
  * will not have the helper.
  *
- * @param {string} name
+ * @param {String} name
  */
 ValidatorBuilder.unregisterHelper = function(name) {
   delete ValidatorBuilder.prototype[name];

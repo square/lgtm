@@ -8,8 +8,8 @@ var config = require("./config");
 /**
  * Iterates over the given object's entries using the given iterator.
  *
- * @param {object|array} iterable
- * @param {function(object, string|number)} iterator
+ * @param {(Object|Array.<*>)} iterable
+ * @param {function(Object, (String|Number))} iterator
  */
 function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
@@ -31,8 +31,8 @@ function forEach(iterable, iterator) {
 /**
  * Returns all the keys this object has not on its prototype.
  *
- * @param {object} object
- * @return {array<string>}
+ * @param {Object} object
+ * @return {Array.<String>}
  */
 function keys(object) {
   if (Object.getOwnPropertyNames) {
@@ -58,9 +58,9 @@ function keys(object) {
  * property access will be used. If object is null or undefined then undefined
  * will be returned.
  *
- * @param {object} object
- * @param {string} property
- * @return {object}
+ * @param {Object} object
+ * @param {String} property
+ * @return {Object}
  */
 function get(object, property) {
   if (object === null || object === undefined) {
@@ -75,9 +75,9 @@ function get(object, property) {
 /**
  * Get a list of property values from the given object with the given names.
  *
- * @param {object} object
- * @param {array<string>} properties
- * @return {array<object>}
+ * @param {Object} object
+ * @param {Array.<String>} properties
+ * @return {Array.<*>}
  */
 function getProperties(object, properties) {
   return properties.map(function(prop) {
@@ -94,9 +94,9 @@ function getProperties(object, properties) {
 /**
  * Determines whether the given array contains the given object.
  *
- * @param {array} array
- * @param {object} object
- * @return {boolean}
+ * @param {Array.<*>} array
+ * @param {*} object
+ * @return {Boolean}
  */
 function contains(array, object) {
   return array.indexOf(object) > -1;
@@ -106,8 +106,8 @@ function contains(array, object) {
  * Returns an array with duplicate values in the given array removed. Only the
  * first instance of any value will be kept.
  *
- * @param {array} array
- * @return {array}
+ * @param {Array.<*>} array
+ * @return {Array.<*>}
  */
 function uniq(array) {
   var result = [];
@@ -132,8 +132,8 @@ function uniq(array) {
  * Generates a promise resolving to the given object or, if the object is
  * itself a promise, resolving to the final value of that promise.
  *
- * @param {object} promiseOrValue
- * @return {object}
+ * @param {Object} promiseOrValue
+ * @return {Object}
  */
 function resolve(promiseOrValue) {
   var deferred = config.defer();
@@ -146,8 +146,8 @@ function resolve(promiseOrValue) {
  * among the given array will be used as-is, and any promises among the given
  * array will be replaced by their final resolved value.
  *
- * @param {array<object>} promisesOrValues
- * @return {object}
+ * @param {[*]} promisesOrValues
+ * @return {Object}
  */
 function all(promisesOrValues) {
   if (promisesOrValues.length === 0) {

@@ -15,7 +15,7 @@ function ValidatorBuilder() {
 /**
  * The current validated attribute – the last value passed to validates().
  *
- * @type {string}
+ * @type {String}
  * @private
  */
 ValidatorBuilder.prototype._attr = null;
@@ -23,7 +23,7 @@ ValidatorBuilder.prototype._attr = null;
 /**
  * The current condition function – the last value passed to when().
  *
- * @type {function}
+ * @type {function(...[*], String, Object)}
  * @private
  */
 ValidatorBuilder.prototype._condition = null;
@@ -39,7 +39,7 @@ ValidatorBuilder.prototype._validator = null;
 /**
  * Configures the builder to start building validation for the given attribute.
  *
- * @param {string} attr
+ * @param {String} attr
  * @return {ValidatorBuilder}
  */
 ValidatorBuilder.prototype.validates = function(attr) {
@@ -52,8 +52,8 @@ ValidatorBuilder.prototype.validates = function(attr) {
  * Configures the builder to make subsequent validations for the current
  * attribute conditional based on the given predicate function.
  *
- * @param {string...} dependencies Attributes this condition depends on.
- * @param {function} condition The condition used to gate validations.
+ * @param {...[String]} dependencies Attributes this condition depends on.
+ * @param {function(...[*], String, Object)} condition The condition used to gate validations.
  * @return {ValidatorBuilder}
  */
 ValidatorBuilder.prototype.when = function(/* ...dependencies, condition */) {
@@ -79,9 +79,9 @@ ValidatorBuilder.prototype.when = function(/* ...dependencies, condition */) {
 /**
  * Register a validation for the current attribute.
  *
- * @param {string...} dependencies Attributes this validation depends on.
- * @param {function} predicate The function to validate the current attribute.
- * @param {object} message A message, usually a string, to pass when invalid.
+ * @param {...[String]} dependencies Attributes this validation depends on.
+ * @param {function(...[*], String, Object)} predicate The function to validate the current attribute.
+ * @param {Object} message A message, usually a string, to pass when invalid.
  * @return {ValidatorBuilder}
  */
 ValidatorBuilder.prototype.using = function(/* ...dependencies, predicate, message */) {
@@ -146,8 +146,8 @@ ValidatorBuilder.prototype.build = function() {
 /**
  * Registers a helper to extend the DSL offered by ValidatorBuilder.
  *
- * @param {string} name The name to use for the DSL method.
- * @param {function} fn A callback for when the helper is used.
+ * @param {String} name The name to use for the DSL method.
+ * @param {function(...[*])} fn A callback for when the helper is used.
  */
 ValidatorBuilder.registerHelper = function(name, fn) {
   ValidatorBuilder.prototype[name] = function() {
@@ -161,7 +161,7 @@ ValidatorBuilder.registerHelper = function(name, fn) {
  * the helper will continue to function, but new ValidatorBuilder instances
  * will not have the helper.
  *
- * @param {string} name
+ * @param {String} name
  */
 ValidatorBuilder.unregisterHelper = function(name) {
   delete ValidatorBuilder.prototype[name];
