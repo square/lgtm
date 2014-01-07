@@ -30,6 +30,6 @@
     "grunt-browserify": "~1.2.0"
   },
   "dependencies": {
-    "rsvp": "~2.0.0"
+    "rsvp": "~3.0.3"
   }
 }
