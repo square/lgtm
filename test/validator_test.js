@@ -324,3 +324,48 @@ test('is used by #optional to prevent subsequent validations from firing when a 
   });
   stop();
 });
+
+test('may be used multiple times', function() {
+  var shouldValidate;
+  var v = validator()
+        .validates('email')
+          .optional() // this is a .when() call internally
+          .when(function(email) { return shouldValidate; })
+          .email("That's no email!")
+        .build();
+
+  // start off with the first .when() returning false, the second true
+  shouldValidate = true;
+  v.validate({ email: '' }).then(function(result) {
+    deepEqual(result, {
+      valid: true,
+      errors: {
+        email: []
+      }
+    }, 'subsequent .when() calls do not clobber previous ones');
+
+    // now make the first .when() return true, the second false
+    shouldValidate = false;
+    v.validate({ email: 'I am not an email' }).then(function(result) {
+      deepEqual(result, {
+        valid: true,
+        errors: {
+          email: []
+        }
+      }, 'does not validate if any .when() call returns falsy');
+
+      // now they should both return true, triggering validation
+      shouldValidate = true;
+      v.validate({ email: 'I am not an email' }).then(function(result) {
+        deepEqual(result, {
+          valid: false,
+          errors: {
+            email: ["That's no email!"]
+          }
+        }, 'validates as normal when all .when() calls return truthy');
+        start();
+      });
+    });
+  });
+  stop();
+});

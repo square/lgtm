@@ -1,18 +1,20 @@
 import ObjectValidator from './object_validator';
-import { getProperties, resolve } from './utils';
+import { getProperties, all } from './utils';
 
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();
 }
 
 ValidatorBuilder.prototype = {
-  _attr      : null,
-  _condition : null,
-  _validator : null,
+  _attr                  : null,
+  _conditions            : null,
+  _conditionDependencies : null,
+  _validator             : null,
 
   validates: function(attr) {
     this._attr = attr;
-    this._condition = null;
+    this._conditions = [];
+    this._conditionDependencies = [];
     return this;
   },
 
@@ -31,8 +33,8 @@ ValidatorBuilder.prototype = {
       }
     }
 
-    this._condition = condition;
-    this._conditionDependencies = dependencies;
+    this._conditions.push(condition);
+    this._conditionDependencies.push(dependencies);
     return this;
   },
 
@@ -61,26 +63,29 @@ ValidatorBuilder.prototype = {
       return predicate.apply(null, properties.concat([attr, object]));
     }
 
-    var condition = this._condition;
+    var conditions = this._conditions;
     var conditionDependencies = this._conditionDependencies;
 
-    function validationWithCondition(value, attr, object) {
-      var properties = getProperties(object, conditionDependencies);
-      var conditionResult = condition.apply(null, properties.concat([attr, object]));
-      return resolve(conditionResult).then(function(result) {
-        if (result) {
-          // condition resolved to a truthy value, so continue with validation
-          return validation(value, attr, object);
-        } else {
-          // condition resolved to a falsy value, so just return as valid
-          return true;
+    function validationWithConditions(value, attr, object) {
+      return all(conditions.map(function(condition, i) {
+        var dependencies = conditionDependencies[i];
+        var properties = getProperties(object, dependencies);
+        return condition.apply(null, properties.concat([attr, object]));
+      })).then(function(results) {
+        for (var i = 0; i < results.length; i++) {
+          // a condition resolved to a falsy value; return as valid
+          if (!results[i]) {
+            return true;
+          }
         }
+        // all conditions resolved to truthy values; continue with validation
+        return validation(value, attr, object);
       });
     }
 
     this._validator.addValidation(
       this._attr,
-      condition ? validationWithCondition : validation,
+      conditions ? validationWithConditions : validation,
       message
     );
     return this;
