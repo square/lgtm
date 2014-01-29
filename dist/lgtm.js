@@ -473,6 +473,10 @@ ValidatorBuilder.prototype = {
     return this;
   },
 
+  and: function(/* ...dependencies, condition */) {
+    return this.when.apply(this, arguments);
+  },
+
   using: function(/* ...dependencies, predicate, message */) {
     var dependencies = [].slice.apply(arguments);
     var message      = dependencies.pop();

@@ -388,3 +388,25 @@ test('only affects .using() calls after it in the chain', function() {
   });
   stop();
 });
+
+QUnit.module('validator#and');
+
+test('is an alias for #when', function() {
+  var v = validator()
+        .validates('name')
+          .when(function(name){ return true; })
+          .and(function(name){ return false; })
+          .required("You must enter a name!")
+        .build();
+
+  v.validate({ name: null }).then(function(result) {
+    start();
+    deepEqual(result, {
+      valid: true,
+      errors: {
+        name: []
+      }
+    }, 'skips validating when .and() callback returns false');
+  });
+  stop();
+});
