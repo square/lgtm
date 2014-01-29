@@ -369,3 +369,22 @@ test('may be used multiple times', function() {
   });
   stop();
 });
+
+test('only affects .using() calls after it in the chain', function() {
+  var v = validator()
+        .validates('password')
+          .using(function(password){ return password === 'zanzabar'; }, "Nope!")
+          .when(function(){ return false; })
+        .build();
+
+  v.validate({ email: '' }).then(function(result) {
+    start();
+    deepEqual(result, {
+      valid: false,
+      errors: {
+        password: ["Nope!"]
+      }
+    }, 'validates without any conditions added after the .using() call');
+  });
+  stop();
+});

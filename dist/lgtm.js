@@ -498,8 +498,8 @@ ValidatorBuilder.prototype = {
       return predicate.apply(null, properties.concat([attr, object]));
     }
 
-    var conditions = this._conditions;
-    var conditionDependencies = this._conditionDependencies;
+    var conditions = this._conditions.slice();
+    var conditionDependencies = this._conditionDependencies.slice();
 
     function validationWithConditions(value, attr, object) {
       return all(conditions.map(function(condition, i) {
