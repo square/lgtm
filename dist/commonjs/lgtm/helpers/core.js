@@ -9,9 +9,16 @@ function present(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
-function checkEmail(value) {
+function checkEmail(value, options) {
   if (typeof value === 'string') {
     value = value.trim();
+  }
+
+  if (options.strictCharacters) {
+    var strictCharactersRegexp = /^[\x20-\x7F]*$/
+    if (!strictCharactersRegexp.test(value)) {
+      return false
+    }
   }
 
   // http://stackoverflow.com/a/46181/11236

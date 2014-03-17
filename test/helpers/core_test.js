@@ -20,6 +20,8 @@ test('checkEmail', function() {
   ok(!core.checkEmail('anything@paypal'), 'returns false for missing . in domain part');
   ok(!core.checkEmail('!$23@screwedup'), 'returns false for invalid characters');
   ok(!core.checkEmail(''), 'returns false for empty string');
+  ok(!core.checkEmail('mañana@squareup.com'), 'returns true for emails with characters in extended ASCII range');
+  ok(!core.checkEmail('mañana@squareup.com', { strictCharacters: true }), 'returns false for emails with characters in extended ASCII range when strictCharacters == true');
 });
 
 test('checkMinLength', function() {
