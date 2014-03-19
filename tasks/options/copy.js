@@ -8,6 +8,9 @@ module.exports = {
       cwd: 'test',
       src: 'libs/**/*',
       dest: 'tmp/test'
+    }, {
+      src: 'node_modules/qunit-bdd/lib/qunit-bdd.js',
+      dest: 'tmp/test/libs/qunit-bdd.js'
     }]
   },
 

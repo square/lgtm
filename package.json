@@ -27,7 +27,8 @@
     "grunt-contrib-connect": "~0.3.0",
     "grunt-contrib-watch": "~0.4.4",
     "grunt-contrib-copy": "~0.4.1",
-    "grunt-browserify": "~1.2.0"
+    "grunt-browserify": "~1.2.0",
+    "qunit-bdd": "0.0.4"
   },
   "dependencies": {
     "rsvp": "~3.0.3"
