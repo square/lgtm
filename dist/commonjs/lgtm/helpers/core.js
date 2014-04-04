@@ -14,10 +14,14 @@ function checkEmail(value, options) {
     value = value.trim();
   }
 
+  if (!options) {
+    options = {};
+  }
+
   if (options.strictCharacters) {
-    var strictCharactersRegexp = /^[\x20-\x7F]*$/
+    var strictCharactersRegexp = /^[\x20-\x7F]*$/;
     if (!strictCharactersRegexp.test(value)) {
-      return false
+      return false;
     }
   }
 
