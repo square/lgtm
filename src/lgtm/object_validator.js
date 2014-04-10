@@ -1,3 +1,5 @@
+/* jshint esnext:true */
+
 import config from './config';
 import { all, resolve, contains, keys, forEach, get, uniq } from './utils';
 
@@ -34,7 +36,7 @@ ObjectValidator.prototype = {
     for (var i = 0; i < dependentAttributes.length; i++) {
       var attr = dependentAttributes[i];
       if (!contains(dependentsForParent, attr)) {
-        dependentsForParent.push(attr)
+        dependentsForParent.push(attr);
       }
     }
   },

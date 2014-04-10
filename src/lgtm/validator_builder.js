@@ -1,3 +1,5 @@
+/* jshint esnext:true */
+
 import ObjectValidator from './object_validator';
 import { getProperties, all } from './utils';
 

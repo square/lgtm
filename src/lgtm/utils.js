@@ -1,3 +1,5 @@
+/* jshint esnext:true */
+
 import config from './config';
 
 /**

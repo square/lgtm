@@ -1,5 +1,7 @@
 "use strict";
 var config = require("./config");
+/* jshint esnext:true */
+
 
 /**
  * Iteration

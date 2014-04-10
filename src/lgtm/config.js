@@ -1,3 +1,5 @@
+/* jshint esnext:true */
+
 var config = {};
 
 config.defer = function() {

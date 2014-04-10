@@ -8,6 +8,8 @@ var keys = __dependency1__.keys;
 var forEach = __dependency1__.forEach;
 var get = __dependency1__.get;
 var uniq = __dependency1__.uniq;
+/* jshint esnext:true */
+
 
 function ObjectValidator() {
   this._validations  = {};
@@ -42,7 +44,7 @@ ObjectValidator.prototype = {
     for (var i = 0; i < dependentAttributes.length; i++) {
       var attr = dependentAttributes[i];
       if (!contains(dependentsForParent, attr)) {
-        dependentsForParent.push(attr)
+        dependentsForParent.push(attr);
       }
     }
   },

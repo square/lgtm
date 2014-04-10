@@ -48,6 +48,8 @@ exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
 },{"./lgtm/config":2,"./lgtm/helpers/core":3,"./lgtm/object_validator":4,"./lgtm/validator_builder":6}],2:[function(require,module,exports){
 "use strict";
+/* jshint esnext:true */
+
 var config = {};
 
 config.defer = function() {
@@ -59,6 +61,8 @@ module.exports = config;
 },{}],3:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
+/* jshint esnext:true */
+
 
 function present(value) {
   if (typeof value === 'string') {
@@ -68,19 +72,30 @@ function present(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
-function checkEmail(value) {
+function checkEmail(value, options) {
   if (typeof value === 'string') {
     value = value.trim();
   }
 
+  if (!options) {
+    options = {};
+  }
+
+  if (options.strictCharacters) {
+    var strictCharactersRegexp = /^[\x20-\x7F]*$/;
+    if (!strictCharactersRegexp.test(value)) {
+      return false;
+    }
+  }
+
   // http://stackoverflow.com/a/46181/11236
-  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return regexp.test(value);
 }
 
 function checkMinLength(minLength) {
   if (minLength === null || minLength === undefined) {
-    throw new Error('must specify a min length')
+    throw new Error('must specify a min length');
   }
 
   return function(value) {
@@ -94,7 +109,7 @@ function checkMinLength(minLength) {
 
 function checkMaxLength(maxLength) {
   if (maxLength === null || maxLength === undefined) {
-    throw new Error('must specify a max length')
+    throw new Error('must specify a max length');
   }
 
   return function(value) {
@@ -145,6 +160,8 @@ var keys = __dependency1__.keys;
 var forEach = __dependency1__.forEach;
 var get = __dependency1__.get;
 var uniq = __dependency1__.uniq;
+/* jshint esnext:true */
+
 
 function ObjectValidator() {
   this._validations  = {};
@@ -179,7 +196,7 @@ ObjectValidator.prototype = {
     for (var i = 0; i < dependentAttributes.length; i++) {
       var attr = dependentAttributes[i];
       if (!contains(dependentsForParent, attr)) {
-        dependentsForParent.push(attr)
+        dependentsForParent.push(attr);
       }
     }
   },
@@ -303,6 +320,8 @@ module.exports = ObjectValidator;
 },{"./config":2,"./utils":5}],5:[function(require,module,exports){
 "use strict";
 var config = require("./config");
+/* jshint esnext:true */
+
 
 /**
  * Iteration
@@ -435,6 +454,8 @@ var ObjectValidator = require("./object_validator");
 var __dependency1__ = require("./utils");
 var getProperties = __dependency1__.getProperties;
 var all = __dependency1__.all;
+/* jshint esnext:true */
+
 
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();

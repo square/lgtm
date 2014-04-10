@@ -1,5 +1,7 @@
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
+/* jshint esnext:true */
+
 
 function present(value) {
   if (typeof value === 'string') {
@@ -26,13 +28,13 @@ function checkEmail(value, options) {
   }
 
   // http://stackoverflow.com/a/46181/11236
-  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return regexp.test(value);
 }
 
 function checkMinLength(minLength) {
   if (minLength === null || minLength === undefined) {
-    throw new Error('must specify a min length')
+    throw new Error('must specify a min length');
   }
 
   return function(value) {
@@ -46,7 +48,7 @@ function checkMinLength(minLength) {
 
 function checkMaxLength(maxLength) {
   if (maxLength === null || maxLength === undefined) {
-    throw new Error('must specify a max length')
+    throw new Error('must specify a max length');
   }
 
   return function(value) {
