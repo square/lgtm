@@ -11,25 +11,28 @@ function present(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
-function checkEmail(value, options) {
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
+var STRICT_CHARS = /^[\x20-\x7F]*$/;
+// http://stackoverflow.com/a/46181/11236
+var EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+function checkEmail(options) {
   if (!options) {
     options = {};
   }
 
-  if (options.strictCharacters) {
-    var strictCharactersRegexp = /^[\x20-\x7F]*$/;
-    if (!strictCharactersRegexp.test(value)) {
-      return false;
-    }
+  if (typeof value === 'string') {
+    value = value.trim();
   }
 
-  // http://stackoverflow.com/a/46181/11236
-  var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return regexp.test(value);
+  return function(value) {
+    if (options.strictCharacters) {
+      if (!STRICT_CHARS.test(value)) {
+        return false;
+      }
+    }
+
+    return EMAIL.test(value);
+  };
 }
 
 function checkMinLength(minLength) {
@@ -69,8 +72,8 @@ function register() {
     this.when(present);
   });
 
-  ValidatorBuilder.registerHelper('email', function(message) {
-    this.using(checkEmail, message);
+  ValidatorBuilder.registerHelper('email', function(message, options) {
+    this.using(checkEmail(options), message);
   });
 
   ValidatorBuilder.registerHelper('minLength', function(minLength, message) {

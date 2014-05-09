@@ -340,7 +340,7 @@ describe('validator', function() {
             .validates('email')
               .optional() // this is a .when() call internally
               .when(function(email) { return shouldValidate; })
-              .email('That is no email!')
+              .email('That is no email!', { strictCharacters: true })
             .build();
 
       // start off with the first .when() returning false, the second true
@@ -365,7 +365,7 @@ describe('validator', function() {
 
           // now they should both return true, triggering validation
           shouldValidate = true;
-          v.validate({ email: 'I am not an email' }).then(function(result) {
+          v.validate({ email: 'mañana@squareup.com' }).then(function(result) {
             expect(result).to.eql({
               valid: false,
               errors: {
