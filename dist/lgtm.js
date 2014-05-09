@@ -1,10 +1,9 @@
-(function(e){if("function"==typeof bootstrap)bootstrap("lgtm",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeLGTM=e}else"undefined"!=typeof window?window.LGTM=e():global.LGTM=e()})(function(){var define,ses,bootstrap,module,exports;
-return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.LGTM=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 "use strict";
-var ValidatorBuilder = require("./lgtm/validator_builder");
-var ObjectValidator = require("./lgtm/object_validator");
-var core = require("./lgtm/helpers/core");
-var config = require("./lgtm/config");
+var ValidatorBuilder = _dereq_("./lgtm/validator_builder");
+var ObjectValidator = _dereq_("./lgtm/object_validator");
+var core = _dereq_("./lgtm/helpers/core");
+var config = _dereq_("./lgtm/config");
 
 core.register();
 
@@ -34,10 +33,10 @@ function configure(key, value) {
 // that may not exist. And we may be in node or in the browser.
 if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
-} else if (typeof require === 'function') {
+} else if (typeof _dereq_ === 'function') {
   try {
     var rsvpSoBrowserifyCannotSeeIt = 'rsvp';
-    configure('defer', require(rsvpSoBrowserifyCannotSeeIt).defer);
+    configure('defer', _dereq_(rsvpSoBrowserifyCannotSeeIt).defer);
   } catch (e) {}
 }
 
@@ -46,7 +45,7 @@ exports.configure = configure;
 exports.validator = validator;
 exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
-},{"./lgtm/config":2,"./lgtm/helpers/core":3,"./lgtm/object_validator":4,"./lgtm/validator_builder":6}],2:[function(require,module,exports){
+},{"./lgtm/config":2,"./lgtm/helpers/core":3,"./lgtm/object_validator":4,"./lgtm/validator_builder":6}],2:[function(_dereq_,module,exports){
 "use strict";
 /* jshint esnext:true */
 
@@ -58,9 +57,9 @@ config.defer = function() {
 
 
 module.exports = config;
-},{}],3:[function(require,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 "use strict";
-var ValidatorBuilder = require("../validator_builder");
+var ValidatorBuilder = _dereq_("../validator_builder");
 /* jshint esnext:true */
 
 
@@ -77,20 +76,18 @@ function checkEmail(value, options) {
     value = value.trim();
   }
 
-  if (!options) {
-    options = {};
-  }
-
-  if (options.strictCharacters) {
-    var strictCharactersRegexp = /^[\x20-\x7F]*$/;
-    if (!strictCharactersRegexp.test(value)) {
-      return false;
-    }
-  }
-
   // http://stackoverflow.com/a/46181/11236
   var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return regexp.test(value);
+}
+
+function checkStrictEmail(value) {
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+
+  var regexp = /^[\x20-\x7F]*$/;
+  return regexp.test(value) && checkEmail(value)
 }
 
 function checkMinLength(minLength) {
@@ -134,6 +131,10 @@ function register() {
     this.using(checkEmail, message);
   });
 
+  ValidatorBuilder.registerHelper('strictEmail', function(message) {
+    this.using(checkStrictEmail, message);
+  });
+
   ValidatorBuilder.registerHelper('minLength', function(minLength, message) {
     this.using(checkMinLength(minLength), message);
   });
@@ -146,13 +147,14 @@ function register() {
 
 exports.present = present;
 exports.checkEmail = checkEmail;
+exports.checkStrictEmail = checkStrictEmail;
 exports.checkMinLength = checkMinLength;
 exports.checkMaxLength = checkMaxLength;
 exports.register = register;
-},{"../validator_builder":6}],4:[function(require,module,exports){
+},{"../validator_builder":6}],4:[function(_dereq_,module,exports){
 "use strict";
-var config = require("./config");
-var __dependency1__ = require("./utils");
+var config = _dereq_("./config");
+var __dependency1__ = _dereq_("./utils");
 var all = __dependency1__.all;
 var resolve = __dependency1__.resolve;
 var contains = __dependency1__.contains;
@@ -317,9 +319,9 @@ ObjectValidator.prototype = {
 
 
 module.exports = ObjectValidator;
-},{"./config":2,"./utils":5}],5:[function(require,module,exports){
+},{"./config":2,"./utils":5}],5:[function(_dereq_,module,exports){
 "use strict";
-var config = require("./config");
+var config = _dereq_("./config");
 /* jshint esnext:true */
 
 
@@ -448,10 +450,10 @@ exports.contains = contains;
 exports.uniq = uniq;
 exports.resolve = resolve;
 exports.all = all;
-},{"./config":2}],6:[function(require,module,exports){
+},{"./config":2}],6:[function(_dereq_,module,exports){
 "use strict";
-var ObjectValidator = require("./object_validator");
-var __dependency1__ = require("./utils");
+var ObjectValidator = _dereq_("./object_validator");
+var __dependency1__ = _dereq_("./utils");
 var getProperties = __dependency1__.getProperties;
 var all = __dependency1__.all;
 /* jshint esnext:true */
@@ -571,6 +573,6 @@ ValidatorBuilder.unregisterHelper = function(name) {
 
 
 module.exports = ValidatorBuilder;
-},{"./object_validator":4,"./utils":5}]},{},[1])(1)
+},{"./object_validator":4,"./utils":5}]},{},[1])
+(1)
 });
-;

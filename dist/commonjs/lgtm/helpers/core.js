@@ -16,20 +16,18 @@ function checkEmail(value, options) {
     value = value.trim();
   }
 
-  if (!options) {
-    options = {};
-  }
-
-  if (options.strictCharacters) {
-    var strictCharactersRegexp = /^[\x20-\x7F]*$/;
-    if (!strictCharactersRegexp.test(value)) {
-      return false;
-    }
-  }
-
   // http://stackoverflow.com/a/46181/11236
   var regexp = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return regexp.test(value);
+}
+
+function checkStrictEmail(value) {
+  if (typeof value === 'string') {
+    value = value.trim();
+  }
+
+  var regexp = /^[\x20-\x7F]*$/;
+  return regexp.test(value) && checkEmail(value)
 }
 
 function checkMinLength(minLength) {
@@ -73,6 +71,10 @@ function register() {
     this.using(checkEmail, message);
   });
 
+  ValidatorBuilder.registerHelper('strictEmail', function(message) {
+    this.using(checkStrictEmail, message);
+  });
+
   ValidatorBuilder.registerHelper('minLength', function(minLength, message) {
     this.using(checkMinLength(minLength), message);
   });
@@ -85,6 +87,7 @@ function register() {
 
 exports.present = present;
 exports.checkEmail = checkEmail;
+exports.checkStrictEmail = checkStrictEmail;
 exports.checkMinLength = checkMinLength;
 exports.checkMaxLength = checkMaxLength;
 exports.register = register;
