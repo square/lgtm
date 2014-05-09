@@ -3,7 +3,7 @@ var ObjectValidator = require("./object_validator");
 var __dependency1__ = require("./utils");
 var getProperties = __dependency1__.getProperties;
 var all = __dependency1__.all;
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 function ValidatorBuilder() {

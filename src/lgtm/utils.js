@@ -1,4 +1,4 @@
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 import config from './config';
 
@@ -35,8 +35,7 @@ function keys(object) {
   }
 }
 
-export forEach;
-export keys;
+export { forEach, keys };
 
 
 /**
@@ -59,8 +58,7 @@ function getProperties(object, properties) {
   });
 }
 
-export get;
-export getProperties;
+export { get, getProperties };
 
 
 /**
@@ -84,8 +82,7 @@ function uniq(array) {
   return result;
 }
 
-export contains;
-export uniq;
+export { contains, uniq };
 
 
 /**
@@ -124,5 +121,4 @@ function all(thenables) {
   return deferred.promise;
 }
 
-export resolve;
-export all;
+export { resolve, all };

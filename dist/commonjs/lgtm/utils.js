@@ -1,6 +1,6 @@
 "use strict";
 var config = require("./config");
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 /**

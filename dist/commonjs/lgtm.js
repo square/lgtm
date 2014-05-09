@@ -3,6 +3,8 @@ var ValidatorBuilder = require("./lgtm/validator_builder");
 var ObjectValidator = require("./lgtm/object_validator");
 var core = require("./lgtm/helpers/core");
 var config = require("./lgtm/config");
+/* jshint esnext:true, undef:true, unused:true */
+
 
 core.register();
 
@@ -30,6 +32,7 @@ function configure(key, value) {
 
 // This kinda sucks, but I don't think ES6 has the ability to require modules
 // that may not exist. And we may be in node or in the browser.
+/* global RSVP, require */
 if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
 } else if (typeof require === 'function') {

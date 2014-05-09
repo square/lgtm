@@ -1,3 +1,5 @@
+/* jshint esnext:true, undef:true, unused:true */
+
 // TODO: use this instead: export * from './lgtm';
 import { configure, validator, helpers, ObjectValidator } from './lgtm';
 import { defer } from 'rsvp';

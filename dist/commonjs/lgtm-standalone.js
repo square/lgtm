@@ -5,6 +5,8 @@ var validator = __dependency1__.validator;
 var helpers = __dependency1__.helpers;
 var ObjectValidator = __dependency1__.ObjectValidator;
 var defer = require("rsvp").defer;
+/* jshint esnext:true, undef:true, unused:true */
+
 // TODO: use this instead: export * from './lgtm';
 
 configure('defer', defer);

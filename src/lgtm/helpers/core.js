@@ -1,4 +1,4 @@
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 import ValidatorBuilder from '../validator_builder';
 
@@ -19,11 +19,11 @@ function checkEmail(options) {
     options = {};
   }
 
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
-
   return function(value) {
+    if (typeof value === 'string') {
+      value = value.trim();
+    }
+
     if (options.strictCharacters) {
       if (!STRICT_CHARS.test(value)) {
         return false;

@@ -5,6 +5,8 @@ var ValidatorBuilder = require("./lgtm/validator_builder");
 var ObjectValidator = require("./lgtm/object_validator");
 var core = require("./lgtm/helpers/core");
 var config = require("./lgtm/config");
+/* jshint esnext:true, undef:true, unused:true */
+
 
 core.register();
 
@@ -32,6 +34,7 @@ function configure(key, value) {
 
 // This kinda sucks, but I don't think ES6 has the ability to require modules
 // that may not exist. And we may be in node or in the browser.
+/* global RSVP, require */
 if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
 } else if (typeof require === 'function') {
@@ -48,12 +51,17 @@ exports.helpers = helpers;
 exports.ObjectValidator = ObjectValidator;
 },{"./lgtm/config":2,"./lgtm/helpers/core":3,"./lgtm/object_validator":4,"./lgtm/validator_builder":6}],2:[function(require,module,exports){
 "use strict";
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 var config = {};
 
 config.defer = function() {
-  throw new Error('No "defer" function provided to LGTM! Please use lgtm-standalone.js or call LGTM.configure("defer", myDeferFunction) e.g. to use with Q, use Q.defer.');
+  throw new Error(
+    'No "defer" function provided to LGTM! ' +
+    'Please use lgtm-standalone.js or call ' +
+    'LGTM.configure("defer", myDeferFunction) ' +
+    'e.g. to use with Q, use Q.defer.'
+  );
 };
 
 
@@ -61,7 +69,7 @@ module.exports = config;
 },{}],3:[function(require,module,exports){
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 function present(value) {
@@ -81,11 +89,11 @@ function checkEmail(options) {
     options = {};
   }
 
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
-
   return function(value) {
+    if (typeof value === 'string') {
+      value = value.trim();
+    }
+
     if (options.strictCharacters) {
       if (!STRICT_CHARS.test(value)) {
         return false;
@@ -154,16 +162,14 @@ exports.checkMaxLength = checkMaxLength;
 exports.register = register;
 },{"../validator_builder":6}],4:[function(require,module,exports){
 "use strict";
-var config = require("./config");
 var __dependency1__ = require("./utils");
 var all = __dependency1__.all;
 var resolve = __dependency1__.resolve;
 var contains = __dependency1__.contains;
 var keys = __dependency1__.keys;
-var forEach = __dependency1__.forEach;
 var get = __dependency1__.get;
 var uniq = __dependency1__.uniq;
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 function ObjectValidator() {
@@ -320,10 +326,10 @@ ObjectValidator.prototype = {
 
 
 module.exports = ObjectValidator;
-},{"./config":2,"./utils":5}],5:[function(require,module,exports){
+},{"./utils":5}],5:[function(require,module,exports){
 "use strict";
 var config = require("./config");
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 /**
@@ -457,7 +463,7 @@ var ObjectValidator = require("./object_validator");
 var __dependency1__ = require("./utils");
 var getProperties = __dependency1__.getProperties;
 var all = __dependency1__.all;
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 function ValidatorBuilder() {

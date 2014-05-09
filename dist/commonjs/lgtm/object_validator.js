@@ -1,14 +1,12 @@
 "use strict";
-var config = require("./config");
 var __dependency1__ = require("./utils");
 var all = __dependency1__.all;
 var resolve = __dependency1__.resolve;
 var contains = __dependency1__.contains;
 var keys = __dependency1__.keys;
-var forEach = __dependency1__.forEach;
 var get = __dependency1__.get;
 var uniq = __dependency1__.uniq;
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 function ObjectValidator() {

@@ -1,6 +1,6 @@
 "use strict";
 var ValidatorBuilder = require("../validator_builder");
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
 
 function present(value) {
@@ -20,11 +20,11 @@ function checkEmail(options) {
     options = {};
   }
 
-  if (typeof value === 'string') {
-    value = value.trim();
-  }
-
   return function(value) {
+    if (typeof value === 'string') {
+      value = value.trim();
+    }
+
     if (options.strictCharacters) {
       if (!STRICT_CHARS.test(value)) {
         return false;

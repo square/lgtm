@@ -1,7 +1,6 @@
-/* jshint esnext:true */
+/* jshint esnext:true, undef:true, unused:true */
 
-import config from './config';
-import { all, resolve, contains, keys, forEach, get, uniq } from './utils';
+import { all, resolve, contains, keys, get, uniq } from './utils';
 
 function ObjectValidator() {
   this._validations  = {};
