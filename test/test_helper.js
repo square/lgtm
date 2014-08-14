@@ -1,4 +1,4 @@
-global.resolve = function(value) {
+(typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : this).resolve = function(value) {
   return {
     then: function(callback) {
       setTimeout(function() {

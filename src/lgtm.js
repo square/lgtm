@@ -2,10 +2,10 @@
 
 import ValidatorBuilder from './lgtm/validator_builder';
 import ObjectValidator from './lgtm/object_validator';
-import core from './lgtm/helpers/core';
+import { present, checkEmail, checkMinLength, checkMaxLength, register as core_register } from './lgtm/helpers/core';
 import config from './lgtm/config';
 
-core.register();
+core_register();
 
 function validator() {
   return new ValidatorBuilder();
@@ -20,24 +20,27 @@ function unregister() {
 }
 
 var helpers = {
-  core       : core,
-  register   : register,
-  unregister : unregister
+  core: {
+    present: present,
+    checkEmail: checkEmail,
+    checkMinLength: checkMinLength,
+    checkMaxLength: checkMaxLength,
+    register: core_register
+  },
+  register: register,
+  unregister: unregister
 };
 
 function configure(key, value) {
   config[key] = value;
 }
 
-// This kinda sucks, but I don't think ES6 has the ability to require modules
-// that may not exist. And we may be in node or in the browser.
 /* global RSVP, require */
 if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
 } else if (typeof require === 'function') {
   try {
-    var rsvpSoBrowserifyCannotSeeIt = 'rsvp';
-    configure('defer', require(rsvpSoBrowserifyCannotSeeIt).defer);
+    configure('defer', require('rsvp').defer);
   } catch (e) {}
 }
 

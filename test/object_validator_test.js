@@ -1,8 +1,7 @@
 /* jshint undef:true */
 /* global QUnit, throws, start, stop */
 /* global describe, context, it, lazy, expect, before, after, fail */
-/* global LGTM */
-/* global resolve */
+/* global LGTM, RSVP */
 
 var ObjectValidator = LGTM.ObjectValidator;
 var core            = LGTM.helpers.core;

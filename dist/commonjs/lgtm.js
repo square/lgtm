@@ -1,49 +1,78 @@
 "use strict";
-var ValidatorBuilder = require("./lgtm/validator_builder");
-var ObjectValidator = require("./lgtm/object_validator");
-var core = require("./lgtm/helpers/core");
-var config = require("./lgtm/config");
-/* jshint esnext:true, undef:true, unused:true */
 
+Object.seal(Object.defineProperties(exports, {
+  configure: {
+    get: function() {
+      return configure;
+    },
 
-core.register();
+    enumerable: true
+  },
+
+  validator: {
+    get: function() {
+      return validator;
+    },
+
+    enumerable: true
+  },
+
+  helpers: {
+    get: function() {
+      return helpers;
+    },
+
+    enumerable: true
+  },
+
+  ObjectValidator: {
+    get: function() {
+      return $$lgtm$object_validator$$.default;
+    },
+
+    enumerable: true
+  }
+}));
+
+var $$lgtm$validator_builder$$ = require("./lgtm/validator_builder"), $$lgtm$object_validator$$ = require("./lgtm/object_validator"), $$lgtm$helpers$core$$ = require("./lgtm/helpers/core"), $$lgtm$config$$ = require("./lgtm/config");
+
+$$lgtm$helpers$core$$.register();
 
 function validator() {
-  return new ValidatorBuilder();
+  return new $$lgtm$validator_builder$$.default();
 }
 
 function register() {
-  ValidatorBuilder.registerHelper.apply(ValidatorBuilder, arguments);
+  $$lgtm$validator_builder$$.default.registerHelper.apply($$lgtm$validator_builder$$.default, arguments);
 }
 
 function unregister() {
-  ValidatorBuilder.unregisterHelper.apply(ValidatorBuilder, arguments);
+  $$lgtm$validator_builder$$.default.unregisterHelper.apply($$lgtm$validator_builder$$.default, arguments);
 }
 
 var helpers = {
-  core       : core,
-  register   : register,
-  unregister : unregister
+  core: {
+    present: $$lgtm$helpers$core$$.present,
+    checkEmail: $$lgtm$helpers$core$$.checkEmail,
+    checkMinLength: $$lgtm$helpers$core$$.checkMinLength,
+    checkMaxLength: $$lgtm$helpers$core$$.checkMaxLength,
+    register: $$lgtm$helpers$core$$.register
+  },
+  register: register,
+  unregister: unregister
 };
 
 function configure(key, value) {
-  config[key] = value;
+  $$lgtm$config$$.default[key] = value;
 }
 
-// This kinda sucks, but I don't think ES6 has the ability to require modules
-// that may not exist. And we may be in node or in the browser.
 /* global RSVP, require */
 if (typeof RSVP !== 'undefined') {
   configure('defer', RSVP.defer);
 } else if (typeof require === 'function') {
   try {
-    var rsvpSoBrowserifyCannotSeeIt = 'rsvp';
-    configure('defer', require(rsvpSoBrowserifyCannotSeeIt).defer);
+    configure('defer', require('rsvp').defer);
   } catch (e) {}
 }
 
-
-exports.configure = configure;
-exports.validator = validator;
-exports.helpers = helpers;
-exports.ObjectValidator = ObjectValidator;
+//# sourceMappingURL=lgtm.js.map

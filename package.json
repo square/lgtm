@@ -2,10 +2,10 @@
   "name": "lgtm",
   "version": "0.3.5",
   "description": "Simple JavaScript validation for objects.",
-  "main": "dist/lgtm.js",
+  "main": "dist/commonjs/lgtm.js",
   "scripts": {
-    "test": "grunt test",
-    "prepublish": "grunt test"
+    "test": "make test",
+    "prepublish": "make test"
   },
   "repository": {
     "type": "git",
@@ -17,17 +17,12 @@
   "author": "Square, Inc.",
   "license": "Apache 2.0",
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "string": "~1.4.0",
-    "glob": "~3.2.1",
-    "matchdep": "~0.1.2",
-    "grunt-contrib-clean": "~0.4.1",
-    "grunt-es6-module-transpiler": "~0.4.1",
-    "grunt-contrib-qunit": "~0.2.2",
-    "grunt-contrib-connect": "~0.3.0",
-    "grunt-contrib-watch": "~0.4.4",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-browserify": "~1.2.0",
+    "es6-module-transpiler": "^0.6.0",
+    "karma": "^0.12.21",
+    "karma-chrome-launcher": "^0.1.4",
+    "karma-firefox-launcher": "^0.1.3",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-qunit": "^0.1.3",
     "qunit-bdd": "0.0.4"
   },
   "dependencies": {

@@ -1,13 +1,16 @@
 "use strict";
-var __dependency1__ = require("./utils");
-var all = __dependency1__.all;
-var resolve = __dependency1__.resolve;
-var contains = __dependency1__.contains;
-var keys = __dependency1__.keys;
-var get = __dependency1__.get;
-var uniq = __dependency1__.uniq;
-/* jshint esnext:true, undef:true, unused:true */
 
+Object.seal(Object.defineProperties(exports, {
+  default: {
+    get: function() {
+      return src$lgtm$object_validator$$default;
+    },
+
+    enumerable: true
+  }
+}));
+
+var $$utils$$ = require("./utils");
 
 function ObjectValidator() {
   this._validations  = {};
@@ -41,16 +44,16 @@ ObjectValidator.prototype = {
 
     for (var i = 0; i < dependentAttributes.length; i++) {
       var attr = dependentAttributes[i];
-      if (!contains(dependentsForParent, attr)) {
+      if (!$$utils$$.contains(dependentsForParent, attr)) {
         dependentsForParent.push(attr);
       }
     }
   },
 
   attributes: function() {
-    return uniq(
-      keys(this._validations).concat(
-        keys(this._dependencies)
+    return $$utils$$.uniq(
+      $$utils$$.keys(this._validations).concat(
+        $$utils$$.keys(this._dependencies)
       )
     );
   },
@@ -67,7 +70,7 @@ ObjectValidator.prototype = {
     }
 
     if (attributes.length === 0) {
-      attributes = keys(this._validations);
+      attributes = $$utils$$.keys(this._validations);
     }
 
     var validationPromises = [];
@@ -76,7 +79,7 @@ ObjectValidator.prototype = {
       validationPromises = validationPromises.concat(this._validateAttribute(object, attr));
     }
 
-    var promise = all(validationPromises).then(
+    var promise = $$utils$$.all(validationPromises).then(
       function(results) {
         results = self._collectResults(results);
         if (callback) {
@@ -97,7 +100,7 @@ ObjectValidator.prototype = {
   },
 
   _validateAttribute: function(object, attr) {
-    var value       = get(object, attr);
+    var value       = $$utils$$.get(object, attr);
     var validations = this._validations[attr];
     var results     = [];
 
@@ -106,7 +109,7 @@ ObjectValidator.prototype = {
         var fn      = pair[0];
         var message = pair[1];
 
-        var promise = resolve()
+        var promise = $$utils$$.resolve()
           .then(function() {
             return fn(value, attr, object);
           })
@@ -116,7 +119,7 @@ ObjectValidator.prototype = {
 
         results.push(promise);
       });
-    } else if (contains(this.attributes(), attr)) {
+    } else if ($$utils$$.contains(this.attributes(), attr)) {
       results.push([ attr, null ]);
     }
 
@@ -161,5 +164,6 @@ ObjectValidator.prototype = {
   }
 };
 
+var src$lgtm$object_validator$$default = ObjectValidator;
 
-module.exports = ObjectValidator;
+//# sourceMappingURL=object_validator.js.map
