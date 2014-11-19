@@ -3,7 +3,6 @@ tasks
 test
 tmp
 
-dist/commonjs
 dist/lgtm-standalone.js
 bower.json
 Gruntfile.js
