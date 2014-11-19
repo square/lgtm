@@ -1,6 +1,6 @@
 {
   "name": "lgtm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple JavaScript validation for objects.",
   "main": "dist/commonjs/lgtm.js",
   "jsnext:main": "src/lgtm.js",
