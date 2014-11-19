@@ -1,20 +1,17 @@
-/* jshint undef:true */
-/* global QUnit, describe, it, expect, before, after, fail, throws */
-/* global LGTM */
+const LGTM = require('../dist/lgtm');
+const assert = require('assert');
 
 describe('LGTM.helpers.(un)register', function() {
-  after(function() {
+  afterEach(function() {
     LGTM.helpers.unregister('isBob');
   });
 
   it('allow registering a custom helper for use in the builder DSL', function() {
-    QUnit.expect(0);
-
     LGTM.helpers.register('isBob', function(message) {
       this.using(function(value){ return value === 'Bob'; }, message);
     });
 
-    // this would throw if the above didn't work, hence expect(0)
+    // this would throw if the above didn't work
     LGTM.validator().validates('name').isBob("You must be Bob.").build();
   });
 
@@ -23,7 +20,7 @@ describe('LGTM.helpers.(un)register', function() {
       this.using(function(value){ return value === 'Bob'; } /* note I don't pass message here */);
     });
 
-    throws(function() {
+    assert.throws(function() {
       LGTM.validator().validates('name').isBob("You must be Bob.").build();
     }, 'using() should have thrown an exception');
   });
@@ -35,7 +32,7 @@ describe('LGTM.helpers.(un)register', function() {
 
     LGTM.helpers.unregister('isBob');
 
-    throws(function() {
+    assert.throws(function() {
       LGTM.validator().validates('name').isBob("You must be Bob.").build();
     }, "unregister() makes the helper unavailable");
   });

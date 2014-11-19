@@ -1,11 +1,10 @@
 COMPILE_MODULES=./node_modules/.bin/compile-modules
-KARMA=./node_modules/karma/bin/karma
 RSVP_LIB=./node_modules/rsvp/lib
+MOCHA=./node_modules/.bin/mocha
 
 all: dist test
 
 test:
-	$(KARMA) start --single-run
 
 # Collect the targets that may not exist yet for dist/commonjs/**/*.js.
 SRC_FILES=$(shell find src -type f -name '*.js')
@@ -27,6 +26,7 @@ $(foreach file, $(SRC_FILES), $(eval $(call cjsbuild, $(file))))
 
 # Build all commonjs files.
 dist/commonjs: $(CJS_FILES)
+	$(MOCHA) --recursive test
 
 clean:
 	rm -rf dist

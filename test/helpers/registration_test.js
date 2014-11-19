@@ -1,14 +1,12 @@
-/* jshint undef:true */
-/* global QUnit, describe, it, expect, before, after, fail, throws */
-/* global LGTM */
-
-var validator   = LGTM.validator;
-var validations = LGTM.helpers;
+const LGTM = require('../../dist/lgtm');
+const validator   = LGTM.validator;
+const validations = LGTM.helpers;
+const assert = require('assert');
 
 describe('helpers.(un)register', function() {
   it('can add and remove a helper from the builder', function() {
-    var builder = validator();
-    expect(builder.isEven).to.be.undefined('precondition: helper is not there yet');
+    const builder = validator();
+    assert.strictEqual(builder.isEven, undefined, 'precondition: helper is not there yet');
 
     validations.register('isEven', function() {
       this.using(function(value) {
@@ -16,9 +14,9 @@ describe('helpers.(un)register', function() {
       });
     });
 
-    expect(builder.isEven).to.be.defined('helper is added to the builder');
+    assert.notStrictEqual(builder.isEven, undefined, 'helper is added to the builder');
 
     validations.unregister('isEven');
-    expect(builder.isEven).to.be.undefined('postcondition: helper is removed after unregister');
+    assert.strictEqual(builder.isEven, undefined, 'postcondition: helper is removed after unregister');
   });
 });
