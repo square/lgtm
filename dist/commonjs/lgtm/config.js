@@ -1,14 +1,5 @@
 "use strict";
-
-Object.seal(Object.defineProperties(exports, {
-  default: {
-    get: function() {
-      return src$lgtm$config$$default;
-    },
-
-    enumerable: true
-  }
-}));
+/* jshint esnext:true, undef:true, unused:true */
 
 var config = {};
 
@@ -21,6 +12,6 @@ config.defer = function() {
   );
 };
 
-var src$lgtm$config$$default = config;
+exports["default"] = config;
 
 //# sourceMappingURL=config.js.map

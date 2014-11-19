@@ -1,72 +1,5 @@
 "use strict";
-
-Object.seal(Object.defineProperties(exports, {
-  forEach: {
-    get: function() {
-      return forEach;
-    },
-
-    enumerable: true
-  },
-
-  keys: {
-    get: function() {
-      return keys;
-    },
-
-    enumerable: true
-  },
-
-  get: {
-    get: function() {
-      return get;
-    },
-
-    enumerable: true
-  },
-
-  getProperties: {
-    get: function() {
-      return getProperties;
-    },
-
-    enumerable: true
-  },
-
-  contains: {
-    get: function() {
-      return contains;
-    },
-
-    enumerable: true
-  },
-
-  uniq: {
-    get: function() {
-      return uniq;
-    },
-
-    enumerable: true
-  },
-
-  resolve: {
-    get: function() {
-      return resolve;
-    },
-
-    enumerable: true
-  },
-
-  all: {
-    get: function() {
-      return all;
-    },
-
-    enumerable: true
-  }
-}));
-
-var $$config$$ = require("./config");
+var lgtm$config$$ = require("./config");
 
 /**
  * Iteration
@@ -150,7 +83,7 @@ function uniq(array) {
  */
 
 function resolve(thenable) {
-  var deferred = $$config$$.default.defer();
+  var deferred = lgtm$config$$.default.defer();
   deferred.resolve(thenable);
   return deferred.promise;
 }
@@ -162,7 +95,7 @@ function all(thenables) {
 
   var results = [];
   var remaining = thenables.length;
-  var deferred = $$config$$.default.defer();
+  var deferred = lgtm$config$$.default.defer();
 
   function resolver(index) {
     return function(value) {
@@ -180,5 +113,7 @@ function all(thenables) {
 
   return deferred.promise;
 }
+
+exports.forEach = forEach, exports.keys = keys, exports.get = get, exports.getProperties = getProperties, exports.contains = contains, exports.uniq = uniq, exports.resolve = resolve, exports.all = all;
 
 //# sourceMappingURL=utils.js.map

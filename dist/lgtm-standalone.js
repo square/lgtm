@@ -1,5 +1,6 @@
 (function() {
     "use strict";
+    /* jshint esnext:true, undef:true, unused:true */
 
     var $$lgtm$config$$config = {};
 
@@ -516,7 +517,7 @@
       } catch (e) {}
     }
 
-    function $$rsvp$events$$indexOf(callbacks, callback) {
+    function $$events$$indexOf(callbacks, callback) {
       for (var i=0, l=callbacks.length; i<l; i++) {
         if (callbacks[i] === callback) { return i; }
       }
@@ -524,7 +525,7 @@
       return -1;
     }
 
-    function $$rsvp$events$$callbacksFor(object) {
+    function $$events$$callbacksFor(object) {
       var callbacks = object._promiseCallbacks;
 
       if (!callbacks) {
@@ -534,7 +535,7 @@
       return callbacks;
     }
 
-    var $$rsvp$events$$default = {
+    var $$events$$default = {
 
       /**
         `RSVP.EventTarget.mixin` extends an object with EventTarget methods. For
@@ -604,7 +605,7 @@
         @param {Function} callback function to be called when the event is triggered.
       */
       on: function(eventName, callback) {
-        var allCallbacks = $$rsvp$events$$callbacksFor(this), callbacks;
+        var allCallbacks = $$events$$callbacksFor(this), callbacks;
 
         callbacks = allCallbacks[eventName];
 
@@ -612,7 +613,7 @@
           callbacks = allCallbacks[eventName] = [];
         }
 
-        if ($$rsvp$events$$indexOf(callbacks, callback) === -1) {
+        if ($$events$$indexOf(callbacks, callback) === -1) {
           callbacks.push(callback);
         }
       },
@@ -657,7 +658,7 @@
         queue.
       */
       off: function(eventName, callback) {
-        var allCallbacks = $$rsvp$events$$callbacksFor(this), callbacks, index;
+        var allCallbacks = $$events$$callbacksFor(this), callbacks, index;
 
         if (!callback) {
           allCallbacks[eventName] = [];
@@ -666,7 +667,7 @@
 
         callbacks = allCallbacks[eventName];
 
-        index = $$rsvp$events$$indexOf(callbacks, callback);
+        index = $$events$$indexOf(callbacks, callback);
 
         if (index !== -1) { callbacks.splice(index, 1); }
       },
@@ -702,7 +703,7 @@
         the given `eventName`
       */
       trigger: function(eventName, options) {
-        var allCallbacks = $$rsvp$events$$callbacksFor(this), callbacks, callback;
+        var allCallbacks = $$events$$callbacksFor(this), callbacks, callback;
 
         if (callbacks = allCallbacks[eventName]) {
           // Don't cache the callbacks.length since it may grow
@@ -715,25 +716,25 @@
       }
     };
 
-    var $$rsvp$config$$config = {
+    var $$config$$config = {
       instrument: false
     };
 
-    $$rsvp$events$$default.mixin($$rsvp$config$$config);
+    $$events$$default.mixin($$config$$config);
 
-    function $$rsvp$config$$configure(name, value) {
+    function $$config$$configure(name, value) {
       if (name === 'onerror') {
         // handle for legacy users that expect the actual
         // error to be passed to their function added via
         // `RSVP.configure('onerror', someFunctionHere);`
-        $$rsvp$config$$config.on('error', value);
+        $$config$$config.on('error', value);
         return;
       }
 
       if (arguments.length === 2) {
-        $$rsvp$config$$config[name] = value;
+        $$config$$config[name] = value;
       } else {
-        return $$rsvp$config$$config[name];
+        return $$config$$config[name];
       }
     }
 
@@ -770,7 +771,7 @@
 
     var $$instrument$$queue = [];
 
-    var $$instrument$$default = function instrument(eventName, promise, child) {
+    function $$instrument$$instrument(eventName, promise, child) {
       if (1 === $$instrument$$queue.push({
           name: eventName,
           payload: {
@@ -787,12 +788,13 @@
               var entry;
               for (var i = 0; i < $$instrument$$queue.length; i++) {
                 entry = $$instrument$$queue[i];
-                $$rsvp$config$$config.trigger(entry.name, entry.payload);
+                $$config$$config.trigger(entry.name, entry.payload);
               }
               $$instrument$$queue.length = 0;
             }, 50);
           }
-      };
+      }
+    var $$instrument$$default = $$instrument$$instrument;
 
     function $$$internal$$noop() {}
 
@@ -820,7 +822,7 @@
     }
 
     function $$$internal$$handleForeignThenable(promise, thenable, then) {
-      $$rsvp$config$$config.async(function(promise) {
+      $$config$$config.async(function(promise) {
         var sealed = false;
         var error = $$$internal$$tryThen(then, thenable, function(value) {
           if (sealed) { return; }
@@ -905,11 +907,11 @@
       promise._state = $$$internal$$FULFILLED;
 
       if (promise._subscribers.length === 0) {
-        if ($$rsvp$config$$config.instrument) {
+        if ($$config$$config.instrument) {
           $$instrument$$default('fulfilled', promise);
         }
       } else {
-        $$rsvp$config$$config.async($$$internal$$publish, promise);
+        $$config$$config.async($$$internal$$publish, promise);
       }
     }
 
@@ -918,7 +920,7 @@
       promise._state = $$$internal$$REJECTED;
       promise._result = reason;
 
-      $$rsvp$config$$config.async($$$internal$$publishRejection, promise);
+      $$config$$config.async($$$internal$$publishRejection, promise);
     }
 
     function $$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
@@ -932,7 +934,7 @@
       subscribers[length + $$$internal$$REJECTED]  = onRejection;
 
       if (length === 0 && parent._state) {
-        $$rsvp$config$$config.async($$$internal$$publish, parent);
+        $$config$$config.async($$$internal$$publish, parent);
       }
     }
 
@@ -940,7 +942,7 @@
       var subscribers = promise._subscribers;
       var settled = promise._state;
 
-      if ($$rsvp$config$$config.instrument) {
+      if ($$config$$config.instrument) {
         $$instrument$$default(settled === $$$internal$$FULFILLED ? 'fulfilled' : 'rejected', promise);
       }
 
@@ -1027,7 +1029,7 @@
       }
     }
 
-    function $$enumerator$$makeSettledResult(state, position, value) {
+    function $$$enumerator$$makeSettledResult(state, position, value) {
       if (state === $$$internal$$FULFILLED) {
         return {
           state: 'fulfilled',
@@ -1041,7 +1043,7 @@
       }
     }
 
-    function $$enumerator$$Enumerator(Constructor, input, abortOnReject, label) {
+    function $$$enumerator$$Enumerator(Constructor, input, abortOnReject, label) {
       this._instanceConstructor = Constructor;
       this.promise = new Constructor($$$internal$$noop, label);
       this._abortOnReject = abortOnReject;
@@ -1067,21 +1069,21 @@
       }
     }
 
-    $$enumerator$$Enumerator.prototype._validateInput = function(input) {
+    $$$enumerator$$Enumerator.prototype._validateInput = function(input) {
       return $$utils1$$isArray(input);
     };
 
-    $$enumerator$$Enumerator.prototype._validationError = function() {
+    $$$enumerator$$Enumerator.prototype._validationError = function() {
       return new Error('Array Methods must be provided an Array');
     };
 
-    $$enumerator$$Enumerator.prototype._init = function() {
+    $$$enumerator$$Enumerator.prototype._init = function() {
       this._result = new Array(this.length);
     };
 
-    var $$enumerator$$default = $$enumerator$$Enumerator;
+    var $$$enumerator$$default = $$$enumerator$$Enumerator;
 
-    $$enumerator$$Enumerator.prototype._enumerate = function() {
+    $$$enumerator$$Enumerator.prototype._enumerate = function() {
       var length  = this.length;
       var promise = this.promise;
       var input   = this._input;
@@ -1091,7 +1093,7 @@
       }
     };
 
-    $$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
+    $$$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
       var c = this._instanceConstructor;
       if ($$utils1$$isMaybeThenable(entry)) {
         if (entry.constructor === c && entry._state !== $$$internal$$PENDING) {
@@ -1106,7 +1108,7 @@
       }
     };
 
-    $$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
+    $$$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
       var promise = this.promise;
 
       if (promise._state === $$$internal$$PENDING) {
@@ -1124,11 +1126,11 @@
       }
     };
 
-    $$enumerator$$Enumerator.prototype._makeResult = function(state, i, value) {
+    $$$enumerator$$Enumerator.prototype._makeResult = function(state, i, value) {
       return value;
     };
 
-    $$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
+    $$$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
       var enumerator = this;
 
       $$$internal$$subscribe(promise, undefined, function(value) {
@@ -1137,12 +1139,11 @@
         enumerator._settledAt($$$internal$$REJECTED, i, reason);
       });
     };
-
-    var $$promise$all$$default = function all(entries, label) {
-      return new $$enumerator$$default(this, entries, true /* abort on reject */, label).promise;
-    };
-
-    var $$promise$race$$default = function race(entries, label) {
+    function $$promise$all$$all(entries, label) {
+      return new $$$enumerator$$default(this, entries, true /* abort on reject */, label).promise;
+    }
+    var $$promise$all$$default = $$promise$all$$all;
+    function $$promise$race$$race(entries, label) {
       /*jshint validthis:true */
       var Constructor = this;
 
@@ -1168,9 +1169,9 @@
       }
 
       return promise;
-    };
-
-    var $$promise$resolve$$default = function resolve(object, label) {
+    }
+    var $$promise$race$$default = $$promise$race$$race;
+    function $$promise$resolve$$resolve(object, label) {
       /*jshint validthis:true */
       var Constructor = this;
 
@@ -1181,27 +1182,28 @@
       var promise = new Constructor($$$internal$$noop, label);
       $$$internal$$resolve(promise, object);
       return promise;
-    };
-
-    var $$promise$reject$$default = function reject(reason, label) {
+    }
+    var $$promise$resolve$$default = $$promise$resolve$$resolve;
+    function $$promise$reject$$reject(reason, label) {
       /*jshint validthis:true */
       var Constructor = this;
       var promise = new Constructor($$$internal$$noop, label);
       $$$internal$$reject(promise, reason);
       return promise;
-    };
+    }
+    var $$promise$reject$$default = $$promise$reject$$reject;
 
-    var $$rsvp$promise$$guidKey = 'rsvp_' + $$utils1$$now() + '-';
-    var $$rsvp$promise$$counter = 0;
+    var $$promise$$guidKey = 'rsvp_' + $$utils1$$now() + '-';
+    var $$promise$$counter = 0;
 
-    function $$rsvp$promise$$needsResolver() {
+    function $$promise$$needsResolver() {
       throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
     }
 
-    function $$rsvp$promise$$needsNew() {
+    function $$promise$$needsNew() {
       throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
     }
-    var $$rsvp$promise$$default = $$rsvp$promise$$Promise;
+    var $$promise$$default = $$promise$$Promise;
     /**
       Promise objects represent the eventual result of an asynchronous operation. The
       primary way of interacting with a promise is through its `then` method, which
@@ -1306,24 +1308,24 @@
       Useful for tooling.
       @constructor
     */
-    function $$rsvp$promise$$Promise(resolver, label) {
-      this._id = $$rsvp$promise$$counter++;
+    function $$promise$$Promise(resolver, label) {
+      this._id = $$promise$$counter++;
       this._label = label;
       this._state = undefined;
       this._result = undefined;
       this._subscribers = [];
 
-      if ($$rsvp$config$$config.instrument) {
+      if ($$config$$config.instrument) {
         $$instrument$$default('created', this);
       }
 
       if ($$$internal$$noop !== resolver) {
         if (!$$utils1$$isFunction(resolver)) {
-          $$rsvp$promise$$needsResolver();
+          $$promise$$needsResolver();
         }
 
-        if (!(this instanceof $$rsvp$promise$$Promise)) {
-          $$rsvp$promise$$needsNew();
+        if (!(this instanceof $$promise$$Promise)) {
+          $$promise$$needsNew();
         }
 
         $$$internal$$initializePromise(this, resolver);
@@ -1331,19 +1333,19 @@
     }
 
     // deprecated
-    $$rsvp$promise$$Promise.cast = $$promise$resolve$$default;
-    $$rsvp$promise$$Promise.all = $$promise$all$$default;
-    $$rsvp$promise$$Promise.race = $$promise$race$$default;
-    $$rsvp$promise$$Promise.resolve = $$promise$resolve$$default;
-    $$rsvp$promise$$Promise.reject = $$promise$reject$$default;
+    $$promise$$Promise.cast = $$promise$resolve$$default;
+    $$promise$$Promise.all = $$promise$all$$default;
+    $$promise$$Promise.race = $$promise$race$$default;
+    $$promise$$Promise.resolve = $$promise$resolve$$default;
+    $$promise$$Promise.reject = $$promise$reject$$default;
 
-    $$rsvp$promise$$Promise.prototype = {
-      constructor: $$rsvp$promise$$Promise,
+    $$promise$$Promise.prototype = {
+      constructor: $$promise$$Promise,
 
-      _guidKey: $$rsvp$promise$$guidKey,
+      _guidKey: $$promise$$guidKey,
 
       _onerror: function (reason) {
-        $$rsvp$config$$config.trigger('error', reason);
+        $$config$$config.trigger('error', reason);
       },
 
     /**
@@ -1545,7 +1547,7 @@
         var state = parent._state;
 
         if (state === $$$internal$$FULFILLED && !onFulfillment || state === $$$internal$$REJECTED && !onRejection) {
-          if ($$rsvp$config$$config.instrument) {
+          if ($$config$$config.instrument) {
             $$instrument$$default('chained', this, this);
           }
           return this;
@@ -1556,13 +1558,13 @@
         var child = new this.constructor($$$internal$$noop, label);
         var result = parent._result;
 
-        if ($$rsvp$config$$config.instrument) {
+        if ($$config$$config.instrument) {
           $$instrument$$default('chained', parent, child);
         }
 
         if (state) {
           var callback = arguments[state - 1];
-          $$rsvp$config$$config.async(function(){
+          $$config$$config.async(function(){
             $$$internal$$invokeCallback(state, child, callback, result);
           });
         } else {
@@ -1658,424 +1660,19 @@
         }, label);
       }
     };
-
-    function $$rsvp$node$$Result() {
-      this.value = undefined;
-    }
-
-    var $$rsvp$node$$ERROR = new $$rsvp$node$$Result();
-    var $$rsvp$node$$GET_THEN_ERROR = new $$rsvp$node$$Result();
-
-    function $$rsvp$node$$getThen(obj) {
-      try {
-       return obj.then;
-      } catch(error) {
-        $$rsvp$node$$ERROR.value= error;
-        return $$rsvp$node$$ERROR;
-      }
-    }
-
-
-    function $$rsvp$node$$tryApply(f, s, a) {
-      try {
-        f.apply(s, a);
-      } catch(error) {
-        $$rsvp$node$$ERROR.value = error;
-        return $$rsvp$node$$ERROR;
-      }
-    }
-
-    function $$rsvp$node$$makeObject(_, argumentNames) {
-      var obj = {};
-      var name;
-      var i;
-      var length = _.length;
-      var args = new Array(length);
-
-      for (var x = 0; x < length; x++) {
-        args[x] = _[x];
-      }
-
-      for (i = 0; i < argumentNames.length; i++) {
-        name = argumentNames[i];
-        obj[name] = args[i + 1];
-      }
-
-      return obj;
-    }
-
-    function $$rsvp$node$$arrayResult(_) {
-      var length = _.length;
-      var args = new Array(length - 1);
-
-      for (var i = 1; i < length; i++) {
-        args[i - 1] = _[i];
-      }
-
-      return args;
-    }
-
-    function $$rsvp$node$$wrapThenable(then, promise) {
-      return {
-        then: function(onFulFillment, onRejection) {
-          return then.call(promise, onFulFillment, onRejection);
-        }
-      };
-    }
-
-    var $$rsvp$node$$default = function denodeify(nodeFunc, options) {
-      var fn = function() {
-        var self = this;
-        var l = arguments.length;
-        var args = new Array(l + 1);
-        var arg;
-        var promiseInput = false;
-
-        for (var i = 0; i < l; ++i) {
-          arg = arguments[i];
-
-          if (!promiseInput) {
-            // TODO: clean this up
-            promiseInput = $$rsvp$node$$needsPromiseInput(arg);
-            if (promiseInput === $$rsvp$node$$GET_THEN_ERROR) {
-              var p = new $$rsvp$promise$$default($$$internal$$noop);
-              $$$internal$$reject(p, $$rsvp$node$$GET_THEN_ERROR.value);
-              return p;
-            } else if (promiseInput && promiseInput !== true) {
-              arg = $$rsvp$node$$wrapThenable(promiseInput, arg);
-            }
-          }
-          args[i] = arg;
-        }
-
-        var promise = new $$rsvp$promise$$default($$$internal$$noop);
-
-        args[l] = function(err, val) {
-          if (err)
-            $$$internal$$reject(promise, err);
-          else if (options === undefined)
-            $$$internal$$resolve(promise, val);
-          else if (options === true)
-            $$$internal$$resolve(promise, $$rsvp$node$$arrayResult(arguments));
-          else if ($$utils1$$isArray(options))
-            $$$internal$$resolve(promise, $$rsvp$node$$makeObject(arguments, options));
-          else
-            $$$internal$$resolve(promise, val);
-        };
-
-        if (promiseInput) {
-          return $$rsvp$node$$handlePromiseInput(promise, args, nodeFunc, self);
-        } else {
-          return $$rsvp$node$$handleValueInput(promise, args, nodeFunc, self);
-        }
-      };
-
-      fn.__proto__ = nodeFunc;
-
-      return fn;
-    };
-
-    function $$rsvp$node$$handleValueInput(promise, args, nodeFunc, self) {
-      var result = $$rsvp$node$$tryApply(nodeFunc, self, args);
-      if (result === $$rsvp$node$$ERROR) {
-        $$$internal$$reject(promise, result.value);
-      }
-      return promise;
-    }
-
-    function $$rsvp$node$$handlePromiseInput(promise, args, nodeFunc, self){
-      return $$rsvp$promise$$default.all(args).then(function(args){
-        var result = $$rsvp$node$$tryApply(nodeFunc, self, args);
-        if (result === $$rsvp$node$$ERROR) {
-          $$$internal$$reject(promise, result.value);
-        }
-        return promise;
-      });
-    }
-
-    function $$rsvp$node$$needsPromiseInput(arg) {
-      if (arg && typeof arg === 'object') {
-        if (arg.constructor === $$rsvp$promise$$default) {
-          return true;
-        } else {
-          return $$rsvp$node$$getThen(arg);
-        }
-      } else {
-        return false;
-      }
-    }
-
-    var $$rsvp$all$$default = function all(array, label) {
-      return $$rsvp$promise$$default.all(array, label);
-    };
-
-    function $$rsvp$all$settled$$AllSettled(Constructor, entries, label) {
-      this._superConstructor(Constructor, entries, false /* don't abort on reject */, label);
-    }
-
-    $$rsvp$all$settled$$AllSettled.prototype = $$utils1$$o_create($$enumerator$$default.prototype);
-    $$rsvp$all$settled$$AllSettled.prototype._superConstructor = $$enumerator$$default;
-    $$rsvp$all$settled$$AllSettled.prototype._makeResult = $$enumerator$$makeSettledResult;
-    $$rsvp$all$settled$$AllSettled.prototype._validationError = function() {
-      return new Error('allSettled must be called with an array');
-    };
-
-    var $$rsvp$all$settled$$default = function allSettled(entries, label) {
-      return new $$rsvp$all$settled$$AllSettled($$rsvp$promise$$default, entries, label).promise;
-    };
-
-    var $$rsvp$race$$default = function race(array, label) {
-      return $$rsvp$promise$$default.race(array, label);
-    };
-
-    function $$promise$hash$$PromiseHash(Constructor, object, label) {
-      this._superConstructor(Constructor, object, true, label);
-    }
-
-    var $$promise$hash$$default = $$promise$hash$$PromiseHash;
-
-    $$promise$hash$$PromiseHash.prototype = $$utils1$$o_create($$enumerator$$default.prototype);
-    $$promise$hash$$PromiseHash.prototype._superConstructor = $$enumerator$$default;
-    $$promise$hash$$PromiseHash.prototype._init = function() {
-      this._result = {};
-    };
-
-    $$promise$hash$$PromiseHash.prototype._validateInput = function(input) {
-      return input && typeof input === 'object';
-    };
-
-    $$promise$hash$$PromiseHash.prototype._validationError = function() {
-      return new Error('Promise.hash must be called with an object');
-    };
-
-    $$promise$hash$$PromiseHash.prototype._enumerate = function() {
-      var promise = this.promise;
-      var input   = this._input;
-      var results = [];
-
-      for (var key in input) {
-        if (promise._state === $$$internal$$PENDING && input.hasOwnProperty(key)) {
-          results.push({
-            position: key,
-            entry: input[key]
-          });
-        }
-      }
-
-      var length = results.length;
-      this._remaining = length;
-      var result;
-
-      for (var i = 0; promise._state === $$$internal$$PENDING && i < length; i++) {
-        result = results[i];
-        this._eachEntry(result.entry, result.position);
-      }
-    };
-
-    var $$rsvp$hash$$default = function hash(object, label) {
-      return new $$promise$hash$$default($$rsvp$promise$$default, object, label).promise;
-    };
-
-    function $$rsvp$hash$settled$$HashSettled(Constructor, object, label) {
-      this._superConstructor(Constructor, object, false, label);
-    }
-
-    $$rsvp$hash$settled$$HashSettled.prototype = $$utils1$$o_create($$promise$hash$$default.prototype);
-    $$rsvp$hash$settled$$HashSettled.prototype._superConstructor = $$enumerator$$default;
-    $$rsvp$hash$settled$$HashSettled.prototype._makeResult = $$enumerator$$makeSettledResult;
-
-    $$rsvp$hash$settled$$HashSettled.prototype._validationError = function() {
-      return new Error('hashSettled must be called with an object');
-    };
-
-    var $$rsvp$hash$settled$$default = function hashSettled(object, label) {
-      return new $$rsvp$hash$settled$$HashSettled($$rsvp$promise$$default, object, label).promise;
-    };
-
-    var $$rsvp$rethrow$$default = function rethrow(reason) {
-      setTimeout(function() {
-        throw reason;
-      });
-      throw reason;
-    };
-
-    var $$rsvp$defer$$default = function defer(label) {
+    function rsvp$defer$$defer(label) {
       var deferred = { };
 
-      deferred.promise = new $$rsvp$promise$$default(function(resolve, reject) {
+      deferred.promise = new $$promise$$default(function(resolve, reject) {
         deferred.resolve = resolve;
         deferred.reject = reject;
       }, label);
 
       return deferred;
-    };
-
-    var $$rsvp$map$$default = function map(promises, mapFn, label) {
-      return $$rsvp$promise$$default.all(promises, label).then(function(values) {
-        if (!$$utils1$$isFunction(mapFn)) {
-          throw new TypeError("You must pass a function as map's second argument.");
-        }
-
-        var length = values.length;
-        var results = new Array(length);
-
-        for (var i = 0; i < length; i++) {
-          results[i] = mapFn(values[i]);
-        }
-
-        return $$rsvp$promise$$default.all(results, label);
-      });
-    };
-
-    var $$rsvp$resolve$$default = function resolve(value, label) {
-      return $$rsvp$promise$$default.resolve(value, label);
-    };
-
-    var $$rsvp$reject$$default = function reject(reason, label) {
-      return $$rsvp$promise$$default.reject(reason, label);
-    };
-
-    var $$rsvp$filter$$default = function filter(promises, filterFn, label) {
-      return $$rsvp$promise$$default.all(promises, label).then(function(values) {
-        if (!$$utils1$$isFunction(filterFn)) {
-          throw new TypeError("You must pass a function as filter's second argument.");
-        }
-
-        var length = values.length;
-        var filtered = new Array(length);
-
-        for (var i = 0; i < length; i++) {
-          filtered[i] = filterFn(values[i]);
-        }
-
-        return $$rsvp$promise$$default.all(filtered, label).then(function(filtered) {
-          var results = new Array(length);
-          var newLength = 0;
-
-          for (var i = 0; i < length; i++) {
-            if (filtered[i]) {
-              results[newLength] = values[i];
-              newLength++;
-            }
-          }
-
-          results.length = newLength;
-
-          return results;
-        });
-      });
-    };
-
-    var $$rsvp$asap$$len = 0;
-
-    var $$rsvp$asap$$default = function asap(callback, arg) {
-      $$rsvp$asap$$queue[$$rsvp$asap$$len] = callback;
-      $$rsvp$asap$$queue[$$rsvp$asap$$len + 1] = arg;
-      $$rsvp$asap$$len += 2;
-      if ($$rsvp$asap$$len === 2) {
-        // If len is 1, that means that we need to schedule an async flush.
-        // If additional callbacks are queued before the queue is flushed, they
-        // will be processed by this flush that we are scheduling.
-        $$rsvp$asap$$scheduleFlush();
-      }
-    };
-
-    var $$rsvp$asap$$browserGlobal = (typeof window !== 'undefined') ? window : {};
-    var $$rsvp$asap$$BrowserMutationObserver = $$rsvp$asap$$browserGlobal.MutationObserver || $$rsvp$asap$$browserGlobal.WebKitMutationObserver;
-
-    // test for web worker but not in IE10
-    var $$rsvp$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
-      typeof importScripts !== 'undefined' &&
-      typeof MessageChannel !== 'undefined';
-
-    // node
-    function $$rsvp$asap$$useNextTick() {
-      return function() {
-        process.nextTick($$rsvp$asap$$flush);
-      };
     }
+    var rsvp$defer$$default = rsvp$defer$$defer;
 
-    function $$rsvp$asap$$useMutationObserver() {
-      var iterations = 0;
-      var observer = new $$rsvp$asap$$BrowserMutationObserver($$rsvp$asap$$flush);
-      var node = document.createTextNode('');
-      observer.observe(node, { characterData: true });
-
-      return function() {
-        node.data = (iterations = ++iterations % 2);
-      };
-    }
-
-    // web worker
-    function $$rsvp$asap$$useMessageChannel() {
-      var channel = new MessageChannel();
-      channel.port1.onmessage = $$rsvp$asap$$flush;
-      return function () {
-        channel.port2.postMessage(0);
-      };
-    }
-
-    function $$rsvp$asap$$useSetTimeout() {
-      return function() {
-        setTimeout($$rsvp$asap$$flush, 1);
-      };
-    }
-
-    var $$rsvp$asap$$queue = new Array(1000);
-    function $$rsvp$asap$$flush() {
-      for (var i = 0; i < $$rsvp$asap$$len; i+=2) {
-        var callback = $$rsvp$asap$$queue[i];
-        var arg = $$rsvp$asap$$queue[i+1];
-
-        callback(arg);
-
-        $$rsvp$asap$$queue[i] = undefined;
-        $$rsvp$asap$$queue[i+1] = undefined;
-      }
-
-      $$rsvp$asap$$len = 0;
-    }
-
-    var $$rsvp$asap$$scheduleFlush;
-
-    // Decide what async method to use to triggering processing of queued callbacks:
-    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
-      $$rsvp$asap$$scheduleFlush = $$rsvp$asap$$useNextTick();
-    } else if ($$rsvp$asap$$BrowserMutationObserver) {
-      $$rsvp$asap$$scheduleFlush = $$rsvp$asap$$useMutationObserver();
-    } else if ($$rsvp$asap$$isWorker) {
-      $$rsvp$asap$$scheduleFlush = $$rsvp$asap$$useMessageChannel();
-    } else {
-      $$rsvp$asap$$scheduleFlush = $$rsvp$asap$$useSetTimeout();
-    }
-
-    // default async is asap;
-    $$rsvp$config$$config.async = $$rsvp$asap$$default;
-    var rsvp$$cast = $$rsvp$resolve$$default;
-    function rsvp$$async(callback, arg) {
-      $$rsvp$config$$config.async(callback, arg);
-    }
-
-    function rsvp$$on() {
-      $$rsvp$config$$config.on.apply($$rsvp$config$$config, arguments);
-    }
-
-    function rsvp$$off() {
-      $$rsvp$config$$config.off.apply($$rsvp$config$$config, arguments);
-    }
-
-    // Set up instrumentation through `window.__PROMISE_INTRUMENTATION__`
-    if (typeof window !== 'undefined' && typeof window['__PROMISE_INSTRUMENTATION__'] === 'object') {
-      var rsvp$$callbacks = window['__PROMISE_INSTRUMENTATION__'];
-      $$rsvp$config$$configure('instrument', true);
-      for (var rsvp$$eventName in rsvp$$callbacks) {
-        if (rsvp$$callbacks.hasOwnProperty(rsvp$$eventName)) {
-          rsvp$$on(rsvp$$eventName, rsvp$$callbacks[rsvp$$eventName]);
-        }
-      }
-    }
-
-    $$lgtm$$configure('defer', $$rsvp$defer$$default);
+    $$lgtm$$configure('defer', rsvp$defer$$default);
 
     var lgtm$standalone$umd$$LGTM = {
       configure: $$lgtm$$configure,

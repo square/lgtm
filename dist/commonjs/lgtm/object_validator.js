@@ -1,16 +1,5 @@
 "use strict";
-
-Object.seal(Object.defineProperties(exports, {
-  default: {
-    get: function() {
-      return src$lgtm$object_validator$$default;
-    },
-
-    enumerable: true
-  }
-}));
-
-var $$utils$$ = require("./utils");
+var lgtm$utils$$ = require("./utils");
 
 function ObjectValidator() {
   this._validations  = {};
@@ -44,16 +33,16 @@ ObjectValidator.prototype = {
 
     for (var i = 0; i < dependentAttributes.length; i++) {
       var attr = dependentAttributes[i];
-      if (!$$utils$$.contains(dependentsForParent, attr)) {
+      if (!lgtm$utils$$.contains(dependentsForParent, attr)) {
         dependentsForParent.push(attr);
       }
     }
   },
 
   attributes: function() {
-    return $$utils$$.uniq(
-      $$utils$$.keys(this._validations).concat(
-        $$utils$$.keys(this._dependencies)
+    return lgtm$utils$$.uniq(
+      lgtm$utils$$.keys(this._validations).concat(
+        lgtm$utils$$.keys(this._dependencies)
       )
     );
   },
@@ -70,7 +59,7 @@ ObjectValidator.prototype = {
     }
 
     if (attributes.length === 0) {
-      attributes = $$utils$$.keys(this._validations);
+      attributes = lgtm$utils$$.keys(this._validations);
     }
 
     var validationPromises = [];
@@ -79,7 +68,7 @@ ObjectValidator.prototype = {
       validationPromises = validationPromises.concat(this._validateAttribute(object, attr));
     }
 
-    var promise = $$utils$$.all(validationPromises).then(
+    var promise = lgtm$utils$$.all(validationPromises).then(
       function(results) {
         results = self._collectResults(results);
         if (callback) {
@@ -100,7 +89,7 @@ ObjectValidator.prototype = {
   },
 
   _validateAttribute: function(object, attr) {
-    var value       = $$utils$$.get(object, attr);
+    var value       = lgtm$utils$$.get(object, attr);
     var validations = this._validations[attr];
     var results     = [];
 
@@ -109,7 +98,7 @@ ObjectValidator.prototype = {
         var fn      = pair[0];
         var message = pair[1];
 
-        var promise = $$utils$$.resolve()
+        var promise = lgtm$utils$$.resolve()
           .then(function() {
             return fn(value, attr, object);
           })
@@ -119,7 +108,7 @@ ObjectValidator.prototype = {
 
         results.push(promise);
       });
-    } else if ($$utils$$.contains(this.attributes(), attr)) {
+    } else if (lgtm$utils$$.contains(this.attributes(), attr)) {
       results.push([ attr, null ]);
     }
 
@@ -164,6 +153,6 @@ ObjectValidator.prototype = {
   }
 };
 
-var src$lgtm$object_validator$$default = ObjectValidator;
+exports["default"] = ObjectValidator;
 
 //# sourceMappingURL=object_validator.js.map

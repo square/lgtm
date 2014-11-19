@@ -1,19 +1,8 @@
 "use strict";
-
-Object.seal(Object.defineProperties(exports, {
-  default: {
-    get: function() {
-      return src$lgtm$validator_builder$$default;
-    },
-
-    enumerable: true
-  }
-}));
-
-var $$object_validator$$ = require("./object_validator"), $$utils$$ = require("./utils");
+var lgtm$object_validator$$ = require("./object_validator"), lgtm$utils$$ = require("./utils");
 
 function ValidatorBuilder() {
-  this._validator = new $$object_validator$$.default();
+  this._validator = new lgtm$object_validator$$.default();
 }
 
 ValidatorBuilder.prototype = {
@@ -74,7 +63,7 @@ ValidatorBuilder.prototype = {
     }
 
     function validation(value, attr, object) {
-      var properties = $$utils$$.getProperties(object, dependencies);
+      var properties = lgtm$utils$$.getProperties(object, dependencies);
       return predicate.apply(null, properties.concat([attr, object]));
     }
 
@@ -82,9 +71,9 @@ ValidatorBuilder.prototype = {
     var conditionDependencies = this._conditionDependencies.slice();
 
     function validationWithConditions(value, attr, object) {
-      return $$utils$$.all(conditions.map(function(condition, i) {
+      return lgtm$utils$$.all(conditions.map(function(condition, i) {
         var dependencies = conditionDependencies[i];
-        var properties = $$utils$$.getProperties(object, dependencies);
+        var properties = lgtm$utils$$.getProperties(object, dependencies);
         return condition.apply(null, properties.concat([attr, object]));
       })).then(function(results) {
         for (var i = 0; i < results.length; i++) {
@@ -124,6 +113,6 @@ ValidatorBuilder.unregisterHelper = function(name) {
   return null;
 };
 
-var src$lgtm$validator_builder$$default = ValidatorBuilder;
+exports["default"] = ValidatorBuilder;
 
 //# sourceMappingURL=validator_builder.js.map

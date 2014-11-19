@@ -1,48 +1,5 @@
 "use strict";
-
-Object.seal(Object.defineProperties(exports, {
-  present: {
-    get: function() {
-      return present;
-    },
-
-    enumerable: true
-  },
-
-  checkEmail: {
-    get: function() {
-      return checkEmail;
-    },
-
-    enumerable: true
-  },
-
-  checkMinLength: {
-    get: function() {
-      return checkMinLength;
-    },
-
-    enumerable: true
-  },
-
-  checkMaxLength: {
-    get: function() {
-      return checkMaxLength;
-    },
-
-    enumerable: true
-  },
-
-  register: {
-    get: function() {
-      return register;
-    },
-
-    enumerable: true
-  }
-}));
-
-var $$$validator_builder$$ = require("../validator_builder");
+var lgtm$validator_builder$$ = require("../validator_builder");
 
 function present(value) {
   if (typeof value === 'string') {
@@ -105,25 +62,27 @@ function checkMaxLength(maxLength) {
 }
 
 function register() {
-  $$$validator_builder$$.default.registerHelper('required', function(message) {
+  lgtm$validator_builder$$.default.registerHelper('required', function(message) {
     this.using(present, message);
   });
 
-  $$$validator_builder$$.default.registerHelper('optional', function() {
+  lgtm$validator_builder$$.default.registerHelper('optional', function() {
     this.when(present);
   });
 
-  $$$validator_builder$$.default.registerHelper('email', function(message, options) {
+  lgtm$validator_builder$$.default.registerHelper('email', function(message, options) {
     this.using(checkEmail(options), message);
   });
 
-  $$$validator_builder$$.default.registerHelper('minLength', function(minLength, message) {
+  lgtm$validator_builder$$.default.registerHelper('minLength', function(minLength, message) {
     this.using(checkMinLength(minLength), message);
   });
 
-  $$$validator_builder$$.default.registerHelper('maxLength', function(maxLength, message) {
+  lgtm$validator_builder$$.default.registerHelper('maxLength', function(maxLength, message) {
     this.using(checkMaxLength(maxLength), message);
   });
 }
+
+exports.present = present, exports.checkEmail = checkEmail, exports.checkMinLength = checkMinLength, exports.checkMaxLength = checkMaxLength, exports.register = register;
 
 //# sourceMappingURL=core.js.map

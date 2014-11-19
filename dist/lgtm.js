@@ -1,5 +1,6 @@
 (function() {
     "use strict";
+    /* jshint esnext:true, undef:true, unused:true */
 
     var $$lgtm$config$$config = {};
 

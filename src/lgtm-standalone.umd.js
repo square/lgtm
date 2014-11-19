@@ -2,7 +2,7 @@
 
 // TODO: use this instead: export * from './lgtm';
 import { configure, validator, helpers, ObjectValidator } from './lgtm';
-import { defer } from 'rsvp';
+import defer from 'rsvp/defer';
 
 configure('defer', defer);
 
