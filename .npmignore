@@ -1,9 +1,0 @@
-src
-tasks
-test
-tmp
-
-dist/lgtm-standalone.js
-bower.json
-Gruntfile.js
-README.md

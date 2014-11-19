@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Simple JavaScript validation for objects.",
   "main": "dist/commonjs/lgtm.js",
+  "jsnext:main": "src/lgtm.js",
   "scripts": {
     "test": "make test",
     "prepublish": "make test"
@@ -26,5 +27,9 @@
   },
   "dependencies": {
     "rsvp": "~3.0.3"
-  }
+  },
+  "files": [
+    "src",
+    "dist/commonjs"
+  ]
 }
