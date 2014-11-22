@@ -99,6 +99,23 @@ ValidatorBuilder.prototype = {
 
   build: function() {
     return this._validator;
+  },
+
+  clone: function() {
+    var clone = new ValidatorBuilder();
+    if (this._attr != null) {
+      clone._attr = this._attr;
+    }
+    if (this._conditions != null) {
+      clone._conditions = this._conditions.slice();
+    }
+    if (this._conditionDependencies != null) {
+      clone._conditionDependencies = this._conditionDependencies.map(
+        function (dependencies) { return dependencies.slice(); }
+      );
+    }
+    clone._validator = this._validator.clone();
+    return clone;
   }
 };
 

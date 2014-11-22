@@ -89,6 +89,23 @@ ObjectValidator.prototype = {
     }
   },
 
+  clone: function () {
+    var clone       = new ObjectValidator();
+    var validations = this._validations;
+    keys(validations).forEach(function (attr) {
+      clone._validations[attr] = validations[attr].map(
+        function (list) { return list.slice(); }
+      );
+    });
+    var dependencies = this._dependencies;
+    keys(dependencies).forEach(function (attr) {
+      clone._dependencies[attr] = dependencies[attr].map(
+        function (list) { return list.slice(); }
+      );
+    });
+    return clone;
+  },
+
   _validateAttribute: function(object, attr) {
     var value       = get(object, attr);
     var validations = this._validations[attr];
