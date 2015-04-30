@@ -134,7 +134,7 @@ ObjectValidator.prototype = {
     };
 
     for (var i = 0; i < results.length; i++) {
-      if (!results[i]){ continue; }
+      if (!results[i]) { continue; }
 
       var attr = results[i][0];
       var message = results[i][1];
