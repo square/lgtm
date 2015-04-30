@@ -716,25 +716,25 @@
       }
     };
 
-    var $$config$$config = {
+    var rsvp$config$$config = {
       instrument: false
     };
 
-    $$events$$default.mixin($$config$$config);
+    $$events$$default.mixin(rsvp$config$$config);
 
-    function $$config$$configure(name, value) {
+    function rsvp$config$$configure(name, value) {
       if (name === 'onerror') {
         // handle for legacy users that expect the actual
         // error to be passed to their function added via
         // `RSVP.configure('onerror', someFunctionHere);`
-        $$config$$config.on('error', value);
+        rsvp$config$$config.on('error', value);
         return;
       }
 
       if (arguments.length === 2) {
-        $$config$$config[name] = value;
+        rsvp$config$$config[name] = value;
       } else {
-        return $$config$$config[name];
+        return rsvp$config$$config[name];
       }
     }
 
@@ -788,7 +788,7 @@
               var entry;
               for (var i = 0; i < $$instrument$$queue.length; i++) {
                 entry = $$instrument$$queue[i];
-                $$config$$config.trigger(entry.name, entry.payload);
+                rsvp$config$$config.trigger(entry.name, entry.payload);
               }
               $$instrument$$queue.length = 0;
             }, 50);
@@ -822,7 +822,7 @@
     }
 
     function $$$internal$$handleForeignThenable(promise, thenable, then) {
-      $$config$$config.async(function(promise) {
+      rsvp$config$$config.async(function(promise) {
         var sealed = false;
         var error = $$$internal$$tryThen(then, thenable, function(value) {
           if (sealed) { return; }
@@ -907,11 +907,11 @@
       promise._state = $$$internal$$FULFILLED;
 
       if (promise._subscribers.length === 0) {
-        if ($$config$$config.instrument) {
+        if (rsvp$config$$config.instrument) {
           $$instrument$$default('fulfilled', promise);
         }
       } else {
-        $$config$$config.async($$$internal$$publish, promise);
+        rsvp$config$$config.async($$$internal$$publish, promise);
       }
     }
 
@@ -920,7 +920,7 @@
       promise._state = $$$internal$$REJECTED;
       promise._result = reason;
 
-      $$config$$config.async($$$internal$$publishRejection, promise);
+      rsvp$config$$config.async($$$internal$$publishRejection, promise);
     }
 
     function $$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
@@ -934,7 +934,7 @@
       subscribers[length + $$$internal$$REJECTED]  = onRejection;
 
       if (length === 0 && parent._state) {
-        $$config$$config.async($$$internal$$publish, parent);
+        rsvp$config$$config.async($$$internal$$publish, parent);
       }
     }
 
@@ -942,7 +942,7 @@
       var subscribers = promise._subscribers;
       var settled = promise._state;
 
-      if ($$config$$config.instrument) {
+      if (rsvp$config$$config.instrument) {
         $$instrument$$default(settled === $$$internal$$FULFILLED ? 'fulfilled' : 'rejected', promise);
       }
 
@@ -1315,7 +1315,7 @@
       this._result = undefined;
       this._subscribers = [];
 
-      if ($$config$$config.instrument) {
+      if (rsvp$config$$config.instrument) {
         $$instrument$$default('created', this);
       }
 
@@ -1345,7 +1345,7 @@
       _guidKey: $$promise$$guidKey,
 
       _onerror: function (reason) {
-        $$config$$config.trigger('error', reason);
+        rsvp$config$$config.trigger('error', reason);
       },
 
     /**
@@ -1547,7 +1547,7 @@
         var state = parent._state;
 
         if (state === $$$internal$$FULFILLED && !onFulfillment || state === $$$internal$$REJECTED && !onRejection) {
-          if ($$config$$config.instrument) {
+          if (rsvp$config$$config.instrument) {
             $$instrument$$default('chained', this, this);
           }
           return this;
@@ -1558,13 +1558,13 @@
         var child = new this.constructor($$$internal$$noop, label);
         var result = parent._result;
 
-        if ($$config$$config.instrument) {
+        if (rsvp$config$$config.instrument) {
           $$instrument$$default('chained', parent, child);
         }
 
         if (state) {
           var callback = arguments[state - 1];
-          $$config$$config.async(function(){
+          rsvp$config$$config.async(function(){
             $$$internal$$invokeCallback(state, child, callback, result);
           });
         } else {
@@ -1671,7 +1671,92 @@
       return deferred;
     }
     var rsvp$defer$$default = rsvp$defer$$defer;
+    var rsvp$asap$$len = 0;
 
+    function rsvp$asap$$asap(callback, arg) {
+      rsvp$asap$$queue[rsvp$asap$$len] = callback;
+      rsvp$asap$$queue[rsvp$asap$$len + 1] = arg;
+      rsvp$asap$$len += 2;
+      if (rsvp$asap$$len === 2) {
+        // If len is 1, that means that we need to schedule an async flush.
+        // If additional callbacks are queued before the queue is flushed, they
+        // will be processed by this flush that we are scheduling.
+        rsvp$asap$$scheduleFlush();
+      }
+    }
+
+    var rsvp$asap$$default = rsvp$asap$$asap;
+
+    var rsvp$asap$$browserGlobal = (typeof window !== 'undefined') ? window : {};
+    var rsvp$asap$$BrowserMutationObserver = rsvp$asap$$browserGlobal.MutationObserver || rsvp$asap$$browserGlobal.WebKitMutationObserver;
+
+    // test for web worker but not in IE10
+    var rsvp$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
+      typeof importScripts !== 'undefined' &&
+      typeof MessageChannel !== 'undefined';
+
+    // node
+    function rsvp$asap$$useNextTick() {
+      return function() {
+        process.nextTick(rsvp$asap$$flush);
+      };
+    }
+
+    function rsvp$asap$$useMutationObserver() {
+      var iterations = 0;
+      var observer = new rsvp$asap$$BrowserMutationObserver(rsvp$asap$$flush);
+      var node = document.createTextNode('');
+      observer.observe(node, { characterData: true });
+
+      return function() {
+        node.data = (iterations = ++iterations % 2);
+      };
+    }
+
+    // web worker
+    function rsvp$asap$$useMessageChannel() {
+      var channel = new MessageChannel();
+      channel.port1.onmessage = rsvp$asap$$flush;
+      return function () {
+        channel.port2.postMessage(0);
+      };
+    }
+
+    function rsvp$asap$$useSetTimeout() {
+      return function() {
+        setTimeout(rsvp$asap$$flush, 1);
+      };
+    }
+
+    var rsvp$asap$$queue = new Array(1000);
+    function rsvp$asap$$flush() {
+      for (var i = 0; i < rsvp$asap$$len; i+=2) {
+        var callback = rsvp$asap$$queue[i];
+        var arg = rsvp$asap$$queue[i+1];
+
+        callback(arg);
+
+        rsvp$asap$$queue[i] = undefined;
+        rsvp$asap$$queue[i+1] = undefined;
+      }
+
+      rsvp$asap$$len = 0;
+    }
+
+    var rsvp$asap$$scheduleFlush;
+
+    // Decide what async method to use to triggering processing of queued callbacks:
+    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+      rsvp$asap$$scheduleFlush = rsvp$asap$$useNextTick();
+    } else if (rsvp$asap$$BrowserMutationObserver) {
+      rsvp$asap$$scheduleFlush = rsvp$asap$$useMutationObserver();
+    } else if (rsvp$asap$$isWorker) {
+      rsvp$asap$$scheduleFlush = rsvp$asap$$useMessageChannel();
+    } else {
+      rsvp$asap$$scheduleFlush = rsvp$asap$$useSetTimeout();
+    }
+
+    rsvp$config$$config.async = rsvp$asap$$default;
     $$lgtm$$configure('defer', rsvp$defer$$default);
 
     var lgtm$standalone$umd$$LGTM = {

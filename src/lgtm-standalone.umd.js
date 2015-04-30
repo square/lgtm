@@ -3,7 +3,10 @@
 // TODO: use this instead: export * from './lgtm';
 import { configure, validator, helpers, ObjectValidator } from './lgtm';
 import defer from 'rsvp/defer';
+import asap from 'rsvp/asap';
+import { config } from 'rsvp/config';
 
+config.async = asap;
 configure('defer', defer);
 
 export { configure, validator, helpers, ObjectValidator };
