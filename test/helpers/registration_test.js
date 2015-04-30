@@ -1,4 +1,4 @@
-const LGTM = require('../../dist/lgtm');
+const LGTM = require('../lgtm');
 const validator   = LGTM.validator;
 const validations = LGTM.helpers;
 const assert = require('assert');

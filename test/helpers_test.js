@@ -1,4 +1,4 @@
-const LGTM = require('../dist/lgtm');
+const LGTM = require('./lgtm');
 const assert = require('assert');
 
 describe('LGTM.helpers.(un)register', function() {

@@ -5,6 +5,7 @@ all: dist test
 
 test:
 	$(MOCHA) --recursive test
+	env LGTM_STANDALONE=1 $(MOCHA) --recursive test
 
 clean:
 	rm -rf dist
