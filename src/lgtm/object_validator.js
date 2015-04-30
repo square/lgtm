@@ -64,9 +64,11 @@ ObjectValidator.prototype = {
     }
 
     var validationPromises = [];
+    var alreadyValidating = attributes.slice();
     for (var i = 0; i < attributes.length; i++) {
       var attr = attributes[i];
-      validationPromises = validationPromises.concat(this._validateAttribute(object, attr));
+      validationPromises = validationPromises.concat(
+        this._validateAttribute(object, attr, alreadyValidating));
     }
 
     var promise = all(validationPromises).then(
@@ -89,7 +91,7 @@ ObjectValidator.prototype = {
     }
   },
 
-  _validateAttribute: function(object, attr) {
+  _validateAttribute: function(object, attr, alreadyValidating) {
     var value       = get(object, attr);
     var validations = this._validations[attr];
     var results     = [];
@@ -116,7 +118,10 @@ ObjectValidator.prototype = {
     var dependents = this._getDependentsFor(attr);
     for (var i = 0; i < dependents.length; i++) {
       var dependent = dependents[i];
-      results = results.concat(this._validateAttribute(object, dependent));
+      if (alreadyValidating.indexOf(dependent) < 0) {
+        alreadyValidating.push(dependent);
+        results = results.concat(this._validateAttribute(object, dependent, alreadyValidating));
+      }
     }
 
     return results;
