@@ -1,5 +1,5 @@
-MOCHA=./node_modules/.bin/mocha
-BROCCOLI=./node_modules/broccoli-cli/bin/broccoli
+MOCHA=$$(npm bin)/mocha
+BROCCOLI=$$(npm bin)/broccoli-cli/bin/broccoli
 
 all: dist test
 
