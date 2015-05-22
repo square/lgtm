@@ -1,6 +1,5 @@
 (function() {
     "use strict";
-    /* jshint esnext:true, undef:true, unused:true */
 
     var $$lgtm$config$$config = {};
 
@@ -193,7 +192,8 @@
         var alreadyValidating = attributes.slice();
         for (var i = 0; i < attributes.length; i++) {
           var attr = attributes[i];
-          validationPromises = validationPromises.concat(this._validateAttribute(object, attr, alreadyValidating));
+          validationPromises = validationPromises.concat(
+            this._validateAttribute(object, attr, alreadyValidating));
         }
 
         var promise = $$utils$$all(validationPromises).then(
@@ -230,8 +230,14 @@
               .then(function() {
                 return fn(value, attr, object);
               })
-              .then(function(isValid) {
-                return [ attr, isValid ? null : message ];
+              .then(function(validationResult) {
+                if (message == undefined) {
+                  // This form of validation returns a message (invalid) or null (valid)
+                  return [ attr, validationResult ];
+                } else {
+                  // This form of validation returns a boolean
+                  return [ attr, validationResult ? null : message ];
+                }
               });
 
             results.push(promise);
@@ -259,7 +265,7 @@
         };
 
         for (var i = 0; i < results.length; i++) {
-          if (!results[i]){ continue; }
+          if (!results[i]) { continue; }
 
           var attr = results[i][0];
           var message = results[i][1];
@@ -327,13 +333,23 @@
         return this.when.apply(this, arguments);
       },
 
-      using: function(/* ...dependencies, predicate, message */) {
+      using: function(/* ...dependencies, predicate, [message] */) {
         var dependencies = [].slice.apply(arguments);
-        var message      = dependencies.pop();
-        var predicate    = dependencies.pop();
-
-        if (typeof message === 'function' && typeof predicate === 'undefined') {
-          throw new Error('missing expected argument `message` after predicate function');
+        var message, predicate;
+        if (typeof dependencies[dependencies.length-1] === 'function') {
+          // This form of the .using() call defers message generation to the
+          // validation function
+          predicate = dependencies.pop();
+        } else if (
+          typeof dependencies[dependencies.length-2] === 'function' &&
+          typeof dependencies[dependencies.length-1] === 'string'
+        ) {
+          // This is the form of .using() with a message specified at the time
+          // the validation is built
+          message = dependencies.pop();
+          predicate = dependencies.pop();
+        } else {
+          throw new Error('invalid arguments');
         }
 
         if (dependencies.length === 0) {

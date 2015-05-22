@@ -44,13 +44,23 @@ ValidatorBuilder.prototype = {
     return this.when.apply(this, arguments);
   },
 
-  using: function(/* ...dependencies, predicate, message */) {
+  using: function(/* ...dependencies, predicate, [message] */) {
     var dependencies = [].slice.apply(arguments);
-    var message      = dependencies.pop();
-    var predicate    = dependencies.pop();
-
-    if (typeof message === 'function' && typeof predicate === 'undefined') {
-      throw new Error('missing expected argument `message` after predicate function');
+    var message, predicate;
+    if (typeof dependencies[dependencies.length-1] === 'function') {
+      // This form of the .using() call defers message generation to the
+      // validation function
+      predicate = dependencies.pop();
+    } else if (
+      typeof dependencies[dependencies.length-2] === 'function' &&
+      typeof dependencies[dependencies.length-1] === 'string'
+    ) {
+      // This is the form of .using() with a message specified at the time
+      // the validation is built
+      message = dependencies.pop();
+      predicate = dependencies.pop();
+    } else {
+      throw new Error('invalid arguments');
     }
 
     if (dependencies.length === 0) {

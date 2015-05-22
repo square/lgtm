@@ -1,3 +1,5 @@
+/* jshint esnext:true, undef:true, unused:true */
+
 "use strict";
 var lgtm$utils$$ = require("./utils");
 
@@ -66,7 +68,8 @@ ObjectValidator.prototype = {
     var alreadyValidating = attributes.slice();
     for (var i = 0; i < attributes.length; i++) {
       var attr = attributes[i];
-      validationPromises = validationPromises.concat(this._validateAttribute(object, attr, alreadyValidating));
+      validationPromises = validationPromises.concat(
+        this._validateAttribute(object, attr, alreadyValidating));
     }
 
     var promise = lgtm$utils$$.all(validationPromises).then(
@@ -103,8 +106,14 @@ ObjectValidator.prototype = {
           .then(function() {
             return fn(value, attr, object);
           })
-          .then(function(isValid) {
-            return [ attr, isValid ? null : message ];
+          .then(function(validationResult) {
+            if (message == undefined) {
+              // This form of validation returns a message (invalid) or null (valid)
+              return [ attr, validationResult ];
+            } else {
+              // This form of validation returns a boolean
+              return [ attr, validationResult ? null : message ];
+            }
           });
 
         results.push(promise);
@@ -132,7 +141,7 @@ ObjectValidator.prototype = {
     };
 
     for (var i = 0; i < results.length; i++) {
-      if (!results[i]){ continue; }
+      if (!results[i]) { continue; }
 
       var attr = results[i][0];
       var message = results[i][1];
