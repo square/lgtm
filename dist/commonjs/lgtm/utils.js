@@ -1,3 +1,5 @@
+/* jshint esnext:true, undef:true, unused:true */
+
 "use strict";
 var lgtm$config$$ = require("./config");
 

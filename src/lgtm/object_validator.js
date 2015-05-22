@@ -105,8 +105,14 @@ ObjectValidator.prototype = {
           .then(function() {
             return fn(value, attr, object);
           })
-          .then(function(isValid) {
-            return [ attr, isValid ? null : message ];
+          .then(function(validationResult) {
+            if (message == undefined) {
+              // This form of validation returns a message (invalid) or null (valid)
+              return [ attr, validationResult ];
+            } else {
+              // This form of validation returns a boolean
+              return [ attr, validationResult ? null : message ];
+            }
           });
 
         results.push(promise);

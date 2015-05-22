@@ -110,6 +110,53 @@ describe('validator', function() {
         });
       });
     });
+
+    describe("with the error message unspecified", function() {
+      beforeEach(function() {
+        validator = buildValidator()
+          .validates('flavor')
+            .using(function(flavor) {
+              if (flavor !== 'cake') {
+                return 'Do not like ' + flavor + '!';
+              }
+            })
+          .build();
+      });
+
+      it('does not return an error if the validator result is null-like', function(done) {
+        validator.validate({ flavor: 'cake' }).then(function(result) {
+          assert.deepEqual(
+            result,
+            {
+              valid: true,
+              errors: {
+                flavor: []
+              }
+            },
+            'returns no errors'
+          );
+
+          done();
+        }).catch(done);
+      });
+
+      it('treats a returned string as an error message', function(done) {
+        validator.validate({ flavor: 'cabbage' }).then(function(result) {
+          assert.deepEqual(
+            result,
+            {
+              valid: false,
+              errors: {
+                flavor: ['Do not like cabbage!']
+              }
+            },
+            'returns the generated error message'
+          );
+
+          done();
+        }).catch(done);
+      });
+    });
   });
 
   describe('validator#when', function() {

@@ -1,3 +1,5 @@
+/* jshint esnext:true, undef:true, unused:true */
+
 "use strict";
 var lgtm$validator_builder$$ = require("../validator_builder");
 

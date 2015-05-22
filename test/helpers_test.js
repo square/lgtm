@@ -15,16 +15,6 @@ describe('LGTM.helpers.(un)register', function() {
     LGTM.validator().validates('name').isBob("You must be Bob.").build();
   });
 
-  it('fails when delegating to using() without a message', function() {
-    LGTM.helpers.register('isBob', function(message) {
-      this.using(function(value){ return value === 'Bob'; } /* note I don't pass message here */);
-    });
-
-    assert.throws(function() {
-      LGTM.validator().validates('name').isBob("You must be Bob.").build();
-    }, 'using() should have thrown an exception');
-  });
-
   it('unregistering makes the helper unavailable to the builder DSL', function() {
     LGTM.helpers.register('isBob', function(message) {
       this.using(function(value){ return value === 'Bob'; }, message);

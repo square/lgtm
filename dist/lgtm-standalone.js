@@ -1,6 +1,5 @@
 (function() {
     "use strict";
-    /* jshint esnext:true, undef:true, unused:true */
 
     var $$lgtm$config$$config = {};
 
@@ -193,7 +192,8 @@
         var alreadyValidating = attributes.slice();
         for (var i = 0; i < attributes.length; i++) {
           var attr = attributes[i];
-          validationPromises = validationPromises.concat(this._validateAttribute(object, attr, alreadyValidating));
+          validationPromises = validationPromises.concat(
+            this._validateAttribute(object, attr, alreadyValidating));
         }
 
         var promise = $$utils$$all(validationPromises).then(
@@ -230,8 +230,14 @@
               .then(function() {
                 return fn(value, attr, object);
               })
-              .then(function(isValid) {
-                return [ attr, isValid ? null : message ];
+              .then(function(validationResult) {
+                if (message == undefined) {
+                  // This form of validation returns a message (invalid) or null (valid)
+                  return [ attr, validationResult ];
+                } else {
+                  // This form of validation returns a boolean
+                  return [ attr, validationResult ? null : message ];
+                }
               });
 
             results.push(promise);
@@ -259,7 +265,7 @@
         };
 
         for (var i = 0; i < results.length; i++) {
-          if (!results[i]){ continue; }
+          if (!results[i]) { continue; }
 
           var attr = results[i][0];
           var message = results[i][1];
@@ -327,13 +333,23 @@
         return this.when.apply(this, arguments);
       },
 
-      using: function(/* ...dependencies, predicate, message */) {
+      using: function(/* ...dependencies, predicate, [message] */) {
         var dependencies = [].slice.apply(arguments);
-        var message      = dependencies.pop();
-        var predicate    = dependencies.pop();
-
-        if (typeof message === 'function' && typeof predicate === 'undefined') {
-          throw new Error('missing expected argument `message` after predicate function');
+        var message, predicate;
+        if (typeof dependencies[dependencies.length-1] === 'function') {
+          // This form of the .using() call defers message generation to the
+          // validation function
+          predicate = dependencies.pop();
+        } else if (
+          typeof dependencies[dependencies.length-2] === 'function' &&
+          typeof dependencies[dependencies.length-1] === 'string'
+        ) {
+          // This is the form of .using() with a message specified at the time
+          // the validation is built
+          message = dependencies.pop();
+          predicate = dependencies.pop();
+        } else {
+          throw new Error('invalid arguments');
         }
 
         if (dependencies.length === 0) {
@@ -583,10 +599,10 @@
         @private
         @param {Object} object object to extend with EventTarget methods
       */
-      mixin: function(object) {
-        object.on = this.on;
-        object.off = this.off;
-        object.trigger = this.trigger;
+      'mixin': function(object) {
+        object['on']      = this['on'];
+        object['off']     = this['off'];
+        object['trigger'] = this['trigger'];
         object._promiseCallbacks = undefined;
         return object;
       },
@@ -608,7 +624,7 @@
         @param {String} eventName name of the event to listen for
         @param {Function} callback function to be called when the event is triggered.
       */
-      on: function(eventName, callback) {
+      'on': function(eventName, callback) {
         var allCallbacks = $$events$$callbacksFor(this), callbacks;
 
         callbacks = allCallbacks[eventName];
@@ -661,7 +677,7 @@
         argument is given, all callbacks will be removed from the event's callback
         queue.
       */
-      off: function(eventName, callback) {
+      'off': function(eventName, callback) {
         var allCallbacks = $$events$$callbacksFor(this), callbacks, index;
 
         if (!callback) {
@@ -706,7 +722,7 @@
         @param {Any} options optional value to be passed to any event handlers for
         the given `eventName`
       */
-      trigger: function(eventName, options) {
+      'trigger': function(eventName, options) {
         var allCallbacks = $$events$$callbacksFor(this), callbacks, callback;
 
         if (callbacks = allCallbacks[eventName]) {
@@ -724,14 +740,14 @@
       instrument: false
     };
 
-    $$events$$default.mixin(rsvp$config$$config);
+    $$events$$default['mixin'](rsvp$config$$config);
 
     function rsvp$config$$configure(name, value) {
       if (name === 'onerror') {
         // handle for legacy users that expect the actual
         // error to be passed to their function added via
         // `RSVP.configure('onerror', someFunctionHere);`
-        rsvp$config$$config.on('error', value);
+        rsvp$config$$config['on']('error', value);
         return;
       }
 
@@ -767,38 +783,62 @@
 
     var $$utils1$$now = Date.now || function() { return new Date().getTime(); };
 
-    var $$utils1$$o_create = (Object.create || function(object) {
-      var o = function() { };
-      o.prototype = object;
-      return o;
+    function $$utils1$$F() { }
+
+    var $$utils1$$o_create = (Object.create || function (o) {
+      if (arguments.length > 1) {
+        throw new Error('Second argument not supported');
+      }
+      if (typeof o !== 'object') {
+        throw new TypeError('Argument must be an object');
+      }
+      $$utils1$$F.prototype = o;
+      return new $$utils1$$F();
     });
 
     var $$instrument$$queue = [];
+
+    function $$instrument$$scheduleFlush() {
+      setTimeout(function() {
+        var entry;
+        for (var i = 0; i < $$instrument$$queue.length; i++) {
+          entry = $$instrument$$queue[i];
+
+          var payload = entry.payload;
+
+          payload.guid = payload.key + payload.id;
+          payload.childGuid = payload.key + payload.childId;
+          if (payload.error) {
+            payload.stack = payload.error.stack;
+          }
+
+          rsvp$config$$config['trigger'](entry.name, entry.payload);
+        }
+        $$instrument$$queue.length = 0;
+      }, 50);
+    }
 
     function $$instrument$$instrument(eventName, promise, child) {
       if (1 === $$instrument$$queue.push({
           name: eventName,
           payload: {
-            guid: promise._guidKey + promise._id,
+            key: promise._guidKey,
+            id:  promise._id,
             eventName: eventName,
             detail: promise._result,
-            childGuid: child && promise._guidKey + child._id,
+            childId: child && child._id,
             label: promise._label,
             timeStamp: $$utils1$$now(),
-            stack: new Error(promise._label).stack
+            error: rsvp$config$$config["instrument-with-stack"] ? new Error(promise._label) : null
           }})) {
-
-            setTimeout(function() {
-              var entry;
-              for (var i = 0; i < $$instrument$$queue.length; i++) {
-                entry = $$instrument$$queue[i];
-                rsvp$config$$config.trigger(entry.name, entry.payload);
-              }
-              $$instrument$$queue.length = 0;
-            }, 50);
+            $$instrument$$scheduleFlush();
           }
       }
     var $$instrument$$default = $$instrument$$instrument;
+
+    function  $$$internal$$withOwnPromise() {
+      return new TypeError('A promises callback cannot return that same promise.');
+    }
 
     function $$$internal$$noop() {}
 
@@ -853,7 +893,8 @@
     function $$$internal$$handleOwnThenable(promise, thenable) {
       if (thenable._state === $$$internal$$FULFILLED) {
         $$$internal$$fulfill(promise, thenable._result);
-      } else if (promise._state === $$$internal$$REJECTED) {
+      } else if (thenable._state === $$$internal$$REJECTED) {
+        thenable._onError = null;
         $$$internal$$reject(promise, thenable._result);
       } else {
         $$$internal$$subscribe(thenable, undefined, function(value) {
@@ -897,8 +938,8 @@
     }
 
     function $$$internal$$publishRejection(promise) {
-      if (promise._onerror) {
-        promise._onerror(promise._result);
+      if (promise._onError) {
+        promise._onError(promise._result);
       }
 
       $$$internal$$publish(promise);
@@ -923,7 +964,6 @@
       if (promise._state !== $$$internal$$PENDING) { return; }
       promise._state = $$$internal$$REJECTED;
       promise._result = reason;
-
       rsvp$config$$config.async($$$internal$$publishRejection, promise);
     }
 
@@ -931,7 +971,7 @@
       var subscribers = parent._subscribers;
       var length = subscribers.length;
 
-      parent._onerror = null;
+      parent._onError = null;
 
       subscribers[length] = child;
       subscribers[length + $$$internal$$FULFILLED] = onFulfillment;
@@ -999,7 +1039,7 @@
         }
 
         if (promise === value) {
-          $$$internal$$reject(promise, new TypeError('A promises callback cannot return that same promise.'));
+          $$$internal$$reject(promise, $$$internal$$withOwnPromise());
           return;
         }
 
@@ -1022,10 +1062,15 @@
     }
 
     function $$$internal$$initializePromise(promise, resolver) {
+      var resolved = false;
       try {
         resolver(function resolvePromise(value){
+          if (resolved) { return; }
+          resolved = true;
           $$$internal$$resolve(promise, value);
         }, function rejectPromise(reason) {
+          if (resolved) { return; }
+          resolved = true;
           $$$internal$$reject(promise, reason);
         });
       } catch(e) {
@@ -1073,6 +1118,8 @@
       }
     }
 
+    var $$$enumerator$$default = $$$enumerator$$Enumerator;
+
     $$$enumerator$$Enumerator.prototype._validateInput = function(input) {
       return $$utils1$$isArray(input);
     };
@@ -1084,8 +1131,6 @@
     $$$enumerator$$Enumerator.prototype._init = function() {
       this._result = new Array(this.length);
     };
-
-    var $$$enumerator$$default = $$$enumerator$$Enumerator;
 
     $$$enumerator$$Enumerator.prototype._enumerate = function() {
       var length  = this.length;
@@ -1101,7 +1146,7 @@
       var c = this._instanceConstructor;
       if ($$utils1$$isMaybeThenable(entry)) {
         if (entry.constructor === c && entry._state !== $$$internal$$PENDING) {
-          entry._onerror = null;
+          entry._onError = null;
           this._settledAt(entry._state, i, entry._result);
         } else {
           this._willSettleAt(c.resolve(entry), i);
@@ -1207,7 +1252,7 @@
     function $$promise$$needsNew() {
       throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
     }
-    var $$promise$$default = $$promise$$Promise;
+
     /**
       Promise objects represent the eventual result of an asynchronous operation. The
       primary way of interacting with a promise is through its `then` method, which
@@ -1336,6 +1381,8 @@
       }
     }
 
+    var $$promise$$default = $$promise$$Promise;
+
     // deprecated
     $$promise$$Promise.cast = $$promise$resolve$$default;
     $$promise$$Promise.all = $$promise$all$$default;
@@ -1348,8 +1395,14 @@
 
       _guidKey: $$promise$$guidKey,
 
-      _onerror: function (reason) {
-        rsvp$config$$config.trigger('error', reason);
+      _onError: function (reason) {
+        rsvp$config$$config.async(function(promise) {
+          setTimeout(function() {
+            if (promise._onError) {
+              rsvp$config$$config['trigger']('error', reason);
+            }
+          }, 0);
+        }, this);
       },
 
     /**
@@ -1557,7 +1610,7 @@
           return this;
         }
 
-        parent._onerror = null;
+        parent._onError = null;
 
         var child = new this.constructor($$$internal$$noop, label);
         var result = parent._result;
@@ -1667,16 +1720,17 @@
     function rsvp$defer$$defer(label) {
       var deferred = { };
 
-      deferred.promise = new $$promise$$default(function(resolve, reject) {
-        deferred.resolve = resolve;
-        deferred.reject = reject;
+      deferred['promise'] = new $$promise$$default(function(resolve, reject) {
+        deferred['resolve'] = resolve;
+        deferred['reject'] = reject;
       }, label);
 
       return deferred;
     }
     var rsvp$defer$$default = rsvp$defer$$defer;
     var rsvp$asap$$len = 0;
-
+    var rsvp$asap$$toString = {}.toString;
+    var rsvp$asap$$vertxNext;
     function rsvp$asap$$asap(callback, arg) {
       rsvp$asap$$queue[rsvp$asap$$len] = callback;
       rsvp$asap$$queue[rsvp$asap$$len + 1] = arg;
@@ -1691,8 +1745,10 @@
 
     var rsvp$asap$$default = rsvp$asap$$asap;
 
-    var rsvp$asap$$browserGlobal = (typeof window !== 'undefined') ? window : {};
+    var rsvp$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
+    var rsvp$asap$$browserGlobal = rsvp$asap$$browserWindow || {};
     var rsvp$asap$$BrowserMutationObserver = rsvp$asap$$browserGlobal.MutationObserver || rsvp$asap$$browserGlobal.WebKitMutationObserver;
+    var rsvp$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
 
     // test for web worker but not in IE10
     var rsvp$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
@@ -1701,8 +1757,22 @@
 
     // node
     function rsvp$asap$$useNextTick() {
+      var nextTick = process.nextTick;
+      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
+      // setImmediate should be used instead instead
+      var version = process.versions.node.match(/^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$/);
+      if (Array.isArray(version) && version[1] === '0' && version[2] === '10') {
+        nextTick = setImmediate;
+      }
       return function() {
-        process.nextTick(rsvp$asap$$flush);
+        nextTick(rsvp$asap$$flush);
+      };
+    }
+
+    // vertx
+    function rsvp$asap$$useVertxTimer() {
+      return function() {
+        rsvp$asap$$vertxNext(rsvp$asap$$flush);
       };
     }
 
@@ -1747,15 +1817,27 @@
       rsvp$asap$$len = 0;
     }
 
-    var rsvp$asap$$scheduleFlush;
+    function rsvp$asap$$attemptVertex() {
+      try {
+        var r = require;
+        var vertx = r('vertx');
+        rsvp$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
+        return rsvp$asap$$useVertxTimer();
+      } catch(e) {
+        return rsvp$asap$$useSetTimeout();
+      }
+    }
 
+    var rsvp$asap$$scheduleFlush;
     // Decide what async method to use to triggering processing of queued callbacks:
-    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+    if (rsvp$asap$$isNode) {
       rsvp$asap$$scheduleFlush = rsvp$asap$$useNextTick();
     } else if (rsvp$asap$$BrowserMutationObserver) {
       rsvp$asap$$scheduleFlush = rsvp$asap$$useMutationObserver();
     } else if (rsvp$asap$$isWorker) {
       rsvp$asap$$scheduleFlush = rsvp$asap$$useMessageChannel();
+    } else if (rsvp$asap$$browserWindow === undefined && typeof require === 'function') {
+      rsvp$asap$$scheduleFlush = rsvp$asap$$attemptVertex();
     } else {
       rsvp$asap$$scheduleFlush = rsvp$asap$$useSetTimeout();
     }
