@@ -1,3 +1,5 @@
+/* jshint esnext:true, undef:true, unused:true */
+
 "use strict";
 var lgtm$object_validator$$ = require("./object_validator"), lgtm$utils$$ = require("./utils");
 
