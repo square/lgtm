@@ -16,7 +16,7 @@
     "validation"
   ],
   "author": "Square, Inc.",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "devDependencies": {
     "broccoli": "^0.16.4",
     "broccoli-cli": "1.0.0",
