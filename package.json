@@ -18,6 +18,7 @@
   "author": "Square, Inc.",
   "license": "Apache-2.0",
   "devDependencies": {
+    "babel": "^5.8.21",
     "broccoli": "^0.16.4",
     "broccoli-cli": "1.0.0",
     "broccoli-compile-modules": "^1.1.1",

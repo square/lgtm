@@ -1,39 +1,39 @@
-const LGTM = require('./lgtm');
-const assert = require('assert');
+import { helpers, validator } from './lgtm';
+import { throws } from 'assert';
 
-describe('LGTM.helpers.(un)register', function() {
-  afterEach(function() {
-    LGTM.helpers.unregister('isBob');
+describe('LGTM.helpers.(un)register', () => {
+  afterEach(() => {
+    helpers.unregister('isBob');
   });
 
-  it('allow registering a custom helper for use in the builder DSL', function() {
-    LGTM.helpers.register('isBob', function(message) {
-      this.using(function(value){ return value === 'Bob'; }, message);
+  it('allow registering a custom helper for use in the builder DSL', () => {
+    helpers.register('isBob', function(message) {
+      this.using((value => value === 'Bob'), message);
     });
 
     // this would throw if the above didn't work
-    LGTM.validator().validates('name').isBob("You must be Bob.").build();
+    validator().validates('name').isBob("You must be Bob.").build();
   });
 
-  it('fails when delegating to using() without a message', function() {
-    LGTM.helpers.register('isBob', function(message) {
-      this.using(function(value){ return value === 'Bob'; } /* note I don't pass message here */);
+  it('fails when delegating to using() without a message', () => {
+    helpers.register('isBob', function(message) {
+      this.using(value => value === 'Bob' /* note I don't pass message here */);
     });
 
-    assert.throws(function() {
-      LGTM.validator().validates('name').isBob("You must be Bob.").build();
+    throws(() => {
+      validator().validates('name').isBob("You must be Bob.").build();
     }, 'using() should have thrown an exception');
   });
 
-  it('unregistering makes the helper unavailable to the builder DSL', function() {
-    LGTM.helpers.register('isBob', function(message) {
-      this.using(function(value){ return value === 'Bob'; }, message);
+  it('unregistering makes the helper unavailable to the builder DSL', () => {
+    helpers.register('isBob', function(message) {
+      this.using((value => value === 'Bob'), message);
     });
 
-    LGTM.helpers.unregister('isBob');
+    helpers.unregister('isBob');
 
-    assert.throws(function() {
-      LGTM.validator().validates('name').isBob("You must be Bob.").build();
+    throws(() => {
+      validator().validates('name').isBob("You must be Bob.").build();
     }, "unregister() makes the helper unavailable");
   });
 });

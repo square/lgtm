@@ -1,22 +1,18 @@
-const LGTM = require('../lgtm');
-const validator   = LGTM.validator;
-const validations = LGTM.helpers;
-const assert = require('assert');
+import { helpers as validations, validator } from '../lgtm';
+import { notStrictEqual, strictEqual } from 'assert';
 
-describe('helpers.(un)register', function() {
-  it('can add and remove a helper from the builder', function() {
+describe('helpers.(un)register', () => {
+  it('can add and remove a helper from the builder', () => {
     const builder = validator();
-    assert.strictEqual(builder.isEven, undefined, 'precondition: helper is not there yet');
+    strictEqual(builder.isEven, undefined, 'precondition: helper is not there yet');
 
     validations.register('isEven', function() {
-      this.using(function(value) {
-        return value % 2 === 0;
-      });
+      this.using(value => value % 2 === 0);
     });
 
-    assert.notStrictEqual(builder.isEven, undefined, 'helper is added to the builder');
+    notStrictEqual(builder.isEven, undefined, 'helper is added to the builder');
 
     validations.unregister('isEven');
-    assert.strictEqual(builder.isEven, undefined, 'postcondition: helper is removed after unregister');
+    strictEqual(builder.isEven, undefined, 'postcondition: helper is removed after unregister');
   });
 });

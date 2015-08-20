@@ -1,28 +1,28 @@
-const LGTM = require('../lgtm');
-const assert = require('assert');
+import { validator } from '../lgtm';
+import { deepEqual, ok } from 'assert';
 
-describe('#8 | Dependent validations cause duplicate errors', function() {
-  it('does not duplicate "Passwords must match"', function() {
-    var validator =
-      LGTM.validator()
+describe('#8 | Dependent validations cause duplicate errors', () => {
+  it('does not duplicate "Passwords must match"', () => {
+    const v =
+      validator()
         .validates('password')
           .required('Please input a password')
         .validates('passwordConfirm')
-          .when('password', function(password) { return password !== undefined; })
+          .when('password', password => password !== undefined)
             .required('Please confirm your password')
-            .using(function(confirm, attr, form) { return confirm === form.password; }, 'Passwords must match')
+            .using(((confirm, attr, form) => confirm === form.password), 'Passwords must match')
         .build();
 
-    var form = {
+    const form = {
       'password': 'asdf',
       'passwordConfirm': undefined
     };
 
-    return validator.validate(form).then(function(result) {
-      assert.ok(!result.valid, 'it should not be valid');
-      assert.deepEqual(Object.keys(result.errors).sort(), ['password', 'passwordConfirm']);
-      assert.deepEqual(result.errors['password'], []);
-      assert.deepEqual(result.errors['passwordConfirm'], ['Please confirm your password', 'Passwords must match']);
+    return v.validate(form).then(result => {
+      ok(!result.valid, 'it should not be valid');
+      deepEqual(Object.keys(result.errors).sort(), ['password', 'passwordConfirm']);
+      deepEqual(result.errors['password'], []);
+      deepEqual(result.errors['passwordConfirm'], ['Please confirm your password', 'Passwords must match']);
     });
   });
 });
