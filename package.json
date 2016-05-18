@@ -2,11 +2,14 @@
   "name": "lgtm",
   "version": "1.0.4",
   "description": "Simple JavaScript validation for objects.",
-  "main": "dist/commonjs/lgtm.js",
-  "jsnext:main": "src/lgtm.js",
+  "main": "dist/lgtm.js",
+  "jsnext:main": "dist/lgtm.mjs",
   "scripts": {
-    "test": "make test",
-    "prepublish": "make test"
+    "lint": "eslint src test",
+    "build": "rm -rf dist && script/build",
+    "pretest": "npm run lint",
+    "test": "mocha",
+    "prepublish": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -18,19 +21,20 @@
   "author": "Square, Inc.",
   "license": "Apache-2.0",
   "devDependencies": {
-    "babel": "^5.8.21",
-    "broccoli": "^0.16.4",
-    "broccoli-cli": "1.0.0",
-    "broccoli-compile-modules": "^1.1.1",
-    "broccoli-merge-trees": "^0.2.1",
-    "es6-module-transpiler": "^0.10.0",
-    "mocha": "^2.2.5"
-  },
-  "dependencies": {
-    "rsvp": "~3.0.18"
+    "babel": "^6.5.2",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-es2015-rollup": "^1.1.1",
+    "babel-register": "^6.9.0",
+    "babelrc-rollup": "^1.0.0",
+    "eslint": "^2.10.2",
+    "mocha": "^2.4.5",
+    "rollup": "^0.26.3",
+    "rollup-plugin-babel": "^2.4.0"
   },
   "files": [
-    "src",
     "dist"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }

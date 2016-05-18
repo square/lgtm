@@ -1,7 +1,5 @@
-/* jshint esnext:true, undef:true, unused:true */
-
-import ObjectValidator from './object_validator';
-import { getProperties, all } from './utils';
+import ObjectValidator from './object_validator.js';
+import { getProperties, all } from './utils.js';
 
 function ValidatorBuilder() {
   this._validator = new ObjectValidator();

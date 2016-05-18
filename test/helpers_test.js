@@ -16,7 +16,7 @@ describe('LGTM.helpers.(un)register', () => {
   });
 
   it('fails when delegating to using() without a message', () => {
-    helpers.register('isBob', function(message) {
+    helpers.register('isBob', function(message) { // eslint-disable-line no-unused-vars
       this.using(value => value === 'Bob' /* note I don't pass message here */);
     });
 

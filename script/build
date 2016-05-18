@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+
+const rollup = require('rollup').rollup;
+const babel = require('rollup-plugin-babel');
+const babelrc = require('babelrc-rollup').default;
+
+rollup({
+  entry: 'src/lgtm.js',
+  plugins: [babel(babelrc())]
+}).then(bundle => {
+  bundle.write({
+    dest: 'dist/lgtm.js',
+    format: 'umd',
+    moduleName: 'LGTM',
+    sourceMap: true
+  });
+  bundle.write({
+    dest: 'dist/lgtm.mjs',
+    format: 'es6',
+    sourceMap: true
+  });
+});

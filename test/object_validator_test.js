@@ -1,6 +1,8 @@
-import { ObjectValidator, helpers } from './lgtm';
+import resolve from './support/resolve.js';
+import { ObjectValidator, helpers } from './lgtm.js';
+import { deepEqual, fail, strictEqual } from 'assert';
+
 const { present } = helpers.core;
-import { deepEqual, fail, ok, strictEqual } from 'assert';
 
 let object;
 let validator;
@@ -25,8 +27,8 @@ describe('ObjectValidator', function() {
   });
 
   it('can validate a specific list of attributes', () => {
-    validator.addValidation('firstName', present, "Missing first name!");
-    validator.addValidation('lastName', present, "Missing last name!");
+    validator.addValidation('firstName', present, 'Missing first name!');
+    validator.addValidation('lastName', present, 'Missing last name!');
 
     return validator.validate(object).then(result => {
       deepEqual(
@@ -34,8 +36,8 @@ describe('ObjectValidator', function() {
         {
           valid: false,
           errors: {
-            firstName: ["Missing first name!"],
-            lastName: ["Missing last name!"]
+            firstName: ['Missing first name!'],
+            lastName: ['Missing last name!']
           }
         }
       );
@@ -46,7 +48,7 @@ describe('ObjectValidator', function() {
           {
             valid: false,
             errors: {
-              firstName: ["Missing first name!"]
+              firstName: ['Missing first name!']
             }
           }
         );
@@ -144,10 +146,10 @@ describe('ObjectValidator', function() {
     beforeEach(() => {
       validator.addValidation('firstName',
         (firstName => firstName === 'Han'),
-        "Sorry, your first name isn't Han.");
+        `Sorry, your first name isn't Han.`);
       validator.addValidation('lastName',
         (lastName => lastName === 'Solo'),
-        "Sorry, your last name isn't Solo.");
+        `Sorry, your last name isn't Solo.`);
     });
 
     itValidatesAsExpected();
@@ -157,10 +159,10 @@ describe('ObjectValidator', function() {
     beforeEach(() => {
       validator.addValidation('firstName',
         (firstName => resolve(firstName === 'Han')),
-        "Sorry, your first name isn't Han.");
+        `Sorry, your first name isn't Han.`);
       validator.addValidation('lastName',
         (lastName => resolve(lastName === 'Solo')),
-        "Sorry, your last name isn't Solo.");
+        `Sorry, your last name isn't Solo.`);
     });
 
     itValidatesAsExpected();
@@ -180,7 +182,7 @@ function itValidatesAsExpected() {
         {
           valid: false,
           errors: {
-            firstName: ["Sorry, your first name isn't Han."],
+            firstName: [`Sorry, your first name isn't Han.`],
             lastName: []
           }
         }

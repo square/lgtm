@@ -1,6 +1,4 @@
-/* jshint esnext:true, undef:true, unused:true */
-
-import ValidatorBuilder from '../validator_builder';
+import ValidatorBuilder from '../validator_builder.js';
 
 function present(value) {
   if (typeof value === 'string') {
@@ -10,9 +8,9 @@ function present(value) {
   return value !== '' && value !== null && value !== undefined;
 }
 
-var STRICT_CHARS = /^[\x20-\x7F]*$/;
+const STRICT_CHARS = /^[\x20-\x7F]*$/;
 // http://stackoverflow.com/a/46181/11236
-var EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const EMAIL = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 function checkEmail(options) {
   if (!options) {

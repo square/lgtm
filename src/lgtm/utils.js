@@ -1,6 +1,4 @@
-/* jshint esnext:true, undef:true, unused:true */
-
-import config from './config';
+import config from './config.js';
 
 /**
  * Iteration

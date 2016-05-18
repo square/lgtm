@@ -1,3 +1,4 @@
+import resolve from './support/resolve.js';
 import { validator as buildValidator, ObjectValidator } from './lgtm';
 import { deepEqual, ok, strictEqual } from 'assert';
 
@@ -329,7 +330,7 @@ describe('validator', () => {
       const v = buildValidator()
             .validates('email')
               .optional() // this is a .when() call internally
-              .when(email => shouldValidate)
+              .when(email => shouldValidate) // eslint-disable-line no-unused-vars
               .email('That is no email!', { strictCharacters: true })
             .build();
 
@@ -405,8 +406,8 @@ describe('validator', () => {
     it('is an alias for #when', () => {
       const v = buildValidator()
             .validates('name')
-              .when(name => true)
-              .and(name => false)
+              .when(() => true)
+              .and(() => false)
               .required('You must enter a name!')
             .build();
 

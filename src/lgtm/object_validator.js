@@ -1,6 +1,4 @@
-/* jshint esnext:true, undef:true, unused:true */
-
-import { all, resolve, contains, keys, get, uniq } from './utils';
+import { all, resolve, contains, keys, get, uniq } from './utils.js';
 
 function ObjectValidator() {
   this._validations  = {};

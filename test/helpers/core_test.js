@@ -1,6 +1,5 @@
-import { helpers } from '../../dist/commonjs/lgtm';
+import { checkEmail, checkMaxLength, checkMinLength, present } from '../../src/lgtm/helpers/core.js';
 import { ok, throws } from 'assert';
-const { checkEmail, checkMaxLength, checkMinLength, present } = helpers.core;
 
 describe('helpers.core', () => {
   it('present', () => {
