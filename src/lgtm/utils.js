@@ -8,14 +8,14 @@ function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
     iterable.forEach(iterator);
   } else if ({}.toString.call(iterable) === '[object Object]') {
-    var hasOwnProp = {}.hasOwnProperty;
-    for (var key in iterable) {
+    let hasOwnProp = {}.hasOwnProperty;
+    for (let key in iterable) {
       if (hasOwnProp.call(iterable, key)) {
         iterator(iterable[key], key);
       }
     }
   } else {
-    for (var i = 0; i < iterable.length; i++) {
+    for (let i = 0; i < iterable.length; i++) {
       iterator(iterable[i], i);
     }
   }
@@ -25,7 +25,7 @@ function keys(object) {
   if (Object.getOwnPropertyNames) {
     return Object.getOwnPropertyNames(object);
   } else {
-    var result = [];
+    let result = [];
     forEach(object, function(key) {
       result.push(key);
     });
@@ -51,9 +51,7 @@ function get(object, property) {
 }
 
 function getProperties(object, properties) {
-  return properties.map(function(prop) {
-    return get(object, prop);
-  });
+  return properties.map(prop => get(object, prop));
 }
 
 export { get, getProperties };
@@ -68,10 +66,10 @@ function contains(array, object) {
 }
 
 function uniq(array) {
-  var result = [];
+  let result = [];
 
-  for (var i = 0; i < array.length; i++) {
-    var item = array[i];
+  for (let i = 0; i < array.length; i++) {
+    let item = array[i];
     if (!contains(result, item)) {
       result.push(item);
     }
@@ -88,7 +86,7 @@ export { contains, uniq };
  */
 
 function resolve(thenable) {
-  var deferred = config.defer();
+  let deferred = config.defer();
   deferred.resolve(thenable);
   return deferred.promise;
 }
@@ -98,9 +96,9 @@ function all(thenables) {
     return resolve([]);
   }
 
-  var results = [];
-  var remaining = thenables.length;
-  var deferred = config.defer();
+  let results = [];
+  let remaining = thenables.length;
+  let deferred = config.defer();
 
   function resolver(index) {
     return function(value) {
@@ -111,8 +109,8 @@ function all(thenables) {
     };
   }
 
-  for (var i = 0; i < thenables.length; i++) {
-    var thenable = thenables[i];
+  for (let i = 0; i < thenables.length; i++) {
+    let thenable = thenables[i];
     resolve(thenable).then(resolver(i), deferred.reject);
   }
 

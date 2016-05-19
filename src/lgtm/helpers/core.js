@@ -17,7 +17,7 @@ function checkEmail(options) {
     options = {};
   }
 
-  return function(value) {
+  return value => {
     if (typeof value === 'string') {
       value = value.trim();
     }
@@ -37,7 +37,7 @@ function checkMinLength(minLength) {
     throw new Error('must specify a min length');
   }
 
-  return function(value) {
+  return value => {
     if (value !== null && value !== undefined) {
       return value.length >= minLength;
     } else {
@@ -51,7 +51,7 @@ function checkMaxLength(maxLength) {
     throw new Error('must specify a max length');
   }
 
-  return function(value) {
+  return value => {
     if (value !== null && value !== undefined) {
       return value.length <= maxLength;
     } else {

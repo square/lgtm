@@ -17,16 +17,16 @@ function unregister() {
   ValidatorBuilder.unregisterHelper.apply(ValidatorBuilder, arguments);
 }
 
-var helpers = {
+const helpers = {
   core: {
-    present: present,
-    checkEmail: checkEmail,
-    checkMinLength: checkMinLength,
-    checkMaxLength: checkMaxLength,
+    present,
+    checkEmail,
+    checkMinLength,
+    checkMaxLength,
     register: core_register
   },
-  register: register,
-  unregister: unregister
+  register,
+  unregister
 };
 
 function configure(key, value) {
@@ -65,7 +65,7 @@ function PromiseProxy(callback) {
 
   if (typeof require === 'function') {
     try {
-      let Promise = require('rsvp').Promise;
+      let { Promise } = require('rsvp');
       configure('Promise', Promise);
       warn(
         `Implicitly using require("rsvp").Promise. This will be removed in LGTM 2.0. ` +
