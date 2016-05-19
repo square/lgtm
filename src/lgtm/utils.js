@@ -22,15 +22,7 @@ function forEach(iterable, iterator) {
 }
 
 function keys(object) {
-  if (Object.getOwnPropertyNames) {
-    return Object.getOwnPropertyNames(object);
-  } else {
-    var result = [];
-    forEach(object, function(key) {
-      result.push(key);
-    });
-    return result;
-  }
+  return Object.getOwnPropertyNames(object);
 }
 
 export { forEach, keys };
