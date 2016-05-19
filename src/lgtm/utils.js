@@ -27,7 +27,6 @@ function keys(object) {
 
 export { forEach, keys };
 
-
 /**
  * Property access
  */
@@ -48,7 +47,6 @@ function getProperties(object, properties) {
 }
 
 export { get, getProperties };
-
 
 /**
  * Array manipulation
@@ -72,7 +70,6 @@ function uniq(array) {
 }
 
 export { contains, uniq };
-
 
 /**
  * Promises

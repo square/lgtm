@@ -9,7 +9,7 @@ describe('validator', () => {
     beforeEach(() => {
       validator = buildValidator()
         .validates('name')
-          .required('You must provide a name.')
+        .required('You must provide a name.')
         .build();
     });
 
@@ -29,21 +29,18 @@ describe('validator', () => {
     beforeEach(() => {
       validator = buildValidator()
         .validates('theString')
-          .minLength(5, 'too short')
+        .minLength(5, 'too short')
         .build();
     });
 
     it('performs validation with specified param in mind', () => {
       return validator.validate({ theString: '1234' }).then(result => {
-        deepEqual(
-          result,
-          {
-            valid: false,
-            errors: {
-              theString: ['too short']
-            }
+        deepEqual(result, {
+          valid: false,
+          errors: {
+            theString: ['too short']
           }
-        );
+        });
       });
     });
   });
@@ -52,56 +49,65 @@ describe('validator', () => {
     beforeEach(() => {
       validator = buildValidator()
         .validates('password')
-          .using('password', 'passwordConfirmation',
-            ((password, passwordConfirmation) => password === passwordConfirmation),
-            'Passwords must match.')
+        .using(
+          'password',
+          'passwordConfirmation',
+          (password, passwordConfirmation) => password === passwordConfirmation,
+          'Passwords must match.'
+        )
         .build();
     });
 
     it('passes declared dependencies', () => {
-      return validator.validate({ password: 'abc123', passwordConfirmation: 'abc123' }).then(result => {
-        deepEqual(
-          result,
-          {
-            valid: true,
-            errors: {
-              password: []
-            }
-          },
-          'dependent values are passed in'
-        );
-      });
-    });
-
-    it('causes dependent attributes to be validated, even when not specified explicitly', () => {
-      // we're leaving out "password" but it gets validated anyway because it
-      // depends on "passwordConfirmation"
-      return validator.validate({ password: 'abc123' }, 'passwordConfirmation').then(result => {
-        deepEqual(
-          result,
-          {
-            valid: false,
-            errors: {
-              password: ["Passwords must match."],
-              passwordConfirmation: []
-            }
-          }
-        );
-
-        return validator.validate({ password: 'abc123', passwordConfirmation: 'abc123' }, 'passwordConfirmation').then(result => {
+      return validator
+        .validate({ password: 'abc123', passwordConfirmation: 'abc123' })
+        .then(result => {
           deepEqual(
             result,
             {
               valid: true,
               errors: {
-                password: [],
-                passwordConfirmation: []
+                password: []
               }
             },
-            'returns empty error messages for dependent attributes as well'
+            'dependent values are passed in'
           );
         });
-      });
+    });
+
+    it('causes dependent attributes to be validated, even when not specified explicitly', () => {
+      // we're leaving out "password" but it gets validated anyway because it
+      // depends on "passwordConfirmation"
+      return validator
+        .validate({ password: 'abc123' }, 'passwordConfirmation')
+        .then(result => {
+          deepEqual(result, {
+            valid: false,
+            errors: {
+              password: ['Passwords must match.'],
+              passwordConfirmation: []
+            }
+          });
+
+          return validator
+            .validate(
+              { password: 'abc123', passwordConfirmation: 'abc123' },
+              'passwordConfirmation'
+            )
+            .then(result => {
+              deepEqual(
+                result,
+                {
+                  valid: true,
+                  errors: {
+                    password: [],
+                    passwordConfirmation: []
+                  }
+                },
+                'returns empty error messages for dependent attributes as well'
+              );
+            });
+        });
     });
   });
 
@@ -111,14 +117,13 @@ describe('validator', () => {
 
     beforeEach(() => {
       object = {};
-      validator =
-        buildValidator()
-          .validates('age')
-            .when(age => age % 2 === 0)
-              .using((age => age > 12), "You must be at least 13 years old.")
-          .validates('name')
-            .required("You must provide a name.")
-          .build();
+      validator = buildValidator()
+        .validates('age')
+        .when(age => age % 2 === 0)
+        .using(age => age > 12, 'You must be at least 13 years old.')
+        .validates('name')
+        .required('You must provide a name.')
+        .build();
     });
 
     it('allows conditionally running validations', () => {
@@ -130,8 +135,8 @@ describe('validator', () => {
           {
             valid: false,
             errors: {
-              name: ["You must provide a name."],
-              age:  ["You must be at least 13 years old."]
+              name: ['You must provide a name.'],
+              age: ['You must be at least 13 years old.']
             }
           },
           'validations matching their when clause are run'
@@ -145,7 +150,7 @@ describe('validator', () => {
             {
               valid: false,
               errors: {
-                name: ["You must provide a name."],
+                name: ['You must provide a name.'],
                 age: []
               }
             },
@@ -156,25 +161,21 @@ describe('validator', () => {
     });
 
     it('allows conditionals that return promises', () => {
-      validator =
-        buildValidator()
-          .validates('name')
-            .when(name => resolve(name.length % 2 !== 0))
-              .using((name => name === 'Han'), "Your name is not Han!")
-          .build();
+      validator = buildValidator()
+        .validates('name')
+        .when(name => resolve(name.length % 2 !== 0))
+        .using(name => name === 'Han', 'Your name is not Han!')
+        .build();
 
       object.name = 'Brian'; // odd length names are validated
 
       return validator.validate(object).then(result => {
-        deepEqual(
-          result,
-          {
-            valid: false,
-            errors: {
-              name: ["Your name is not Han!"]
-            }
+        deepEqual(result, {
+          valid: false,
+          errors: {
+            name: ['Your name is not Han!']
           }
-        );
+        });
 
         object.name = 'Fred'; // even length names are not validated
 
@@ -195,99 +196,98 @@ describe('validator', () => {
 
     it('passes declared dependencies', () => {
       let object = {
-        name : 'Brian',
-        age  : 30
+        name: 'Brian',
+        age: 30
       };
 
-      let v =
-        buildValidator()
-          .validates('name')
-            .when('name', 'age', 'unset', (name, age, unset, key, obj) => {
-              strictEqual(name, 'Brian');
-              strictEqual(age, 30);
-              strictEqual(unset, undefined);
-              strictEqual(key, 'name');
-              strictEqual(obj, object);
-              return false;
-            })
-            .required("You must enter a name.")
-          .build();
+      let v = buildValidator()
+        .validates('name')
+        .when('name', 'age', 'unset', (name, age, unset, key, obj) => {
+          strictEqual(name, 'Brian');
+          strictEqual(age, 30);
+          strictEqual(unset, undefined);
+          strictEqual(key, 'name');
+          strictEqual(obj, object);
+          return false;
+        })
+        .required('You must enter a name.')
+        .build();
 
       return v.validate(object);
     });
 
     it('causes dependent attributes to be validated, even when not specified explicitly', () => {
-      let v =
-        buildValidator()
-          .validates('name')
-            .when('age', () => true)
-              .required('You must enter a name.')
-          .build();
+      let v = buildValidator()
+        .validates('name')
+        .when('age', () => true)
+        .required('You must enter a name.')
+        .build();
 
       // we leave out "name" but it is validated anyway because it depends on "age"
       return v.validate({}, 'age').then(result => {
-        deepEqual(
-          result,
-          {
-            valid: false,
-            errors: {
-              age: [],
-              name: ['You must enter a name.']
-            }
+        deepEqual(result, {
+          valid: false,
+          errors: {
+            age: [],
+            name: ['You must enter a name.']
           }
-        );
+        });
 
-        let v =
-          buildValidator()
-            .validates('name')
-              .when('age', () => true)
-                .required('You must enter a name.')
-            .validates('age')
-              .when('isBorn', isBorn => isBorn)
-                .required('You must have an age if you have been born.')
-            .build();
+        let v = buildValidator()
+          .validates('name')
+          .when('age', () => true)
+          .required('You must enter a name.')
+          .validates('age')
+          .when('isBorn', isBorn => isBorn)
+          .required('You must have an age if you have been born.')
+          .build();
 
         // we leave out "name" and "age" but they are validated anyway because they
         // both depend on "isBorn", either directly or transitively
         return v.validate({ isBorn: true }, 'isBorn').then(result => {
-          deepEqual(
-            result,
-            {
-              valid: false,
-              errors: {
-                isBorn: [],
-                name: ['You must enter a name.'],
-                age: ['You must have an age if you have been born.']
-              }
+          deepEqual(result, {
+            valid: false,
+            errors: {
+              isBorn: [],
+              name: ['You must enter a name.'],
+              age: ['You must have an age if you have been born.']
             }
-          );
-
-          return v.validate({ isBorn: true, name: "Winnie the Pooh", age: 10 }, 'isBorn').then(result => {
-            deepEqual(
-              result,
-              {
-                valid: true,
-                errors: {
-                  isBorn: [],
-                  name: [],
-                  age: []
-                }
-              },
-              'returns empty error messages for dependent attributes as well'
-            );
           });
+
+          return v
+            .validate(
+              { isBorn: true, name: 'Winnie the Pooh', age: 10 },
+              'isBorn'
+            )
+            .then(result => {
+              deepEqual(
+                result,
+                {
+                  valid: true,
+                  errors: {
+                    isBorn: [],
+                    name: [],
+                    age: []
+                  }
+                },
+                'returns empty error messages for dependent attributes as well'
+              );
+            });
         });
       });
     });
 
     it('used with #using specifying attributes in both', () => {
       let v = buildValidator()
-            .validates('passwordConfirmation')
-              .when('password', password => password && password.length > 0)
-              .using('password', 'passwordConfirmation',
-                ((password, passwordConfirmation) => password === passwordConfirmation),
-                'Passwords must match!')
-            .build();
+        .validates('passwordConfirmation')
+        .when('password', password => password && password.length > 0)
+        .using(
+          'password',
+          'passwordConfirmation',
+          (password, passwordConfirmation) => password === passwordConfirmation,
+          'Passwords must match!'
+        )
+        .build();
 
       return v.validate({ password: 'letmein' }, 'password').then(result => {
         deepEqual(
@@ -306,10 +306,10 @@ describe('validator', () => {
 
     it('is used by #optional to prevent subsequent validations from firing when a value is absent', () => {
       let v = buildValidator()
-            .validates('email')
-              .optional()
-              .email('That is no email!')
-            .build();
+        .validates('email')
+        .optional()
+        .email('That is no email!')
+        .build();
 
       return v.validate({ email: ' ' }).then(result => {
         deepEqual(
@@ -328,11 +328,11 @@ describe('validator', () => {
     it('may be used multiple times', () => {
       let shouldValidate;
       let v = buildValidator()
-            .validates('email')
-              .optional() // this is a .when() call internally
-              .when(email => shouldValidate) // eslint-disable-line no-unused-vars
-              .email('That is no email!', { strictCharacters: true })
-            .build();
+        .validates('email')
+        .optional() // this is a .when() call internally
+        .when(email => shouldValidate) // eslint-disable-line no-unused-vars
+        .email('That is no email!', { strictCharacters: true })
+        .build();
 
       // start off with the first .when() returning false, the second true
       shouldValidate = true;
@@ -382,10 +382,10 @@ describe('validator', () => {
 
     it('only affects .using() calls after it in the chain', () => {
       let v = buildValidator()
-            .validates('password')
-              .using((password => password === 'zanzabar'), 'Nope!')
-              .when(() => false)
-            .build();
+        .validates('password')
+        .using(password => password === 'zanzabar', 'Nope!')
+        .when(() => false)
+        .build();
 
       return v.validate({ email: '' }).then(result => {
         deepEqual(
@@ -405,11 +405,11 @@ describe('validator', () => {
   describe('#and', () => {
     it('is an alias for #when', () => {
       let v = buildValidator()
-            .validates('name')
-              .when(() => true)
-              .and(() => false)
-              .required('You must enter a name!')
-            .build();
+        .validates('name')
+        .when(() => true)
+        .and(() => false)
+        .required('You must enter a name!')
+        .build();
 
       return v.validate({ name: null }).then(result => {
         deepEqual(

@@ -2,13 +2,13 @@ import config from './config.js';
 import { all, resolve, contains, keys, uniq } from './utils.js';
 
 function ObjectValidator() {
-  this._validations  = {};
+  this._validations = {};
   this._dependencies = {};
 }
 
 ObjectValidator.prototype = {
-  _validations  : null,
-  _dependencies : null,
+  _validations: null,
+  _dependencies: null,
 
   addValidation(attr, fn, message) {
     let list = this._validations[attr];
@@ -40,11 +40,7 @@ ObjectValidator.prototype = {
   },
 
   attributes() {
-    return uniq(
-      keys(this._validations).concat(
-        keys(this._dependencies)
-      )
-    );
+    return uniq(keys(this._validations).concat(keys(this._dependencies)));
   },
 
   validate(/* object, attributes..., callback */) {
@@ -67,7 +63,8 @@ ObjectValidator.prototype = {
     for (let i = 0; i < attributes.length; i++) {
       let attr = attributes[i];
       validationPromises = validationPromises.concat(
-        this._validateAttribute(object, attr, alreadyValidating));
+        this._validateAttribute(object, attr, alreadyValidating)
+      );
     }
 
     let promise = all(validationPromises).then(
@@ -83,7 +80,8 @@ ObjectValidator.prototype = {
           callback(err);
         }
         throw err;
-      });
+      }
+    );
 
     if (!callback) {
       return promise;
@@ -91,23 +89,23 @@ ObjectValidator.prototype = {
   },
 
   _validateAttribute(object, attr, alreadyValidating) {
-    let value       = config.get(object, attr);
+    let value = config.get(object, attr);
     let validations = this._validations[attr];
-    let results     = [];
+    let results = [];
 
     if (validations) {
       validations.forEach(function(pair) {
-        let fn      = pair[0];
+        let fn = pair[0];
         let message = pair[1];
 
         let promise = resolve()
           .then(() => fn(value, attr, object))
-          .then(isValid => [ attr, isValid ? null : message ]);
+          .then(isValid => [attr, isValid ? null : message]);
 
         results.push(promise);
       });
     } else if (contains(this.attributes(), attr)) {
-      results.push([ attr, null ]);
+      results.push([attr, null]);
     }
 
     let dependents = this._getDependentsFor(attr);
@@ -115,7 +113,9 @@ ObjectValidator.prototype = {
       let dependent = dependents[i];
       if (alreadyValidating.indexOf(dependent) < 0) {
         alreadyValidating.push(dependent);
-        results = results.concat(this._validateAttribute(object, dependent, alreadyValidating));
+        results = results.concat(
+          this._validateAttribute(object, dependent, alreadyValidating)
+        );
       }
     }
 
@@ -124,12 +124,14 @@ ObjectValidator.prototype = {
 
   _collectResults(results) {
     let result = {
-      valid  : true,
-      errors : {}
+      valid: true,
+      errors: {}
     };
 
     for (let i = 0; i < results.length; i++) {
-      if (!results[i]) { continue; }
+      if (!results[i]) {
+        continue;
+      }
 
       let attr = results[i][0];
       let message = results[i][1];

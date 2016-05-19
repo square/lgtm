@@ -6,10 +6,10 @@ function ValidatorBuilder() {
 }
 
 ValidatorBuilder.prototype = {
-  _attr                  : null,
-  _conditions            : null,
-  _conditionDependencies : null,
-  _validator             : null,
+  _attr: null,
+  _conditions: null,
+  _conditionDependencies: null,
+  _validator: null,
 
   validates(attr) {
     this._attr = attr;
@@ -20,7 +20,7 @@ ValidatorBuilder.prototype = {
 
   when(/* ...dependencies, condition */) {
     let dependencies = [].slice.apply(arguments);
-    let condition    = dependencies.pop();
+    let condition = dependencies.pop();
 
     if (dependencies.length === 0) {
       dependencies = [this._attr];
@@ -44,15 +44,17 @@ ValidatorBuilder.prototype = {
 
   using(/* ...dependencies, predicate, message */) {
     let dependencies = [].slice.apply(arguments);
-    let message      = dependencies.pop();
-    let predicate    = dependencies.pop();
+    let message = dependencies.pop();
+    let predicate = dependencies.pop();
 
     if (typeof message === 'undefined') {
       throw new Error(`expected a message but got: ${message}`);
     }
 
     if (typeof message === 'function' && typeof predicate === 'undefined') {
-      throw new Error('missing expected argument `message` after predicate function');
+      throw new Error(
+        'missing expected argument `message` after predicate function'
+      );
     }
 
     if (dependencies.length === 0) {
@@ -75,11 +77,13 @@ ValidatorBuilder.prototype = {
     let conditionDependencies = this._conditionDependencies.slice();
 
     function validationWithConditions(value, attr, object) {
-      return all(conditions.map(function(condition, i) {
-        let dependencies = conditionDependencies[i];
-        let properties = getProperties(object, dependencies);
-        return condition.apply(null, properties.concat([attr, object]));
-      })).then(function(results) {
+      return all(
+        conditions.map(function(condition, i) {
+          let dependencies = conditionDependencies[i];
+          let properties = getProperties(object, dependencies);
+          return condition.apply(null, properties.concat([attr, object]));
+        })
+      ).then(function(results) {
         for (let i = 0; i < results.length; i++) {
           // a condition resolved to a falsy value; return as valid
           if (!results[i]) {

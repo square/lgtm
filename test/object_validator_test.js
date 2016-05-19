@@ -13,7 +13,7 @@ describe('ObjectValidator', function() {
     validator = new ObjectValidator();
   });
 
-  it('calls back when given a callback', (done) => {
+  it('calls back when given a callback', done => {
     let returnValue = validator.validate(object, (err, result) => {
       strictEqual(result.valid, true);
       done();
@@ -31,27 +31,21 @@ describe('ObjectValidator', function() {
     validator.addValidation('lastName', present, 'Missing last name!');
 
     return validator.validate(object).then(result => {
-      deepEqual(
-        result,
-        {
-          valid: false,
-          errors: {
-            firstName: ['Missing first name!'],
-            lastName: ['Missing last name!']
-          }
+      deepEqual(result, {
+        valid: false,
+        errors: {
+          firstName: ['Missing first name!'],
+          lastName: ['Missing last name!']
         }
-      );
+      });
 
       return validator.validate(object, 'firstName').then(result => {
-        deepEqual(
-          result,
-          {
-            valid: false,
-            errors: {
-              firstName: ['Missing first name!']
-            }
+        deepEqual(result, {
+          valid: false,
+          errors: {
+            firstName: ['Missing first name!']
           }
-        );
+        });
       });
     });
   });
@@ -60,18 +54,17 @@ describe('ObjectValidator', function() {
     validator.addValidation('firstName', present, 'Missing first name!');
     validator.addValidation('lastName', present, 'Missing last name!');
 
-    return validator.validate({ firstName: 'Bah', lastName: 'Humbug' }).then(result => {
-      deepEqual(
-        result,
-        {
+    return validator
+      .validate({ firstName: 'Bah', lastName: 'Humbug' })
+      .then(result => {
+        deepEqual(result, {
           valid: true,
           errors: {
             firstName: [],
             lastName: []
           }
-        }
-      );
-    });
+        });
+      });
   });
 
   it('passes the validation function the value, key, and object being validated', () => {
@@ -95,33 +88,36 @@ describe('ObjectValidator', function() {
 
   it('allows registering dependencies between attributes', () => {
     // always invalid, easy to test
-    validator.addValidation('spouseName', (() => false), 'No name is good enough.');
+    validator.addValidation(
+      'spouseName',
+      () => false,
+      'No name is good enough.'
+    );
     validator.addDependentsFor('maritalStatus', 'spouseName');
 
     return validator.validate(object, 'maritalStatus').then(result => {
-      deepEqual(
-        result,
-        {
-          valid: false,
-          errors: {
-            maritalStatus: [],
-            spouseName: ['No name is good enough.']
-          }
+      deepEqual(result, {
+        valid: false,
+        errors: {
+          maritalStatus: [],
+          spouseName: ['No name is good enough.']
         }
-      );
+      });
     });
   });
 
   it('can provide a list of all attributes it is interested in', () => {
-    validator.addValidation('street1', (() => false), 'Whatever.');
-    validator.addValidation('street2', (() => false), 'Whatever.');
+    validator.addValidation('street1', () => false, 'Whatever.');
+    validator.addValidation('street2', () => false, 'Whatever.');
     validator.addDependentsFor('mobile', 'street1', 'street2');
 
     deepEqual(validator.attributes().sort(), ['mobile', 'street1', 'street2']);
   });
 
   it('passes exceptions thrown by validations as the first argument to the callback', () => {
-    validator.addValidation('firstName', () => { throw new Error('OH NO!'); });
+    validator.addValidation('firstName', () => {
+      throw new Error('OH NO!');
+    });
 
     return validator.validate(object, (err, result) => {
       strictEqual(err.message, 'OH NO!', 'passes the thrown error through');
@@ -130,13 +126,15 @@ describe('ObjectValidator', function() {
   });
 
   it('passes exceptions through as a rejected promise', () => {
-    validator.addValidation('firstName', () => { throw new Error('OH NO!'); });
+    validator.addValidation('firstName', () => {
+      throw new Error('OH NO!');
+    });
 
     return validator.validate(object).then(
       () => {
         fail('this function should not have been called');
       },
-      (err) => {
+      err => {
         strictEqual(err.message, 'OH NO!', 'passes the thrown error through');
       }
     );
@@ -144,12 +142,16 @@ describe('ObjectValidator', function() {
 
   context('with validations that return immediately', () => {
     beforeEach(() => {
-      validator.addValidation('firstName',
-        (firstName => firstName === 'Han'),
-        `Sorry, your first name isn't Han.`);
-      validator.addValidation('lastName',
-        (lastName => lastName === 'Solo'),
-        `Sorry, your last name isn't Solo.`);
+      validator.addValidation(
+        'firstName',
+        firstName => firstName === 'Han',
+        `Sorry, your first name isn't Han.`
+      );
+      validator.addValidation(
+        'lastName',
+        lastName => lastName === 'Solo',
+        `Sorry, your last name isn't Solo.`
+      );
     });
 
     itValidatesAsExpected();
@@ -157,12 +159,16 @@ describe('ObjectValidator', function() {
 
   context('with validations that return eventually', function() {
     beforeEach(() => {
-      validator.addValidation('firstName',
-        (firstName => resolve(firstName === 'Han')),
-        `Sorry, your first name isn't Han.`);
-      validator.addValidation('lastName',
-        (lastName => resolve(lastName === 'Solo')),
-        `Sorry, your last name isn't Solo.`);
+      validator.addValidation(
+        'firstName',
+        firstName => resolve(firstName === 'Han'),
+        `Sorry, your first name isn't Han.`
+      );
+      validator.addValidation(
+        'lastName',
+        lastName => resolve(lastName === 'Solo'),
+        `Sorry, your last name isn't Solo.`
+      );
     });
 
     itValidatesAsExpected();
@@ -176,17 +182,14 @@ function itValidatesAsExpected() {
 
   it('yields the validation results correctly', () => {
     object.lastName = 'Solo';
-    return validator.validate(object).then((result) => {
-      deepEqual(
-        result,
-        {
-          valid: false,
-          errors: {
-            firstName: [`Sorry, your first name isn't Han.`],
-            lastName: []
-          }
+    return validator.validate(object).then(result => {
+      deepEqual(result, {
+        valid: false,
+        errors: {
+          firstName: [`Sorry, your first name isn't Han.`],
+          lastName: []
         }
-      );
+      });
     });
   });
 }
