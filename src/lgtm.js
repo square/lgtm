@@ -50,6 +50,27 @@ configure('defer', () => {
 });
 
 function PromiseProxy(callback) {
+  let Promise = getPromise();
+  return new Promise(callback);
+}
+
+PromiseProxy.all = function(...args) {
+  return getPromise().all(...args);
+};
+
+PromiseProxy.race = function(...args) {
+  return getPromise().race(...args);
+};
+
+PromiseProxy.resolve = function(...args) {
+  return getPromise().resolve(...args);
+};
+
+PromiseProxy.reject = function(...args) {
+  return getPromise().reject(...args);
+};
+
+function getPromise() {
   let warn = config['warn'];
 
   /* global Promise, RSVP, require */
@@ -60,7 +81,7 @@ function PromiseProxy(callback) {
       `Instead, use 'LGTM.configure("Promise", RSVP.Promise)' to ` +
       `continue using RSVP promises.`
     );
-    return new RSVP.Promise(callback);
+    return RSVP.Promise;
   }
 
   if (typeof require === 'function') {
@@ -72,7 +93,7 @@ function PromiseProxy(callback) {
         `Instead, use 'LGTM.configure("Promise", require("rsvp").Promise)' to ` +
         `continue using RSVP promises.`
       );
-      return new Promise(callback);
+      return Promise;
     } catch (err) {
       // Ignore errors, just try built-in Promise or fail.
     }
@@ -80,7 +101,7 @@ function PromiseProxy(callback) {
 
   if (typeof Promise === 'function') {
     configure('Promise', Promise);
-    return new Promise(callback);
+    return Promise;
   }
 
   throw new Error(

@@ -88,35 +88,13 @@ export { contains, uniq };
  */
 
 function resolve(thenable) {
-  var deferred = config.defer();
-  deferred.resolve(thenable);
-  return deferred.promise;
+  let { Promise } = config;
+  return new Promise(accept => accept(thenable));
 }
 
 function all(thenables) {
-  if (thenables.length === 0) {
-    return resolve([]);
-  }
-
-  var results = [];
-  var remaining = thenables.length;
-  var deferred = config.defer();
-
-  function resolver(index) {
-    return function(value) {
-      results[index] = value;
-      if (--remaining === 0) {
-        deferred.resolve(results);
-      }
-    };
-  }
-
-  for (var i = 0; i < thenables.length; i++) {
-    var thenable = thenables[i];
-    resolve(thenable).then(resolver(i), deferred.reject);
-  }
-
-  return deferred.promise;
+  let { Promise } = config;
+  return Promise.all(thenables);
 }
 
 export { resolve, all };
