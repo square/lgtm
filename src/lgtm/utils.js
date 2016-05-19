@@ -51,9 +51,8 @@ function get(object, property) {
 }
 
 function getProperties(object, properties) {
-  return properties.map(function(prop) {
-    return get(object, prop);
-  });
+  let { get } = config;
+  return properties.map(prop => get(object, prop));
 }
 
 export { get, getProperties };

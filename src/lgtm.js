@@ -1,6 +1,7 @@
 import ObjectValidator from './lgtm/object_validator.js';
 import ValidatorBuilder from './lgtm/validator_builder.js';
 import config from './lgtm/config.js';
+import { get } from './lgtm/utils.js';
 import { present, checkEmail, checkMinLength, checkMaxLength, register as core_register } from './lgtm/helpers/core.js';
 
 core_register();
@@ -113,5 +114,16 @@ function getPromise() {
 /* global console */
 configure('Promise', PromiseProxy);
 configure('warn', console.warn.bind(console)); // eslint-disable-line no-console
+configure('get', (object, property) => {
+  let warn = config['warn'];
+
+  configure('get', get);
+  warn(
+    `Implicitly using 'get' implementation that uses a 'get' method when available. ` +
+    `This will be removed in LGTM 2.0. Instead, use e.g. 'LGTM.configure("get", Ember.get)' ` +
+    `if you rely on this behavior.`
+  );
+  return get(object, property);
+});
 
 export { configure, validator, helpers, ObjectValidator };

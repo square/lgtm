@@ -1,4 +1,5 @@
-import { all, resolve, contains, keys, get, uniq } from './utils.js';
+import config from './config.js';
+import { all, resolve, contains, keys, uniq } from './utils.js';
 
 function ObjectValidator() {
   this._validations  = {};
@@ -90,7 +91,7 @@ ObjectValidator.prototype = {
   },
 
   _validateAttribute: function(object, attr, alreadyValidating) {
-    var value       = get(object, attr);
+    var value       = config.get(object, attr);
     var validations = this._validations[attr];
     var results     = [];
 
