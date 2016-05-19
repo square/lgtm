@@ -3,20 +3,37 @@
 const rollup = require('rollup').rollup;
 const babel = require('rollup-plugin-babel');
 const babelrc = require('babelrc-rollup').default;
+const filesize = require('file-size');
+const gzipSize = require('gzip-size').sync;
+const stat = require('fs').statSync;
+const minify = require('uglify-js').minify;
 
 rollup({
   entry: 'src/lgtm.js',
   plugins: [babel(babelrc())]
 }).then(bundle => {
-  bundle.write({
-    dest: 'dist/lgtm.js',
-    format: 'umd',
-    moduleName: 'LGTM',
-    sourceMap: true
-  });
-  bundle.write({
-    dest: 'dist/lgtm.mjs',
-    format: 'es6',
-    sourceMap: true
-  });
-});
+  return Promise.all([
+    bundle.write({
+      dest: 'dist/lgtm.js',
+      format: 'umd',
+      moduleName: 'LGTM',
+      sourceMap: true
+    }),
+    bundle.write({
+      dest: 'dist/lgtm.mjs',
+      format: 'es6',
+      sourceMap: true
+    })
+  ]);
+}).then(() => {
+  printFileInfo('dist/lgtm.js');
+}).catch(err => console.error(err.stack));
+
+function printFileInfo(path) {
+  const size = stat(path).size;
+  const minified = minify(path, { acorn: true }).code;
+  console.log(
+    `→ ${path} (raw: ${filesize(size).human('si')} / min: ${filesize(minified.length).human('si')} ` +
+    `/ min+gzip: ${filesize(gzipSize(minified)).human('si')})`
+  );
+}
