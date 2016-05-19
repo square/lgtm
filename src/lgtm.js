@@ -2,7 +2,13 @@ import ObjectValidator from './lgtm/object_validator.js';
 import ValidatorBuilder from './lgtm/validator_builder.js';
 import config from './lgtm/config.js';
 import { get } from './lgtm/utils.js';
-import { present, checkEmail, checkMinLength, checkMaxLength, register as core_register } from './lgtm/helpers/core.js';
+import {
+  present,
+  checkEmail,
+  checkMinLength,
+  checkMaxLength,
+  register as core_register
+} from './lgtm/helpers/core.js';
 
 core_register();
 
@@ -71,8 +77,8 @@ function getPromise() {
     configure('Promise', RSVP.Promise);
     warn(
       `Implicitly using RSVP.Promise. This will be removed in LGTM 2.0. ` +
-      `Instead, use 'LGTM.configure("Promise", RSVP.Promise)' to ` +
-      `continue using RSVP promises.`
+        `Instead, use 'LGTM.configure("Promise", RSVP.Promise)' to ` +
+        `continue using RSVP promises.`
     );
     return RSVP.Promise;
   }
@@ -83,8 +89,8 @@ function getPromise() {
       configure('Promise', Promise);
       warn(
         `Implicitly using require("rsvp").Promise. This will be removed in LGTM 2.0. ` +
-        `Instead, use 'LGTM.configure("Promise", require("rsvp").Promise)' to ` +
-        `continue using RSVP promises.`
+          `Instead, use 'LGTM.configure("Promise", require("rsvp").Promise)' to ` +
+          `continue using RSVP promises.`
       );
       return Promise;
     } catch (err) {
@@ -99,7 +105,7 @@ function getPromise() {
 
   throw new Error(
     `'Promise' could not be found. Configure LGTM with your promise library using ` +
-    `e.g. 'LGTM.configure("Promise", RSVP.Promise)'.`
+      `e.g. 'LGTM.configure("Promise", RSVP.Promise)'.`
   );
 }
 
@@ -112,8 +118,8 @@ configure('get', (object, property) => {
   configure('get', get);
   warn(
     `Implicitly using 'get' implementation that uses a 'get' method when available. ` +
-    `This will be removed in LGTM 2.0. Instead, use e.g. 'LGTM.configure("get", Ember.get)' ` +
-    `if you rely on this behavior.`
+      `This will be removed in LGTM 2.0. Instead, use e.g. 'LGTM.configure("get", Ember.get)' ` +
+      `if you rely on this behavior.`
   );
   return get(object, property);
 });

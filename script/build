@@ -4,38 +4,56 @@
 
 let rollup = require('rollup').rollup;
 let babel = require('rollup-plugin-babel');
-let babelrc = require('babelrc-rollup').default;
 let filesize = require('file-size');
 let gzipSize = require('gzip-size').sync;
-let stat = require('fs').statSync;
+let readFileSync = require('fs').readFileSync;
 let minify = require('uglify-js').minify;
 
 rollup({
-  entry: 'src/lgtm.js',
-  plugins: [babel(babelrc())]
-}).then(bundle => {
-  return Promise.all([
-    bundle.write({
-      dest: 'dist/lgtm.js',
-      format: 'umd',
-      moduleName: 'LGTM',
-      sourceMap: true
-    }),
-    bundle.write({
-      dest: 'dist/lgtm.mjs',
-      format: 'es6',
-      sourceMap: true
+  input: 'src/lgtm.js',
+  plugins: [
+    babel({
+      babelrc: false,
+      presets: [
+        [
+          'env',
+          {
+            targets: ['last 2 versions', 'ie 11'],
+            modules: false
+          }
+        ]
+      ]
     })
-  ]);
-}).then(() => {
-  printFileInfo('dist/lgtm.js');
-}).catch(err => console.error(err.stack));
+  ]
+})
+  .then(bundle => {
+    return Promise.all([
+      bundle.write({
+        file: 'dist/lgtm.js',
+        format: 'umd',
+        name: 'LGTM',
+        sourcemap: true
+      }),
+      bundle.write({
+        file: 'dist/lgtm.mjs',
+        format: 'es',
+        sourcemap: true
+      })
+    ]);
+  })
+  .then(() => {
+    printFileInfo('dist/lgtm.js');
+  })
+  .catch(err => console.error(err.stack));
 
 function printFileInfo(path) {
-  let size = stat(path).size;
-  let minified = minify(path, { acorn: true }).code;
+  let code = readFileSync(path);
+  let minified = minify(code.toString('utf8'));
+
   console.log(
-    `→ ${path} (raw: ${filesize(size).human('si')} / min: ${filesize(minified.length).human('si')} ` +
-    `/ min+gzip: ${filesize(gzipSize(minified)).human('si')})`
+    `→ ${path} (raw: ${filesize(code.length).human('si')} / min: ${filesize(
+      minified.code.length
+    ).human('si')} ` +
+      `/ min+gzip: ${filesize(gzipSize(minified.code)).human('si')})`
   );
 }

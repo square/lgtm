@@ -6,7 +6,7 @@ describe('#17 | Ensure `required` calls without a message fail', () => {
     throws(() => {
       validator()
         .validates('password')
-          .required()
+        .required()
         .build();
     }, /expected a message but got: undefined/);
   });
