@@ -8,14 +8,14 @@ function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
     iterable.forEach(iterator);
   } else if ({}.toString.call(iterable) === '[object Object]') {
-    var hasOwnProp = {}.hasOwnProperty;
-    for (var key in iterable) {
+    let hasOwnProp = {}.hasOwnProperty;
+    for (let key in iterable) {
       if (hasOwnProp.call(iterable, key)) {
         iterator(iterable[key], key);
       }
     }
   } else {
-    for (var i = 0; i < iterable.length; i++) {
+    for (let i = 0; i < iterable.length; i++) {
       iterator(iterable[i], i);
     }
   }
@@ -59,10 +59,10 @@ function contains(array, object) {
 }
 
 function uniq(array) {
-  var result = [];
+  let result = [];
 
-  for (var i = 0; i < array.length; i++) {
-    var item = array[i];
+  for (let i = 0; i < array.length; i++) {
+    let item = array[i];
     if (!contains(result, item)) {
       result.push(item);
     }

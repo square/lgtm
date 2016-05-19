@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
-const rollup = require('rollup').rollup;
-const babel = require('rollup-plugin-babel');
-const babelrc = require('babelrc-rollup').default;
-const filesize = require('file-size');
-const gzipSize = require('gzip-size').sync;
-const stat = require('fs').statSync;
-const minify = require('uglify-js').minify;
+'use strict';
+
+let rollup = require('rollup').rollup;
+let babel = require('rollup-plugin-babel');
+let babelrc = require('babelrc-rollup').default;
+let filesize = require('file-size');
+let gzipSize = require('gzip-size').sync;
+let stat = require('fs').statSync;
+let minify = require('uglify-js').minify;
 
 rollup({
   entry: 'src/lgtm.js',
@@ -30,8 +32,8 @@ rollup({
 }).catch(err => console.error(err.stack));
 
 function printFileInfo(path) {
-  const size = stat(path).size;
-  const minified = minify(path, { acorn: true }).code;
+  let size = stat(path).size;
+  let minified = minify(path, { acorn: true }).code;
   console.log(
     `→ ${path} (raw: ${filesize(size).human('si')} / min: ${filesize(minified.length).human('si')} ` +
     `/ min+gzip: ${filesize(gzipSize(minified)).human('si')})`

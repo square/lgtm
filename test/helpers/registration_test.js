@@ -3,7 +3,7 @@ import { notStrictEqual, strictEqual } from 'assert';
 
 describe('helpers.(un)register', () => {
   it('can add and remove a helper from the builder', () => {
-    const builder = validator();
+    let builder = validator();
     strictEqual(builder.isEven, undefined, 'precondition: helper is not there yet');
 
     validations.register('isEven', function() {

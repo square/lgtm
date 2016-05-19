@@ -194,12 +194,12 @@ describe('validator', () => {
     });
 
     it('passes declared dependencies', () => {
-      const object = {
+      let object = {
         name : 'Brian',
         age  : 30
       };
 
-      const v =
+      let v =
         buildValidator()
           .validates('name')
             .when('name', 'age', 'unset', (name, age, unset, key, obj) => {
@@ -217,7 +217,7 @@ describe('validator', () => {
     });
 
     it('causes dependent attributes to be validated, even when not specified explicitly', () => {
-      const v =
+      let v =
         buildValidator()
           .validates('name')
             .when('age', () => true)
@@ -237,7 +237,7 @@ describe('validator', () => {
           }
         );
 
-        const v =
+        let v =
           buildValidator()
             .validates('name')
               .when('age', () => true)
@@ -281,7 +281,7 @@ describe('validator', () => {
     });
 
     it('used with #using specifying attributes in both', () => {
-      const v = buildValidator()
+      let v = buildValidator()
             .validates('passwordConfirmation')
               .when('password', password => password && password.length > 0)
               .using('password', 'passwordConfirmation',
@@ -305,7 +305,7 @@ describe('validator', () => {
     });
 
     it('is used by #optional to prevent subsequent validations from firing when a value is absent', () => {
-      const v = buildValidator()
+      let v = buildValidator()
             .validates('email')
               .optional()
               .email('That is no email!')
@@ -327,7 +327,7 @@ describe('validator', () => {
 
     it('may be used multiple times', () => {
       let shouldValidate;
-      const v = buildValidator()
+      let v = buildValidator()
             .validates('email')
               .optional() // this is a .when() call internally
               .when(email => shouldValidate) // eslint-disable-line no-unused-vars
@@ -381,7 +381,7 @@ describe('validator', () => {
     });
 
     it('only affects .using() calls after it in the chain', () => {
-      const v = buildValidator()
+      let v = buildValidator()
             .validates('password')
               .using((password => password === 'zanzabar'), 'Nope!')
               .when(() => false)
@@ -404,7 +404,7 @@ describe('validator', () => {
 
   describe('#and', () => {
     it('is an alias for #when', () => {
-      const v = buildValidator()
+      let v = buildValidator()
             .validates('name')
               .when(() => true)
               .and(() => false)

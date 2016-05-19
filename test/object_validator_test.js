@@ -2,7 +2,7 @@ import resolve from './support/resolve.js';
 import { ObjectValidator, helpers } from './lgtm.js';
 import { deepEqual, fail, strictEqual } from 'assert';
 
-const { present } = helpers.core;
+let { present } = helpers.core;
 
 let object;
 let validator;
@@ -14,7 +14,7 @@ describe('ObjectValidator', function() {
   });
 
   it('calls back when given a callback', (done) => {
-    const returnValue = validator.validate(object, (err, result) => {
+    let returnValue = validator.validate(object, (err, result) => {
       strictEqual(result.valid, true);
       done();
     });
@@ -22,7 +22,7 @@ describe('ObjectValidator', function() {
   });
 
   it('returns a promise when no callback is given', () => {
-    const returnValue = validator.validate(object);
+    let returnValue = validator.validate(object);
     return returnValue.then(result => strictEqual(result.valid, true));
   });
 

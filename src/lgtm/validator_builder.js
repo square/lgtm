@@ -11,23 +11,23 @@ ValidatorBuilder.prototype = {
   _conditionDependencies : null,
   _validator             : null,
 
-  validates: function(attr) {
+  validates(attr) {
     this._attr = attr;
     this._conditions = [];
     this._conditionDependencies = [];
     return this;
   },
 
-  when: function(/* ...dependencies, condition */) {
-    var dependencies = [].slice.apply(arguments);
-    var condition    = dependencies.pop();
+  when(/* ...dependencies, condition */) {
+    let dependencies = [].slice.apply(arguments);
+    let condition    = dependencies.pop();
 
     if (dependencies.length === 0) {
       dependencies = [this._attr];
     }
 
-    for (var i = 0; i < dependencies.length; i++) {
-      var dependency = dependencies[i];
+    for (let i = 0; i < dependencies.length; i++) {
+      let dependency = dependencies[i];
       if (dependency !== this._attr) {
         this._validator.addDependentsFor(dependency, this._attr);
       }
@@ -38,14 +38,14 @@ ValidatorBuilder.prototype = {
     return this;
   },
 
-  and: function(/* ...dependencies, condition */) {
+  and(/* ...dependencies, condition */) {
     return this.when.apply(this, arguments);
   },
 
-  using: function(/* ...dependencies, predicate, message */) {
-    var dependencies = [].slice.apply(arguments);
-    var message      = dependencies.pop();
-    var predicate    = dependencies.pop();
+  using(/* ...dependencies, predicate, message */) {
+    let dependencies = [].slice.apply(arguments);
+    let message      = dependencies.pop();
+    let predicate    = dependencies.pop();
 
     if (typeof message === 'undefined') {
       throw new Error(`expected a message but got: ${message}`);
@@ -59,28 +59,28 @@ ValidatorBuilder.prototype = {
       dependencies = [this._attr];
     }
 
-    for (var i = 0; i < dependencies.length; i++) {
-      var dependency = dependencies[i];
+    for (let i = 0; i < dependencies.length; i++) {
+      let dependency = dependencies[i];
       if (dependency !== this._attr) {
         this._validator.addDependentsFor(dependency, this._attr);
       }
     }
 
     function validation(value, attr, object) {
-      var properties = getProperties(object, dependencies);
+      let properties = getProperties(object, dependencies);
       return predicate.apply(null, properties.concat([attr, object]));
     }
 
-    var conditions = this._conditions.slice();
-    var conditionDependencies = this._conditionDependencies.slice();
+    let conditions = this._conditions.slice();
+    let conditionDependencies = this._conditionDependencies.slice();
 
     function validationWithConditions(value, attr, object) {
       return all(conditions.map(function(condition, i) {
-        var dependencies = conditionDependencies[i];
-        var properties = getProperties(object, dependencies);
+        let dependencies = conditionDependencies[i];
+        let properties = getProperties(object, dependencies);
         return condition.apply(null, properties.concat([attr, object]));
       })).then(function(results) {
-        for (var i = 0; i < results.length; i++) {
+        for (let i = 0; i < results.length; i++) {
           // a condition resolved to a falsy value; return as valid
           if (!results[i]) {
             return true;
@@ -99,7 +99,7 @@ ValidatorBuilder.prototype = {
     return this;
   },
 
-  build: function() {
+  build() {
     return this._validator;
   }
 };

@@ -10,8 +10,8 @@ ObjectValidator.prototype = {
   _validations  : null,
   _dependencies : null,
 
-  addValidation: function(attr, fn, message) {
-    var list = this._validations[attr];
+  addValidation(attr, fn, message) {
+    let list = this._validations[attr];
 
     if (!list) {
       list = this._validations[attr] = [];
@@ -21,25 +21,25 @@ ObjectValidator.prototype = {
   },
 
   // e.g. spouseName (dependentAttribute) depends on maritalStatus (parentAttribute)
-  addDependentsFor: function(/* parentAttribute, ...dependentAttributes */) {
-    var dependentAttributes = [].slice.apply(arguments);
-    var parentAttribute = dependentAttributes.shift();
+  addDependentsFor(/* parentAttribute, ...dependentAttributes */) {
+    let dependentAttributes = [].slice.apply(arguments);
+    let parentAttribute = dependentAttributes.shift();
 
-    var dependentsForParent = this._dependencies[parentAttribute];
+    let dependentsForParent = this._dependencies[parentAttribute];
 
     if (!dependentsForParent) {
       dependentsForParent = this._dependencies[parentAttribute] = [];
     }
 
-    for (var i = 0; i < dependentAttributes.length; i++) {
-      var attr = dependentAttributes[i];
+    for (let i = 0; i < dependentAttributes.length; i++) {
+      let attr = dependentAttributes[i];
       if (!contains(dependentsForParent, attr)) {
         dependentsForParent.push(attr);
       }
     }
   },
 
-  attributes: function() {
+  attributes() {
     return uniq(
       keys(this._validations).concat(
         keys(this._dependencies)
@@ -47,11 +47,11 @@ ObjectValidator.prototype = {
     );
   },
 
-  validate: function(/* object, attributes..., callback */) {
-    var attributes = [].slice.apply(arguments);
-    var object = attributes.shift();
-    var callback = attributes.pop();
-    var self = this;
+  validate(/* object, attributes..., callback */) {
+    let attributes = [].slice.apply(arguments);
+    let object = attributes.shift();
+    let callback = attributes.pop();
+    let self = this;
 
     if (typeof callback === 'string') {
       attributes.push(callback);
@@ -62,15 +62,15 @@ ObjectValidator.prototype = {
       attributes = keys(this._validations);
     }
 
-    var validationPromises = [];
-    var alreadyValidating = attributes.slice();
-    for (var i = 0; i < attributes.length; i++) {
-      var attr = attributes[i];
+    let validationPromises = [];
+    let alreadyValidating = attributes.slice();
+    for (let i = 0; i < attributes.length; i++) {
+      let attr = attributes[i];
       validationPromises = validationPromises.concat(
         this._validateAttribute(object, attr, alreadyValidating));
     }
 
-    var promise = all(validationPromises).then(
+    let promise = all(validationPromises).then(
       function(results) {
         results = self._collectResults(results);
         if (callback) {
@@ -90,23 +90,19 @@ ObjectValidator.prototype = {
     }
   },
 
-  _validateAttribute: function(object, attr, alreadyValidating) {
-    var value       = config.get(object, attr);
-    var validations = this._validations[attr];
-    var results     = [];
+  _validateAttribute(object, attr, alreadyValidating) {
+    let value       = config.get(object, attr);
+    let validations = this._validations[attr];
+    let results     = [];
 
     if (validations) {
       validations.forEach(function(pair) {
-        var fn      = pair[0];
-        var message = pair[1];
+        let fn      = pair[0];
+        let message = pair[1];
 
-        var promise = resolve()
-          .then(function() {
-            return fn(value, attr, object);
-          })
-          .then(function(isValid) {
-            return [ attr, isValid ? null : message ];
-          });
+        let promise = resolve()
+          .then(() => fn(value, attr, object))
+          .then(isValid => [ attr, isValid ? null : message ]);
 
         results.push(promise);
       });
@@ -114,9 +110,9 @@ ObjectValidator.prototype = {
       results.push([ attr, null ]);
     }
 
-    var dependents = this._getDependentsFor(attr);
-    for (var i = 0; i < dependents.length; i++) {
-      var dependent = dependents[i];
+    let dependents = this._getDependentsFor(attr);
+    for (let i = 0; i < dependents.length; i++) {
+      let dependent = dependents[i];
       if (alreadyValidating.indexOf(dependent) < 0) {
         alreadyValidating.push(dependent);
         results = results.concat(this._validateAttribute(object, dependent, alreadyValidating));
@@ -126,18 +122,18 @@ ObjectValidator.prototype = {
     return results;
   },
 
-  _collectResults: function(results) {
-    var result = {
+  _collectResults(results) {
+    let result = {
       valid  : true,
       errors : {}
     };
 
-    for (var i = 0; i < results.length; i++) {
+    for (let i = 0; i < results.length; i++) {
       if (!results[i]) { continue; }
 
-      var attr = results[i][0];
-      var message = results[i][1];
-      var messages = result.errors[attr];
+      let attr = results[i][0];
+      let message = results[i][1];
+      let messages = result.errors[attr];
 
       if (!messages) {
         messages = result.errors[attr] = [];
@@ -153,7 +149,7 @@ ObjectValidator.prototype = {
   },
 
   // e.g. getDependents("maritalStatus")  # => ["spouseName"]
-  _getDependentsFor: function(parentAttribute) {
+  _getDependentsFor(parentAttribute) {
     return (this._dependencies[parentAttribute] || []).slice();
   }
 };

@@ -3,7 +3,7 @@ import { deepEqual, ok } from 'assert';
 
 describe('#8 | Dependent validations cause duplicate errors', () => {
   it('does not duplicate "Passwords must match"', () => {
-    const v =
+    let v =
       validator()
         .validates('password')
           .required('Please input a password')
@@ -13,7 +13,7 @@ describe('#8 | Dependent validations cause duplicate errors', () => {
             .using(((confirm, attr, form) => confirm === form.password), 'Passwords must match')
         .build();
 
-    const form = {
+    let form = {
       'password': 'asdf',
       'passwordConfirm': undefined
     };
