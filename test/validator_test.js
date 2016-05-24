@@ -155,6 +155,46 @@ describe('validator', () => {
       });
     });
 
+    it('allows conditionally running validations based on options', () => {
+      let object = {
+        name: null
+      };
+
+      let v =
+        buildValidator()
+          .validates('name')
+            .when('name', function (value, attr, object, options) {
+                return !options.nameOptional;
+              })
+              .required("You must enter a name.")
+          .build();
+
+        return v.validate(object).then(result => {
+          deepEqual(
+            result,
+            {
+              valid:  false,
+              errors: {
+                name: ["You must enter a name."]
+              }
+            }
+          );
+
+          return v.validate(object, { nameOptional: true }).then(result => {
+            deepEqual(
+              result,
+              {
+                  valid: true,
+                  errors: {
+                      name: []
+                  }
+              },
+              'options conditions are respected'
+            );
+          });
+        });
+    });
+
     it('allows conditionals that return promises', () => {
       validator =
         buildValidator()

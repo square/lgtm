@@ -74,14 +74,26 @@ describe('ObjectValidator', function() {
     });
   });
 
-  it('passes the validation function the value, key, and object being validated', () => {
+  it('passes the validation function the value, key, object, and options being validated', () => {
+    let options = { transaction: {} };
+
     object.firstName = 'Han';
 
-    validator.addValidation('firstName', function(value, key, obj) {
-      strictEqual(arguments.length, 3, 'passes three arguments');
+    validator.addValidation('firstName', function(value, key, obj, opts) {
+      strictEqual(arguments.length, 4, 'passes four arguments');
       strictEqual(value, 'Han', '1st argument is value');
       strictEqual(key, 'firstName', '2nd argument is key');
       strictEqual(obj, object, '3rd argument is object');
+      strictEqual(opts, options, '4th argument is options');
+    });
+
+    return validator.validate(object, options);
+  });
+
+  it('passes the validation function empty options by default', () => {
+    validator.addValidation('firstName', function(value, key, obj, opts) {
+      strictEqual(arguments.length, 4, 'passes four arguments');
+      deepEqual(opts, {}, '4th argument is empty options');
     });
 
     return validator.validate(object);

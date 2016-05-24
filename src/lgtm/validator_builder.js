@@ -66,19 +66,19 @@ ValidatorBuilder.prototype = {
       }
     }
 
-    function validation(value, attr, object) {
+    function validation(value, attr, object, options) {
       let properties = getProperties(object, dependencies);
-      return predicate.apply(null, properties.concat([attr, object]));
+      return predicate.apply(null, properties.concat([attr, object, options]));
     }
 
     let conditions = this._conditions.slice();
     let conditionDependencies = this._conditionDependencies.slice();
 
-    function validationWithConditions(value, attr, object) {
+    function validationWithConditions(value, attr, object, options) {
       return all(conditions.map(function(condition, i) {
         let dependencies = conditionDependencies[i];
         let properties = getProperties(object, dependencies);
-        return condition.apply(null, properties.concat([attr, object]));
+        return condition.apply(null, properties.concat([attr, object, options]));
       })).then(function(results) {
         for (let i = 0; i < results.length; i++) {
           // a condition resolved to a falsy value; return as valid
@@ -87,7 +87,7 @@ ValidatorBuilder.prototype = {
           }
         }
         // all conditions resolved to truthy values; continue with validation
-        return validation(value, attr, object);
+        return validation(value, attr, object, options);
       });
     }
 

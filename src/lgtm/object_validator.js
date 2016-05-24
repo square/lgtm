@@ -47,14 +47,24 @@ ObjectValidator.prototype = {
     );
   },
 
-  validate(/* object, attributes..., callback */) {
+  validate(/* object, [attributes...], [options], [callback] */) {
     let attributes = [].slice.apply(arguments);
     let object = attributes.shift();
     let callback = attributes.pop();
+    let options  = attributes.pop();
     let self = this;
+
+    if (typeof options === 'string') {
+      attributes.push(options);
+      options = null;
+    }
 
     if (typeof callback === 'string') {
       attributes.push(callback);
+      callback = null;
+    }
+    else if (typeof callback !== 'function') {
+      options  = options || callback;
       callback = null;
     }
 
@@ -67,7 +77,8 @@ ObjectValidator.prototype = {
     for (let i = 0; i < attributes.length; i++) {
       let attr = attributes[i];
       validationPromises = validationPromises.concat(
-        this._validateAttribute(object, attr, alreadyValidating));
+        this._validateAttribute(object, attr, options || {}, alreadyValidating)
+      );
     }
 
     let promise = all(validationPromises).then(
@@ -90,7 +101,7 @@ ObjectValidator.prototype = {
     }
   },
 
-  _validateAttribute(object, attr, alreadyValidating) {
+  _validateAttribute(object, attr, options, alreadyValidating) {
     let value       = config.get(object, attr);
     let validations = this._validations[attr];
     let results     = [];
@@ -101,7 +112,7 @@ ObjectValidator.prototype = {
         let message = pair[1];
 
         let promise = resolve()
-          .then(() => fn(value, attr, object))
+          .then(() => fn(value, attr, object, options))
           .then(isValid => [ attr, isValid ? null : message ]);
 
         results.push(promise);
@@ -115,7 +126,7 @@ ObjectValidator.prototype = {
       let dependent = dependents[i];
       if (alreadyValidating.indexOf(dependent) < 0) {
         alreadyValidating.push(dependent);
-        results = results.concat(this._validateAttribute(object, dependent, alreadyValidating));
+        results = results.concat(this._validateAttribute(object, dependent, options, alreadyValidating));
       }
     }
 
