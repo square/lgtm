@@ -1,123 +1,57 @@
 import ObjectValidator from './object_validator.js';
-import { getProperties, all } from './utils.js';
+import Validation from './validation';
 
-function ValidatorBuilder() {
-  this._validator = new ObjectValidator();
+function ValidatorBuilder(...validations) {
+  this._validations = validations;
 }
 
 ValidatorBuilder.prototype = {
-  _attr: null,
-  _conditions: null,
-  _conditionDependencies: null,
-  _validator: null,
+  _validations: null,
+  _validation: null,
 
   validates(attr) {
-    this._attr = attr;
-    this._conditions = [];
-    this._conditionDependencies = [];
+    this._validation = new Validation(attr);
+    this._validations.push(this._validation);
     return this;
   },
 
   when(/* ...dependencies, condition */) {
-    let dependencies = [].slice.apply(arguments);
-    let condition = dependencies.pop();
-
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-
-    for (let i = 0; i < dependencies.length; i++) {
-      let dependency = dependencies[i];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-
-    this._conditions.push(condition);
-    this._conditionDependencies.push(dependencies);
+    this._validation.when.apply(this._validation, arguments);
     return this;
   },
 
   and(/* ...dependencies, condition */) {
-    return this.when.apply(this, arguments);
+    this._validation.and.apply(this._validation, arguments);
+    return this;
   },
 
   using(/* ...dependencies, predicate, message */) {
-    let dependencies = [].slice.apply(arguments);
-    let message = dependencies.pop();
-    let predicate = dependencies.pop();
-
-    if (typeof message === 'undefined') {
-      throw new Error(`expected a message but got: ${message}`);
-    }
-
-    if (typeof message === 'function' && typeof predicate === 'undefined') {
-      throw new Error(
-        'missing expected argument `message` after predicate function'
-      );
-    }
-
-    if (dependencies.length === 0) {
-      dependencies = [this._attr];
-    }
-
-    for (let i = 0; i < dependencies.length; i++) {
-      let dependency = dependencies[i];
-      if (dependency !== this._attr) {
-        this._validator.addDependentsFor(dependency, this._attr);
-      }
-    }
-
-    function validation(value, attr, object) {
-      let properties = getProperties(object, dependencies);
-      return predicate.apply(null, properties.concat([attr, object]));
-    }
-
-    let conditions = this._conditions.slice();
-    let conditionDependencies = this._conditionDependencies.slice();
-
-    function validationWithConditions(value, attr, object) {
-      return all(
-        conditions.map(function(condition, i) {
-          let dependencies = conditionDependencies[i];
-          let properties = getProperties(object, dependencies);
-          return condition.apply(null, properties.concat([attr, object]));
-        })
-      ).then(function(results) {
-        for (let i = 0; i < results.length; i++) {
-          // a condition resolved to a falsy value; return as valid
-          if (!results[i]) {
-            return true;
-          }
-        }
-        // all conditions resolved to truthy values; continue with validation
-        return validation(value, attr, object);
-      });
-    }
-
-    this._validator.addValidation(
-      this._attr,
-      conditions ? validationWithConditions : validation,
-      message
-    );
+    this._validation.using.apply(this._validation, arguments);
     return this;
   },
 
   build() {
-    return this._validator;
+    return new ObjectValidator(...this._validations);
   }
 };
 
 ValidatorBuilder.registerHelper = function(name, fn) {
   this.prototype[name] = function() {
+    fn.apply(this._validation, arguments);
+    return this;
+  };
+
+  Validation.prototype[name] = function() {
     fn.apply(this, arguments);
     return this;
   };
+
   return null;
 };
 
 ValidatorBuilder.unregisterHelper = function(name) {
   delete this.prototype[name];
+  delete Validation.prototype[name];
   return null;
 };
 

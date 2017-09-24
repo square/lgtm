@@ -1,4 +1,5 @@
 import ObjectValidator from './lgtm/object_validator.js';
+import Validation from './lgtm/validation.js';
 import ValidatorBuilder from './lgtm/validator_builder.js';
 import config from './lgtm/config.js';
 import { get } from './lgtm/utils.js';
@@ -12,8 +13,12 @@ import {
 
 core_register();
 
-function validator() {
-  return new ValidatorBuilder();
+function validator(...validations) {
+  return new ValidatorBuilder(...validations);
+}
+
+function validates(attr) {
+  return new Validation(attr);
 }
 
 function register() {
@@ -124,4 +129,4 @@ configure('get', (object, property) => {
   return get(object, property);
 });
 
-export { configure, validator, helpers, ObjectValidator };
+export { configure, validator, validates, helpers, ObjectValidator };
