@@ -1,4 +1,4 @@
-import { helpers, validator } from './lgtm';
+import { helpers, validator, validates } from './lgtm';
 import { throws } from 'assert';
 
 describe('LGTM.helpers.(un)register', () => {
@@ -16,6 +16,15 @@ describe('LGTM.helpers.(un)register', () => {
       .validates('name')
       .isBob('You must be Bob.')
       .build();
+  });
+
+  it('allows using the custom helper with a validates object', () => {
+    helpers.register('isBob', function(message) {
+      this.using(value => value === 'Bob', message);
+    });
+
+    // this would throw if the above didn't work
+    validates('name').isBob('You must be Bob.');
   });
 
   it('fails when delegating to using() without a message', () => {

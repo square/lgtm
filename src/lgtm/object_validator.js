@@ -1,9 +1,11 @@
 import config from './config.js';
 import { all, resolve, contains, keys, uniq } from './utils.js';
 
-function ObjectValidator() {
+function ObjectValidator(...validations) {
   this._validations = {};
   this._dependencies = {};
+
+  validations.forEach(validation => validation.addToValidator(this));
 }
 
 ObjectValidator.prototype = {
