@@ -1,5 +1,7 @@
 # LGTM
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/square/lgtm.svg)](https://greenkeeper.io/)
+
 LGTM is a simple JavaScript library for validating objects and collecting error
 messages. It leaves the display, behavior, and error messages in your hands,
 focusing on letting you describe your validations cleanly and concisely for
