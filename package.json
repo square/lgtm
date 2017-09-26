@@ -1,6 +1,6 @@
 {
   "name": "lgtm",
-  "version": "1.1.0",
+  "version": "0.0.0-development",
   "description": "Simple JavaScript validation for objects.",
   "main": "dist/lgtm.js",
   "jsnext:main": "dist/lgtm.mjs",
@@ -9,11 +9,12 @@
     "build": "rm -rf dist && script/build",
     "pretest": "npm run lint",
     "test": "mocha",
-    "prepublish": "npm test && npm run build"
+    "prepublish": "npm test && npm run build",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:square/lgtm.git"
+    "url": "https://github.com/square/lgtm.git"
   },
   "keywords": [
     "validation"
