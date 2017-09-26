@@ -22,11 +22,11 @@ function validates(attr) {
 }
 
 function register() {
-  ValidatorBuilder.registerHelper.apply(ValidatorBuilder, arguments);
+  ValidatorBuilder.registerHelper(...arguments);
 }
 
 function unregister() {
-  ValidatorBuilder.unregisterHelper.apply(ValidatorBuilder, arguments);
+  ValidatorBuilder.unregisterHelper(...arguments);
 }
 
 let helpers = {

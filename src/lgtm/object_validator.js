@@ -1,16 +1,13 @@
 import config from './config.js';
 import { all, resolve, contains, keys, uniq } from './utils.js';
 
-function ObjectValidator(...validations) {
-  this._validations = {};
-  this._dependencies = {};
+export default class ObjectValidator {
+  _validations = {};
+  _dependencies = {};
 
-  validations.forEach(validation => validation.addToValidator(this));
-}
-
-ObjectValidator.prototype = {
-  _validations: null,
-  _dependencies: null,
+  constructor(...validations) {
+    validations.forEach(validation => validation.addToValidator(this));
+  }
 
   addValidation(attr, fn, message) {
     let list = this._validations[attr];
@@ -20,13 +17,10 @@ ObjectValidator.prototype = {
     }
 
     list.push([fn, message]);
-  },
+  }
 
   // e.g. spouseName (dependentAttribute) depends on maritalStatus (parentAttribute)
-  addDependentsFor(/* parentAttribute, ...dependentAttributes */) {
-    let dependentAttributes = [].slice.apply(arguments);
-    let parentAttribute = dependentAttributes.shift();
-
+  addDependentsFor(parentAttribute, ...dependentAttributes) {
     let dependentsForParent = this._dependencies[parentAttribute];
 
     if (!dependentsForParent) {
@@ -39,21 +33,17 @@ ObjectValidator.prototype = {
         dependentsForParent.push(attr);
       }
     }
-  },
+  }
 
   attributes() {
     return uniq(keys(this._validations).concat(keys(this._dependencies)));
-  },
+  }
 
-  validate(/* object, attributes..., callback */) {
-    let attributes = [].slice.apply(arguments);
-    let object = attributes.shift();
-    let callback = attributes.pop();
-    let self = this;
+  validate(object, ...attributes) {
+    let callback = null;
 
-    if (typeof callback === 'string') {
-      attributes.push(callback);
-      callback = null;
+    if (typeof attributes[attributes.length - 1] !== 'string') {
+      callback = attributes.pop();
     }
 
     if (attributes.length === 0) {
@@ -69,15 +59,16 @@ ObjectValidator.prototype = {
       );
     }
 
+    let self = this;
     let promise = all(validationPromises).then(
-      function(results) {
-        results = self._collectResults(results);
+      results => {
+        results = this._collectResults(results);
         if (callback) {
           callback(null, results);
         }
         return results;
       },
-      function(err) {
+      err => {
         if (callback) {
           callback(err);
         }
@@ -88,7 +79,7 @@ ObjectValidator.prototype = {
     if (!callback) {
       return promise;
     }
-  },
+  }
 
   _validateAttribute(object, attr, alreadyValidating) {
     let value = config.get(object, attr);
@@ -122,7 +113,7 @@ ObjectValidator.prototype = {
     }
 
     return results;
-  },
+  }
 
   _collectResults(results) {
     let result = {
@@ -150,12 +141,10 @@ ObjectValidator.prototype = {
     }
 
     return result;
-  },
+  }
 
   // e.g. getDependents("maritalStatus")  # => ["spouseName"]
   _getDependentsFor(parentAttribute) {
     return (this._dependencies[parentAttribute] || []).slice();
   }
-};
-
-export default ObjectValidator;
+}

@@ -4,7 +4,7 @@ import config from './config.js';
  * Iteration
  */
 
-function forEach(iterable, iterator) {
+export function forEach(iterable, iterator) {
   if (typeof iterable.forEach === 'function') {
     iterable.forEach(iterator);
   } else if ({}.toString.call(iterable) === '[object Object]') {
@@ -21,17 +21,15 @@ function forEach(iterable, iterator) {
   }
 }
 
-function keys(object) {
+export function keys(object) {
   return Object.getOwnPropertyNames(object);
 }
-
-export { forEach, keys };
 
 /**
  * Property access
  */
 
-function get(object, property) {
+export function get(object, property) {
   if (object === null || object === undefined) {
     return;
   } else if (typeof object.get === 'function') {
@@ -41,22 +39,20 @@ function get(object, property) {
   }
 }
 
-function getProperties(object, properties) {
+export function getProperties(object, properties) {
   let { get } = config;
   return properties.map(prop => get(object, prop));
 }
-
-export { get, getProperties };
 
 /**
  * Array manipulation
  */
 
-function contains(array, object) {
+export function contains(array, object) {
   return array.indexOf(object) > -1;
 }
 
-function uniq(array) {
+export function uniq(array) {
   let result = [];
 
   for (let i = 0; i < array.length; i++) {
@@ -69,20 +65,16 @@ function uniq(array) {
   return result;
 }
 
-export { contains, uniq };
-
 /**
  * Promises
  */
 
-function resolve(thenable) {
+export function resolve(thenable) {
   let { Promise } = config;
   return new Promise(accept => accept(thenable));
 }
 
-function all(thenables) {
+export function all(thenables) {
   let { Promise } = config;
   return Promise.all(thenables);
 }
-
-export { resolve, all };

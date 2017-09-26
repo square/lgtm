@@ -1,20 +1,16 @@
 import { getProperties, all } from './utils.js';
 
-function Validation(attr) {
-  this._attr = attr;
-  this._conditions = [];
-  this._subvalidations = [];
-  this._dependencies = [];
-}
+export default class Validation {
+  _attr = null;
+  _conditions = [];
+  _subvalidations = [];
+  _dependencies = [];
 
-Validation.prototype = {
-  _attr: null,
-  _conditions: null,
-  _subvalidations: null,
-  _dependencies: null,
+  constructor(attr) {
+    this._attr = attr;
+  }
 
-  when(/* ...dependencies, predicate */) {
-    let dependencies = [].slice.apply(arguments);
+  when(...dependencies /*, predicate */) {
     const predicate = dependencies.pop();
 
     if (dependencies.length === 0) {
@@ -27,14 +23,13 @@ Validation.prototype = {
     });
 
     return this;
-  },
+  }
 
-  and(/* ...dependencies, condition */) {
-    return this.when.apply(this, arguments);
-  },
+  and(...args) {
+    return this.when(...args);
+  }
 
-  using(/* ...dependencies, predicate, message */) {
-    let dependencies = [].slice.apply(arguments);
+  using(...dependencies /*, predicate, message */) {
     const message = dependencies.pop();
     const predicate = dependencies.pop();
 
@@ -54,7 +49,7 @@ Validation.prototype = {
 
     function validation(value, attr, object) {
       const properties = getProperties(object, dependencies);
-      return predicate.apply(null, properties.concat([attr, object]));
+      return predicate(...properties, attr, object);
     }
 
     const conditions = this._conditions.slice();
@@ -63,7 +58,7 @@ Validation.prototype = {
       return all(
         conditions.map(({ predicate, dependencies }) => {
           const properties = getProperties(object, dependencies);
-          return predicate.apply(null, properties.concat([attr, object]));
+          return predicate(...properties, attr, object);
         })
       ).then(results => {
         for (let i = 0; i < results.length; i += 1) {
@@ -72,6 +67,7 @@ Validation.prototype = {
             return true;
           }
         }
+
         // all conditions resolved to truthy values; continue with validation
         return validation(value, attr, object);
       });
@@ -84,7 +80,7 @@ Validation.prototype = {
     });
 
     return this;
-  },
+  }
 
   addToValidator(validator) {
     this.dependencies().forEach(dependency => {
@@ -98,7 +94,7 @@ Validation.prototype = {
         subvalidation.message
       );
     });
-  },
+  }
 
   dependencies() {
     const dependencies = [];
@@ -117,6 +113,4 @@ Validation.prototype = {
 
     return dependencies;
   }
-};
-
-export default Validation;
+}
