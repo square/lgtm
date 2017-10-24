@@ -12,6 +12,9 @@ const STRICT_CHARS = /^[\x20-\x7F]*$/;
 // http://stackoverflow.com/a/46181/11236
 const EMAIL = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+// http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
+const MAX_EMAIL_LENGTH = 254;
+
 export function checkEmail(options = {}) {
   return function(value) {
     if (typeof value === 'string') {
@@ -24,7 +27,12 @@ export function checkEmail(options = {}) {
       }
     }
 
-    return EMAIL.test(value);
+    return (
+      value !== undefined &&
+      value !== null &&
+      value.length <= MAX_EMAIL_LENGTH &&
+      EMAIL.test(value)
+    );
   };
 }
 

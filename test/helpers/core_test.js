@@ -36,6 +36,18 @@ describe('helpers.core', () => {
       !checkEmail({ strictCharacters: true })('mañana@squareup.com'),
       'returns false for emails with characters in extended ASCII range when strictCharacters == true'
     );
+    ok(
+      checkEmail()('github' + '+'.repeat(235) + '@squareup.com'),
+      'returns true for email with length of 254 characters'
+    );
+    ok(
+      checkEmail()('github' + '+'.repeat(235) + '@squareup.com'),
+      'returns true for email with length of 254 characters'
+    );
+    ok(
+      !checkEmail()('github' + '+'.repeat(236) + '@squareup.com'),
+      'returns false for email with length greater than 254 characters'
+    );
   });
 
   it('checkMinLength', () => {
