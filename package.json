@@ -39,7 +39,7 @@
     "prettier": "^1.7.0",
     "rollup": "^0.52.0",
     "rollup-plugin-babel": "^3.0.2",
-    "semantic-release": "^8.0.3",
+    "semantic-release": "^11.0.2",
     "uglify-js": "^3.1.2"
   },
   "files": [
