@@ -4,8 +4,6 @@ cache:
   yarn: true
   directories:
     - node_modules
-notifications:
-  email: false
 node_js:
   - '8'
   - '6'
@@ -16,11 +14,16 @@ before_script:
   - greenkeeper-lockfile-update
 after_script:
   - greenkeeper-lockfile-upload
-after_success:
-  - 'curl -Lo travis_after_all.py https://git.io/travis_after_all'
-  - python travis_after_all.py
-  - export $(cat .to_export_back) &> /dev/null
-  - npm run semantic-release
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
+jobs:
+  include:
+    - stage: release
+      node_js: lts/*
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: 'yarn install && yarn build && npx semantic-release'
+        on:
+          branch: master
