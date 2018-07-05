@@ -1038,9 +1038,9 @@ growl@1.10.3:
   version "1.10.3"
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.3.tgz#1926ba90cf3edfe2adb4927f5880bc22c66c790f"
 
-gzip-size@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/gzip-size/-/gzip-size-4.0.0.tgz#a80e13e18938bcb2e6702fec606f5cf8b666db3a"
+gzip-size@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/gzip-size/-/gzip-size-5.0.0.tgz#a55ecd99222f4c48fd8c01c625ce3b349d0a0e80"
   dependencies:
     duplexer "^0.1.1"
     pify "^3.0.0"
