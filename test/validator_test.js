@@ -1,4 +1,4 @@
-import resolve from './support/resolve.js';
+import resolve from './support/resolve';
 import { validator as buildValidator, ObjectValidator } from './lgtm';
 import { deepEqual, ok, strictEqual } from 'assert';
 

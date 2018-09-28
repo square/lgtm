@@ -1,1 +1,1 @@
-export * from '../src/lgtm.js';
+export * from '../src/lgtm';

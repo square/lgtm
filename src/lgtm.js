@@ -1,15 +1,15 @@
-import ObjectValidator from './lgtm/object_validator.js';
-import Validation from './lgtm/validation.js';
-import ValidatorBuilder from './lgtm/validator_builder.js';
-import config from './lgtm/config.js';
-import { get } from './lgtm/utils.js';
+import ObjectValidator from './lgtm/object_validator';
+import Validation from './lgtm/validation';
+import ValidatorBuilder from './lgtm/validator_builder';
+import config from './lgtm/config';
+import { get } from './lgtm/utils';
 import {
   present,
   checkEmail,
   checkMinLength,
   checkMaxLength,
   register as core_register
-} from './lgtm/helpers/core.js';
+} from './lgtm/helpers/core';
 
 core_register();
 

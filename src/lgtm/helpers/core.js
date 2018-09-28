@@ -1,4 +1,4 @@
-import ValidatorBuilder from '../validator_builder.js';
+import ValidatorBuilder from '../validator_builder';
 
 export function present(value) {
   if (typeof value === 'string') {

@@ -1,4 +1,4 @@
-import ObjectValidator from './object_validator.js';
+import ObjectValidator from './object_validator';
 import Validation from './validation';
 
 export default class ValidatorBuilder {

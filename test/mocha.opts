@@ -1,1 +1,1 @@
---recursive --compilers js:babel-register test
+--recursive --require @babel/register test
