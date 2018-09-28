@@ -1,5 +1,5 @@
-import config from './config.js';
-import { all, resolve, contains, keys, uniq } from './utils.js';
+import config from './config';
+import { all, resolve, contains, keys, uniq } from './utils';
 
 export default class ObjectValidator {
   _validations = {};
@@ -59,7 +59,6 @@ export default class ObjectValidator {
       );
     }
 
-    let self = this;
     let promise = all(validationPromises).then(
       results => {
         results = this._collectResults(results);
@@ -71,8 +70,9 @@ export default class ObjectValidator {
       err => {
         if (callback) {
           callback(err);
+        } else {
+          throw err;
         }
-        throw err;
       }
     );
 

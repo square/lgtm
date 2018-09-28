@@ -3,7 +3,7 @@ import {
   checkMaxLength,
   checkMinLength,
   present
-} from '../../src/lgtm/helpers/core.js';
+} from '../../src/lgtm/helpers/core';
 import { ok, throws } from 'assert';
 
 describe('helpers.core', () => {

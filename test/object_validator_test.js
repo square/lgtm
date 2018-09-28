@@ -1,5 +1,5 @@
-import resolve from './support/resolve.js';
-import { ObjectValidator, helpers } from './lgtm.js';
+import resolve from './support/resolve';
+import { ObjectValidator, helpers } from './lgtm';
 import { deepEqual, fail, strictEqual } from 'assert';
 
 let { present } = helpers.core;

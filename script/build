@@ -16,18 +16,14 @@ rollup({
       babelrc: false,
       presets: [
         [
-          'env',
+          '@babel/preset-env',
           {
             targets: ['last 2 versions', 'ie 11'],
             modules: false
           }
         ]
       ],
-      plugins: [
-        'syntax-class-properties',
-        'transform-class-properties',
-        'external-helpers'
-      ]
+      plugins: ['@babel/plugin-proposal-class-properties']
     })
   ]
 })
@@ -59,6 +55,6 @@ function printFileInfo(path) {
     `→ ${path} (raw: ${filesize(code.length).human('si')} / min: ${filesize(
       minified.code.length
     ).human('si')} ` +
-      `/ min+gzip: ${filesize(gzipSize(minified.code)).human('si')})`
+    `/ min+gzip: ${filesize(gzipSize(minified.code)).human('si')})`
   );
 }

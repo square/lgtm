@@ -1,4 +1,4 @@
-import { getProperties, all } from './utils.js';
+import { getProperties, all } from './utils';
 
 export default class Validation {
   _attr = null;
