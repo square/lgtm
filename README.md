@@ -10,5 +10,3 @@ focusing on letting you describe your validations cleanly and concisely for
 whatever environment you're using.
 
 For examples, installation, setup and more [see the wiki](https://github.com/square/lgtm/wiki).
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/square/lgtm.svg)](https://greenkeeper.io/)
