@@ -1,5 +1,7 @@
 # LGTM
 
+![CI](https://github.com/square/lgtm/workflows/CI/badge.svg)
+
 LGTM is a simple JavaScript library for validating objects and collecting error
 messages. It leaves the display, behavior, and error messages in your hands,
 focusing on letting you describe your validations cleanly and concisely for
