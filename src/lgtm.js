@@ -77,7 +77,7 @@ PromiseProxy.reject = (...args) => getPromise().reject(...args);
 function getPromise() {
   let warn = config['warn'];
 
-  /* global Promise, RSVP, require */
+  /* global RSVP, require */
   if (typeof RSVP !== 'undefined') {
     configure('Promise', RSVP.Promise);
     warn(
