@@ -9,8 +9,7 @@
     "build": "rm -rf dist && script/build",
     "pretest": "npm run lint",
     "test": "mocha",
-    "prepublish": "npm test && npm run build",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "prepublish": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
