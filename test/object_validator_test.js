@@ -140,6 +140,24 @@ describe('ObjectValidator', function() {
     );
   });
 
+  it('creates a dynamic message when given a function for validation message', () => {
+    validator.addValidation('text',
+    (text => text.length == 12),
+    (text => `Text should be 12 characters long. (${text.length}/12)`));
+
+    return validator.validate({text: '12345678901'}).then((result) => {
+      deepEqual(
+        result,
+        {
+          valid: false,
+          errors: {
+            text: [`Text should be 12 characters long. (11/12)`]
+          }
+        }
+      );
+    });
+  });
+
   context('with validations that return immediately', () => {
     beforeEach(() => {
       validator.addValidation(
